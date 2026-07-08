@@ -1,5 +1,6 @@
 package com.example.mcp.config;
 
+import com.example.mcp.handler.FileSystemHandler;
 import com.example.mcp.handler.PictureHandler;
 import com.example.mcp.handler.WeatherHandler;
 import com.example.mcp.pojo.TextInput;
@@ -23,7 +24,7 @@ public class McpConfiguration {
      */
     public String convertToUpperCase(TextInput input) {
         return input.input()
-                    .toUpperCase();
+                .toUpperCase();
     }
 
     /**
@@ -34,9 +35,9 @@ public class McpConfiguration {
     @Bean
     public ToolCallback toUpperCase() {
         return FunctionToolCallback.builder("toUpperCase", this::convertToUpperCase)
-                                   .inputType(TextInput.class)
-                                   .description("Put the text to upper case")
-                                   .build();
+                .inputType(TextInput.class)
+                .description("Put the text to upper case")
+                .build();
     }
 
     /**
@@ -48,14 +49,27 @@ public class McpConfiguration {
     @Bean
     public ToolCallbackProvider weatherTools(WeatherHandler weatherHandler) {
         return MethodToolCallbackProvider.builder()
-                                         .toolObjects(weatherHandler)
-                                         .build();
+                .toolObjects(weatherHandler)
+                .build();
     }
 
     @Bean
     public ToolCallbackProvider pictureTools(PictureHandler pictureHandler) {
         return MethodToolCallbackProvider.builder()
-                                         .toolObjects(pictureHandler)
-                                         .build();
+                .toolObjects(pictureHandler)
+                .build();
+    }
+
+    /**
+     * 注册文件系统工具（FileSystemHandler），提供文件读取、写入、编辑、搜索、目录浏览等 MCP 工具功能
+     *
+     * @param fileSystemHandler 文件系统处理器实例
+     * @return ToolCallbackProvider 对象，提供文件系统相关的工具功能
+     */
+    @Bean
+    public ToolCallbackProvider fileSystemTools(FileSystemHandler fileSystemHandler) {
+        return MethodToolCallbackProvider.builder()
+                .toolObjects(fileSystemHandler)
+                .build();
     }
 }
