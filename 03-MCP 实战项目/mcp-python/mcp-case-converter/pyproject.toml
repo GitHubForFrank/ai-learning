@@ -1,0 +1,31 @@
+[project]
+name = "mcp-case-converter"
+version = "0.2.0"
+description = "字符串大小写与命名风格转换（upper/lower/swap/title/camel/pascal/snake/kebab/constant 等）：CLI + MCP Server 双入口"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.0.0",
+    "pydantic>=2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.23",
+]
+
+[project.scripts]
+case-converter = "mcp_case_converter.entrypoints.cli:main"
+mcp-case-converter = "mcp_case_converter.entrypoints.mcp:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mcp_case_converter"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

@@ -1,0 +1,38 @@
+# ---- Java / Maven ----
+target/
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+
+# Maven wrapper（只忽略 jar，properties 必须提交）
+.mvn/wrapper/maven-wrapper.jar
+
+# JVM crash logs
+hs_err_pid*
+replay_pid*
+
+# ---- Spring Boot 本地运行 ----
+# 本地覆盖配置(若开发者自建,不入库;真实凭证不应进仓)
+application-local.properties
+application-local.yml
+application-local.yaml
+
+# ---- IDE / 工具 ----
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+.factorypath
+.metadata/
+RemoteSystemsTempFiles/
+
+# ---- 测试 / 报告 ----
+.surefire-*
+*.lck
+
+# ---- 注意:以下必须提交 ----
+# pom.xml / src/ / mvnw* / .mvn/wrapper/maven-wrapper.properties

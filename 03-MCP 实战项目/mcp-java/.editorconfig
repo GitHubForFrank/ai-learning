@@ -1,0 +1,922 @@
+# 根配置标记，停止向上级目录查找其他.editorconfig文件（官方标准）
+root = true
+
+# 全局默认配置：所有文件类型通用设置
+[*]
+# 文件编码格式
+charset = utf-8
+# 行尾使用Windows风格的回车换行符
+end_of_line = crlf
+# 缩进大小为2个空格
+indent_size = 2
+# 使用空格进行缩进
+indent_style = space
+# 不在文件末尾插入新行
+insert_final_newline = false
+# 最大行长度限制为100个字符
+max_line_length = 100
+# Tab键宽度为2个空格
+tab_width = 2
+# 移除行尾空白字符
+trim_trailing_whitespace = true
+# IDEA续行缩进大小
+ij_continuation_indent_size = 4
+# IDEA格式化关闭标签
+ij_formatter_off_tag = @formatter:off
+# IDEA格式化开启标签
+ij_formatter_on_tag = @formatter:on
+# 启用IDEA格式化标签
+ij_formatter_tags_enabled = true
+# 禁用智能Tab功能
+ij_smart_tabs = false
+# 可视化指南设置
+ij_visual_guides =
+# 禁用输入时自动换行
+ij_wrap_on_typing = false
+
+# DCL声明式文件配置
+[*.dcl]
+# DCL文件缩进大小为4个空格
+indent_size = 4
+# DCL文件Tab宽度为4个空格
+tab_width = 4
+# DCL文件续行缩进大小为8个空格
+ij_continuation_indent_size = 8
+# DCL文件中空行不保留缩进
+ij_declarative_keep_indents_on_empty_lines = false
+
+# Java源文件配置
+[*.java]
+# Java文件缩进大小为4个空格
+indent_size = 4
+# Java文件最大行长度为150个字符
+max_line_length = 150
+# Java文件Tab宽度为4个空格
+tab_width = 4
+# Java代码中不对齐连续赋值语句
+ij_java_align_consecutive_assignments = false
+# Java代码中不对齐连续变量声明
+ij_java_align_consecutive_variable_declarations = false
+# Java代码中不对齐分组字段声明
+ij_java_align_group_field_declarations = false
+# Java代码中多行注解参数不对齐
+ij_java_align_multiline_annotation_parameters = false
+# Java代码中多行数组初始化表达式不对齐
+ij_java_align_multiline_array_initializer_expression = false
+# Java代码中多行赋值不对齐
+ij_java_align_multiline_assignment = false
+# Java代码中多行二元操作不对齐
+ij_java_align_multiline_binary_operation = false
+# Java代码中多行链式调用方法对齐
+ij_java_align_multiline_chained_methods = true
+# Java代码中多行解构列表组件对齐
+ij_java_align_multiline_deconstruction_list_components = true
+# Java代码中多行extends列表不对齐
+ij_java_align_multiline_extends_list = false
+# Java代码中多行for语句对齐
+ij_java_align_multiline_for = true
+# Java代码中多行方法括号不对齐
+ij_java_align_multiline_method_parentheses = false
+# Java代码中多行方法参数不对齐
+ij_java_align_multiline_parameters = false
+# Java代码中多行调用参数对齐
+ij_java_align_multiline_parameters_in_calls = true
+# Java代码中多行括号表达式不对齐
+ij_java_align_multiline_parenthesized_expression = false
+# Java代码中多行记录（record）对齐
+ij_java_align_multiline_records = true
+# Java代码中多行资源不对齐
+ij_java_align_multiline_resources = false
+# Java代码中多行三元操作不对齐
+ij_java_align_multiline_ternary_operation = false
+# Java代码中多行文本块不对齐
+ij_java_align_multiline_text_blocks = false
+# Java代码中多行throws列表不对齐
+ij_java_align_multiline_throws_list = false
+# Java代码中后续简单方法不对齐
+ij_java_align_subsequent_simple_methods = false
+# Java代码中throws关键字不对齐
+ij_java_align_throws_keyword = false
+# Java代码中multi-catch中的类型对齐
+ij_java_align_types_in_multi_catch = true
+# Java代码中记录组件的注解不换行
+ij_java_annotation_new_line_in_record_component = false
+# Java代码中注解参数不换行（off=关闭换行）
+ij_java_annotation_parameter_wrap = off
+# Java代码中数组初始化左括号后不换行
+ij_java_array_initializer_new_line_after_left_brace = false
+# Java代码中数组初始化右括号不换行
+ij_java_array_initializer_right_brace_on_new_line = false
+# Java代码中数组初始化普通换行（normal=超出时换行）
+ij_java_array_initializer_wrap = normal
+# Java代码中assert语句冒号不在下一行
+ij_java_assert_statement_colon_on_next_line = false
+# Java代码中assert语句不换行
+ij_java_assert_statement_wrap = off
+# Java代码中赋值语句不换行
+ij_java_assignment_wrap = off
+# Java代码中二元操作符置于下行行首
+ij_java_binary_operation_sign_on_next_line = true
+# Java代码中二元操作普通换行
+ij_java_binary_operation_wrap = normal
+# Java代码中匿名类头后空行数为0
+ij_java_blank_lines_after_anonymous_class_header = 0
+# Java代码中类头后保留1行空行
+ij_java_blank_lines_after_class_header = 1
+# Java代码中import语句后保留1行空行
+ij_java_blank_lines_after_imports = 1
+# Java代码中package声明后保留1行空行
+ij_java_blank_lines_after_package = 1
+# Java代码中类前后保留1行空行
+ij_java_blank_lines_around_class = 1
+# Java代码中字段前后不保留空行
+ij_java_blank_lines_around_field = 0
+# Java代码中接口字段前后不保留空行
+ij_java_blank_lines_around_field_in_interface = 0
+# Java代码中有注解的字段前后不保留空行
+ij_java_blank_lines_around_field_with_annotations = 0
+# Java代码中初始化块前后保留1行空行
+ij_java_blank_lines_around_initializer = 1
+# Java代码中方法前后保留1行空行
+ij_java_blank_lines_around_method = 1
+# Java代码中接口方法前后保留1行空行
+ij_java_blank_lines_around_method_in_interface = 1
+# Java代码中类结束前不保留空行
+ij_java_blank_lines_before_class_end = 0
+# Java代码中import语句前保留1行空行
+ij_java_blank_lines_before_imports = 1
+# Java代码中方法体前不保留空行
+ij_java_blank_lines_before_method_body = 0
+# Java代码中package语句前不保留空行
+ij_java_blank_lines_before_package = 0
+# Java代码中记录组件间不保留空行
+ij_java_blank_lines_between_record_components = 0
+# Java代码中块大括号样式：行尾（K&R风格）
+ij_java_block_brace_style = end_of_line
+# Java代码中块注释内容前不添加空格
+ij_java_block_comment_add_space = false
+# Java代码中块注释起始星号在第一列
+ij_java_block_comment_at_first_column = true
+# Java代码中构建器方法名称列表（为空使用默认识别）
+ij_java_builder_methods =
+# Java代码中调用参数左括号后不换行
+ij_java_call_parameters_new_line_after_left_paren = false
+# Java代码中调用参数右括号不换行
+ij_java_call_parameters_right_paren_on_new_line = false
+# Java代码中调用参数普通换行
+ij_java_call_parameters_wrap = normal
+# Java代码中case语句内容单独一行
+ij_java_case_statement_on_separate_line = true
+# Java代码中catch不换行（与try在同一行）
+ij_java_catch_on_new_line = false
+# Java代码中类注解按行分割
+ij_java_class_annotation_wrap = split_into_lines
+# Java代码中类大括号样式：行尾
+ij_java_class_brace_style = end_of_line
+# Java代码中触发通配符导入的类数量阈值（999=实际不使用通配符导入）
+ij_java_class_count_to_use_import_on_demand = 999
+# Java代码中Javadoc中类名显示方式（1=简短名称）
+ij_java_class_names_in_javadoc = 1
+# Java代码中解构列表换行
+ij_java_deconstruction_list_wrap = normal
+# Java代码中删除未使用的模块导入
+ij_java_delete_unused_module_imports = true
+# Java代码中不缩进顶级类成员
+ij_java_do_not_indent_top_level_class_members = false
+# Java代码中单个注解后不禁止换行
+ij_java_do_not_wrap_after_single_annotation = false
+# Java代码中参数中单个注解后不禁止换行
+ij_java_do_not_wrap_after_single_annotation_in_parameter = false
+# Java代码中do-while强制使用大括号
+ij_java_do_while_brace_force = always
+# Java代码中Javadoc描述后添加空行
+ij_java_doc_add_blank_line_after_description = true
+# Java代码中Javadoc参数注释后不添加空行
+ij_java_doc_add_blank_line_after_param_comments = false
+# Java代码中Javadoc返回注释后不添加空行
+ij_java_doc_add_blank_line_after_return = false
+# Java代码中Javadoc空行添加<p>标签
+ij_java_doc_add_p_tag_on_empty_lines = true
+# Java代码中Javadoc异常注释对齐
+ij_java_doc_align_exception_comments = true
+# Java代码中Javadoc参数注释对齐
+ij_java_doc_align_param_comments = true
+# Java代码中Javadoc单行时不禁止换行
+ij_java_doc_do_not_wrap_if_one_line = false
+# Java代码中启用Javadoc格式化
+ij_java_doc_enable_formatting = true
+# Java代码中启用Javadoc行首星号
+ij_java_doc_enable_leading_asterisks = true
+# Java代码中Javadoc续行不缩进
+ij_java_doc_indent_on_continuation = false
+# Java代码中Javadoc保留空行
+ij_java_doc_keep_empty_lines = true
+# Java代码中Javadoc保留空的@param标签
+ij_java_doc_keep_empty_parameter_tag = true
+# Java代码中Javadoc保留空的@return标签
+ij_java_doc_keep_empty_return_tag = true
+# Java代码中Javadoc保留空的@throws标签
+ij_java_doc_keep_empty_throws_tag = true
+# Java代码中Javadoc保留无效标签
+ij_java_doc_keep_invalid_tags = true
+# Java代码中Javadoc参数描述不另起新行
+ij_java_doc_param_description_on_new_line = false
+# Java代码中Javadoc不保留原有换行符
+ij_java_doc_preserve_line_breaks = false
+# Java代码中Javadoc使用@throws而非@exception标签
+ij_java_doc_use_throws_not_exception_tag = true
+# Java代码中else不换行（与if在同一行）
+ij_java_else_on_new_line = false
+# Java代码中枚举常量按行分割
+ij_java_enum_constants_wrap = split_into_lines
+# Java代码中枚举字段注解不换行
+ij_java_enum_field_annotation_wrap = off
+# Java代码中extends关键字不换行
+ij_java_extends_keyword_wrap = off
+# Java代码中extends列表普通换行
+ij_java_extends_list_wrap = normal
+# Java代码中字段注解按行分割
+ij_java_field_annotation_wrap = split_into_lines
+# Java代码中字段名称前缀（为空表示无前缀）
+ij_java_field_name_prefix =
+# Java代码中字段名称后缀（为空表示无后缀）
+ij_java_field_name_suffix =
+# Java代码中finally不换行（与try在同一行）
+ij_java_finally_on_new_line = false
+# Java代码中for强制使用大括号
+ij_java_for_brace_force = always
+# Java代码中for语句左括号后不换行
+ij_java_for_statement_new_line_after_left_paren = false
+# Java代码中for语句右括号不换行
+ij_java_for_statement_right_paren_on_new_line = false
+# Java代码中for语句普通换行
+ij_java_for_statement_wrap = normal
+# Java代码中不自动生成final局部变量
+ij_java_generate_final_locals = false
+# Java代码中不自动生成final参数
+ij_java_generate_final_parameters = false
+# Java代码中类型注解放在类型前
+ij_java_generate_use_type_annotation_before_type = true
+# Java代码中if强制使用大括号
+ij_java_if_brace_force = always
+# Java代码中导入顺序布局（$*=静态导入, |=空行分隔, *=其他导入）
+ij_java_imports_layout = $*, |, *
+# Java代码中switch中case语句缩进
+ij_java_indent_case_from_switch = true
+# Java代码中插入内部类导入语句
+ij_java_insert_inner_class_imports = true
+# Java代码中自动插入@Override注解
+ij_java_insert_override_annotation = true
+# Java代码中右大括号前最多保留2行空行
+ij_java_keep_blank_lines_before_right_brace = 2
+# Java代码中包声明与文件头之间最多保留2行空行
+ij_java_keep_blank_lines_between_package_declaration_and_header = 2
+# Java代码中方法体内最多保留1行空行
+ij_java_keep_blank_lines_in_code = 1
+# Java代码中声明区域最多保留2行空行
+ij_java_keep_blank_lines_in_declarations = 2
+# Java代码中不保留构建器方法的原始缩进
+ij_java_keep_builder_methods_indents = false
+# Java代码中不强制保持控制语句单行
+ij_java_keep_control_statement_in_one_line = false
+# Java代码中不强制注释从第一列开始
+ij_java_keep_first_column_comment = false
+# Java代码中空行上保留缩进
+ij_java_keep_indents_on_empty_lines = true
+# Java代码中不保留原有换行符（格式化时重排）
+ij_java_keep_line_breaks = false
+# Java代码中不保持多表达式单行
+ij_java_keep_multiple_expressions_in_one_line = false
+# Java代码中不保持简单块单行
+ij_java_keep_simple_blocks_in_one_line = false
+# Java代码中不保持简单类单行
+ij_java_keep_simple_classes_in_one_line = false
+# Java代码中保持简单Lambda表达式单行
+ij_java_keep_simple_lambdas_in_one_line = true
+# Java代码中不保持简单方法单行
+ij_java_keep_simple_methods_in_one_line = false
+# Java代码中标签缩进不使用绝对位置
+ij_java_label_indent_absolute = false
+# Java代码中标签缩进大小为0（与所属代码对齐）
+ij_java_label_indent_size = 0
+# Java代码中Lambda大括号样式：行尾
+ij_java_lambda_brace_style = end_of_line
+# Java代码中同包的按需导入优先排列
+ij_java_layout_on_demand_import_from_same_package_first = true
+# Java代码中静态导入与普通导入分开排列
+ij_java_layout_static_imports_separately = true
+# Java代码中行注释后不添加空格
+ij_java_line_comment_add_space = false
+# Java代码中重新格式化时行注释后不添加空格
+ij_java_line_comment_add_space_on_reformat = false
+# Java代码中行注释从第一列开始
+ij_java_line_comment_at_first_column = true
+# Java代码中局部变量名称前缀（为空表示无前缀）
+ij_java_local_variable_name_prefix =
+# Java代码中局部变量名称后缀（为空表示无后缀）
+ij_java_local_variable_name_suffix =
+# Java代码中方法注解按行分割
+ij_java_method_annotation_wrap = split_into_lines
+# Java代码中方法大括号样式：行尾
+ij_java_method_brace_style = end_of_line
+# Java代码中方法调用链按行分割
+ij_java_method_call_chain_wrap = split_into_lines
+# Java代码中方法参数左括号后不换行
+ij_java_method_parameters_new_line_after_left_paren = false
+# Java代码中方法参数右括号不换行
+ij_java_method_parameters_right_paren_on_new_line = false
+# Java代码中方法参数普通换行
+ij_java_method_parameters_wrap = normal
+# Java代码中修饰符列表不换行
+ij_java_modifier_list_wrap = false
+# Java代码中multi-catch类型普通换行
+ij_java_multi_catch_types_wrap = normal
+# Java代码中触发通配符导入的名称数量阈值（999=实际不使用通配符导入）
+ij_java_names_count_to_use_import_on_demand = 999
+# Java代码中注解左括号后不换行
+ij_java_new_line_after_lparen_in_annotation = false
+# Java代码中解构模式左括号后换行
+ij_java_new_line_after_lparen_in_deconstruction_pattern = true
+# Java代码中记录头左括号后不换行
+ij_java_new_line_after_lparen_in_record_header = false
+# Java代码中存在方法体时不额外换行
+ij_java_new_line_when_body_is_presented = false
+# Java代码中按需导入的包列表（为空表示无特定包）
+ij_java_packages_to_use_import_on_demand =
+# Java代码中参数注解不换行
+ij_java_parameter_annotation_wrap = off
+# Java代码中参数名称前缀（为空表示无前缀）
+ij_java_parameter_name_prefix =
+# Java代码中参数名称后缀（为空表示无后缀）
+ij_java_parameter_name_suffix =
+# Java代码中括号表达式左括号后不换行
+ij_java_parentheses_expression_new_line_after_left_paren = false
+# Java代码中括号表达式右括号不换行
+ij_java_parentheses_expression_right_paren_on_new_line = false
+# Java代码中赋值符号不置于下一行
+ij_java_place_assignment_sign_on_next_line = false
+# Java代码中优先使用较长的命名
+ij_java_prefer_longer_names = true
+# Java代码中不优先处理参数换行
+ij_java_prefer_parameters_wrap = false
+# Java代码中保留模块导入语句
+ij_java_preserve_module_imports = true
+# Java代码中记录组件普通换行
+ij_java_record_components_wrap = normal
+# Java代码中可重复注解列表（为空表示使用默认）
+ij_java_repeat_annotations =
+# Java代码中synchronized可重复使用
+ij_java_repeat_synchronized = true
+# Java代码中不自动将instanceof+强转替换为模式匹配
+ij_java_replace_instanceof_and_cast = false
+# Java代码中自动将null判断替换为Objects.requireNonNull等
+ij_java_replace_null_check = true
+# Java代码中自动将sum Lambda替换为方法引用
+ij_java_replace_sum_lambda_with_method_ref = true
+# Java代码中资源列表左括号后不换行
+ij_java_resource_list_new_line_after_left_paren = false
+# Java代码中资源列表右括号不换行
+ij_java_resource_list_right_paren_on_new_line = false
+# Java代码中资源列表不换行
+ij_java_resource_list_wrap = off
+# Java代码中注解右括号不换行
+ij_java_rparen_on_new_line_in_annotation = false
+# Java代码中解构模式右括号换行
+ij_java_rparen_on_new_line_in_deconstruction_pattern = true
+# Java代码中记录头右括号不换行
+ij_java_rparen_on_new_line_in_record_header = false
+# Java代码中类型参数尖括号后不添加空格
+ij_java_space_after_closing_angle_bracket_in_type_argument = false
+# Java代码中冒号后添加空格（如switch、三元运算符）
+ij_java_space_after_colon = true
+# Java代码中逗号后添加空格
+ij_java_space_after_comma = true
+# Java代码中类型参数逗号后添加空格
+ij_java_space_after_comma_in_type_arguments = true
+# Java代码中for循环分号后添加空格
+ij_java_space_after_for_semicolon = true
+# Java代码中三元运算符问号后添加空格
+ij_java_space_after_quest = true
+# Java代码中类型转换括号后添加空格
+ij_java_space_after_type_cast = true
+# Java代码中注解数组初始化左括号前不添加空格
+ij_java_space_before_annotation_array_initializer_left_brace = false
+# Java代码中注解参数列表前不添加空格
+ij_java_space_before_annotation_parameter_list = false
+# Java代码中数组初始化左括号前不添加空格
+ij_java_space_before_array_initializer_left_brace = false
+# Java代码中catch关键字前添加空格
+ij_java_space_before_catch_keyword = true
+# Java代码中catch左大括号前添加空格
+ij_java_space_before_catch_left_brace = true
+# Java代码中catch括号前添加空格
+ij_java_space_before_catch_parentheses = true
+# Java代码中类左大括号前添加空格
+ij_java_space_before_class_left_brace = true
+# Java代码中冒号前添加空格
+ij_java_space_before_colon = true
+# Java代码中foreach冒号前添加空格
+ij_java_space_before_colon_in_foreach = true
+# Java代码中逗号前不添加空格
+ij_java_space_before_comma = false
+# Java代码中解构列表前不添加空格
+ij_java_space_before_deconstruction_list = false
+# Java代码中do语句左大括号前添加空格
+ij_java_space_before_do_left_brace = true
+# Java代码中else关键字前添加空格
+ij_java_space_before_else_keyword = true
+# Java代码中else左大括号前添加空格
+ij_java_space_before_else_left_brace = true
+# Java代码中finally关键字前添加空格
+ij_java_space_before_finally_keyword = true
+# Java代码中finally左大括号前添加空格
+ij_java_space_before_finally_left_brace = true
+# Java代码中for循环左大括号前添加空格
+ij_java_space_before_for_left_brace = true
+# Java代码中for括号前添加空格
+ij_java_space_before_for_parentheses = true
+# Java代码中for循环分号前不添加空格
+ij_java_space_before_for_semicolon = false
+# Java代码中if左大括号前添加空格
+ij_java_space_before_if_left_brace = true
+# Java代码中if括号前添加空格
+ij_java_space_before_if_parentheses = true
+# Java代码中方法调用括号前不添加空格
+ij_java_space_before_method_call_parentheses = false
+# Java代码中方法左大括号前添加空格
+ij_java_space_before_method_left_brace = true
+# Java代码中方法定义括号前不添加空格
+ij_java_space_before_method_parentheses = false
+# Java代码中类型参数尖括号前不添加空格
+ij_java_space_before_opening_angle_bracket_in_type_parameter = false
+# Java代码中三元运算符问号前添加空格
+ij_java_space_before_quest = true
+# Java代码中switch左大括号前添加空格
+ij_java_space_before_switch_left_brace = true
+# Java代码中switch括号前添加空格
+ij_java_space_before_switch_parentheses = true
+# Java代码中synchronized左大括号前添加空格
+ij_java_space_before_synchronized_left_brace = true
+# Java代码中synchronized括号前添加空格
+ij_java_space_before_synchronized_parentheses = true
+# Java代码中try左大括号前添加空格
+ij_java_space_before_try_left_brace = true
+# Java代码中try-with-resources括号前添加空格
+ij_java_space_before_try_parentheses = true
+# Java代码中类型参数列表前不添加空格
+ij_java_space_before_type_parameter_list = false
+# Java代码中while关键字前添加空格
+ij_java_space_before_while_keyword = true
+# Java代码中while左大括号前添加空格
+ij_java_space_before_while_left_brace = true
+# Java代码中while括号前添加空格
+ij_java_space_before_while_parentheses = true
+# Java代码中单行枚举大括号内不添加空格
+ij_java_space_inside_one_line_enum_braces = false
+# Java代码中空数组初始化大括号内不添加空格
+ij_java_space_within_empty_array_initializer_braces = false
+# Java代码中空方法调用括号内不添加空格
+ij_java_space_within_empty_method_call_parentheses = false
+# Java代码中空方法定义括号内不添加空格
+ij_java_space_within_empty_method_parentheses = false
+# Java代码中加减运算符两侧添加空格
+ij_java_spaces_around_additive_operators = true
+# Java代码中注解赋值等号两侧添加空格
+ij_java_spaces_around_annotation_eq = true
+# Java代码中赋值运算符两侧添加空格
+ij_java_spaces_around_assignment_operators = true
+# Java代码中位运算符两侧添加空格
+ij_java_spaces_around_bitwise_operators = true
+# Java代码中相等运算符两侧添加空格
+ij_java_spaces_around_equality_operators = true
+# Java代码中Lambda箭头两侧添加空格
+ij_java_spaces_around_lambda_arrow = true
+# Java代码中逻辑运算符两侧添加空格
+ij_java_spaces_around_logical_operators = true
+# Java代码中方法引用双冒号两侧不添加空格
+ij_java_spaces_around_method_ref_dbl_colon = false
+# Java代码中乘除运算符两侧添加空格
+ij_java_spaces_around_multiplicative_operators = true
+# Java代码中关系运算符两侧添加空格
+ij_java_spaces_around_relational_operators = true
+# Java代码中移位运算符两侧添加空格
+ij_java_spaces_around_shift_operators = true
+# Java代码中类型参数边界两侧添加空格
+ij_java_spaces_around_type_bounds_in_type_parameters = true
+# Java代码中一元运算符两侧不添加空格
+ij_java_spaces_around_unary_operator = false
+# Java代码中有内容的块大括号内不添加空格
+ij_java_spaces_inside_block_braces_when_body_is_present = false
+# Java代码中尖括号内不添加空格
+ij_java_spaces_within_angle_brackets = false
+# Java代码中注解括号内不添加空格
+ij_java_spaces_within_annotation_parentheses = false
+# Java代码中数组初始化大括号内不添加空格
+ij_java_spaces_within_array_initializer_braces = false
+# Java代码中大括号内不添加空格
+ij_java_spaces_within_braces = false
+# Java代码中方括号内不添加空格
+ij_java_spaces_within_brackets = false
+# Java代码中类型转换括号内不添加空格
+ij_java_spaces_within_cast_parentheses = false
+# Java代码中catch括号内不添加空格
+ij_java_spaces_within_catch_parentheses = false
+# Java代码中解构列表内不添加空格
+ij_java_spaces_within_deconstruction_list = false
+# Java代码中for括号内不添加空格
+ij_java_spaces_within_for_parentheses = false
+# Java代码中if括号内不添加空格
+ij_java_spaces_within_if_parentheses = false
+# Java代码中方法调用括号内不添加空格
+ij_java_spaces_within_method_call_parentheses = false
+# Java代码中方法定义括号内不添加空格
+ij_java_spaces_within_method_parentheses = false
+# Java代码中圆括号内不添加空格
+ij_java_spaces_within_parentheses = false
+# Java代码中记录头括号内不添加空格
+ij_java_spaces_within_record_header = false
+# Java代码中switch括号内不添加空格
+ij_java_spaces_within_switch_parentheses = false
+# Java代码中synchronized括号内不添加空格
+ij_java_spaces_within_synchronized_parentheses = false
+# Java代码中try-with-resources括号内不添加空格
+ij_java_spaces_within_try_parentheses = false
+# Java代码中while括号内不添加空格
+ij_java_spaces_within_while_parentheses = false
+# Java代码中else if特殊处理（不换行直接接在else后）
+ij_java_special_else_if_treatment = true
+# Java代码中静态字段名称前缀（为空表示无前缀）
+ij_java_static_field_name_prefix =
+# Java代码中静态字段名称后缀（为空表示无后缀）
+ij_java_static_field_name_suffix =
+# Java代码中子类名称前缀（为空表示无前缀）
+ij_java_subclass_name_prefix =
+# Java代码中子类名称后缀（Impl表示实现类命名约定）
+ij_java_subclass_name_suffix = Impl
+# Java代码中switch表达式普通换行
+ij_java_switch_expressions_wrap = normal
+# Java代码中三元运算符符号置于下行行首
+ij_java_ternary_operation_signs_on_next_line = true
+# Java代码中三元操作普通换行
+ij_java_ternary_operation_wrap = normal
+# Java代码中测试类名称前缀（为空表示无前缀）
+ij_java_test_name_prefix =
+# Java代码中测试类名称后缀（Test表示测试类命名约定）
+ij_java_test_name_suffix = Test
+# Java代码中throws关键字普通换行
+ij_java_throws_keyword_wrap = normal
+# Java代码中throws列表不换行
+ij_java_throws_list_wrap = off
+# Java代码中不使用外部注解（如@NotNull等需要额外依赖）
+ij_java_use_external_annotations = false
+# Java代码中不使用完全限定类名（优先使用import）
+ij_java_use_fq_class_names = false
+# Java代码中不使用相对缩进
+ij_java_use_relative_indents = false
+# Java代码中使用单类import（不使用通配符import）
+ij_java_use_single_class_imports = true
+# Java代码中变量注解不换行
+ij_java_variable_annotation_wrap = off
+# Java代码中代码生成的默认可见性为public
+ij_java_visibility = public
+# Java代码中while强制使用大括号
+ij_java_while_brace_force = always
+# Java代码中while不换行（与do在同一行）
+ij_java_while_on_new_line = false
+# Java代码中不换行注释
+ij_java_wrap_comments = false
+# Java代码中链式调用第一个方法不换行
+ij_java_wrap_first_method_in_call_chain = false
+# Java代码中不强制换行超长行
+ij_java_wrap_long_lines = false
+# Java代码中链式调用末尾分号不换行
+ij_java_wrap_semicolon_after_call_chain = false
+
+
+# EditorConfig自身文件配置
+[.editorconfig]
+# EditorConfig配置中对齐组字段声明
+ij_editorconfig_align_group_field_declarations = false
+# EditorConfig配置中冒号后添加空格
+ij_editorconfig_space_after_colon = false
+# EditorConfig配置中逗号后添加空格
+ij_editorconfig_space_after_comma = true
+# EditorConfig配置中冒号前添加空格
+ij_editorconfig_space_before_colon = false
+# EditorConfig配置中逗号前添加空格
+ij_editorconfig_space_before_comma = false
+# EditorConfig配置中赋值运算符周围添加空格
+ij_editorconfig_spaces_around_assignment_operators = true
+
+# XML及相关标记语言文件配置
+[{*.ant,*.fxml,*.jhm,*.jnlp,*.jrxml,*.pom,*.rng,*.tld,*.wadl,*.wsdl,*.xml,*.xsd,*.xsl,*.xslt,*.xul}]
+# XML文件缩进大小为4个空格
+indent_size = 4
+# XML文件最大行长度（宽松限制，避免XML属性强制换行）
+max_line_length = 1000
+# XML文件Tab宽度为4个空格
+tab_width = 4
+# XML文件中对齐属性（多属性对齐排列）
+ij_xml_align_attributes = true
+# XML文件中不对齐文本内容
+ij_xml_align_text = false
+# XML文件中属性普通换行
+ij_xml_attribute_wrap = normal
+# XML文件中块注释内容前不添加空格
+ij_xml_block_comment_add_space = false
+# XML文件中块注释从第一列开始
+ij_xml_block_comment_at_first_column = true
+# XML文件中最多保留2行空行
+ij_xml_keep_blank_lines = 2
+# XML文件中空行保留缩进
+ij_xml_keep_indents_on_empty_lines = true
+# XML文件中保留原有换行符
+ij_xml_keep_line_breaks = true
+# XML文件中文本内容中保留换行符
+ij_xml_keep_line_breaks_in_text = true
+# XML文件中不保留多余空白字符
+ij_xml_keep_whitespaces = false
+# XML文件中CDATA周围空白保留原样
+ij_xml_keep_whitespaces_around_cdata = preserve
+# XML文件中CDATA内部保留空白字符
+ij_xml_keep_whitespaces_inside_cdata = true
+# XML文件中行注释从第一列开始
+ij_xml_line_comment_at_first_column = true
+# XML文件中标签名后不添加空格
+ij_xml_space_after_tag_name = false
+# XML文件中属性等号两侧不添加空格
+ij_xml_space_around_equals_in_attribute = false
+# XML文件中空标签内添加空格（如<br />）
+ij_xml_space_inside_empty_tag = true
+# XML文件中文本内容普通换行
+ij_xml_text_wrap = normal
+
+# Shell脚本文件配置
+[{*.bash,*.sh,*.zsh}]
+# Shell脚本中二元操作符不置于行首
+ij_shell_binary_ops_start_line = false
+# Shell脚本中不保留列对齐填充空格
+ij_shell_keep_column_alignment_padding = false
+# Shell脚本中不压缩代码
+ij_shell_minify_program = false
+# Shell脚本中重定向符号后不加空格
+ij_shell_redirect_followed_by_space = false
+# Shell脚本中switch的case不额外缩进
+ij_shell_switch_cases_indented = false
+# Shell脚本中使用Unix行分隔符（LF）
+ij_shell_use_unix_line_separator = true
+
+
+# JSON及相关配置文件配置
+[{*.har,*.jsb2,*.jsb3,*.json,*.jsonc,*.postman_collection,*.postman_collection.json,*.postman_environment,*.postman_environment.json,.babelrc,.eslintrc,.prettierrc,.stylelintrc,.ws-context,jest.config}]
+# JSON文件缩进大小为4个空格
+indent_size = 4
+# JSON文件Tab宽度为4个空格
+tab_width = 4
+# JSON文件中数组元素按行分割
+ij_json_array_wrapping = split_into_lines
+# JSON文件中代码内不保留空行
+ij_json_keep_blank_lines_in_code = 0
+# JSON文件中空行不保留缩进
+ij_json_keep_indents_on_empty_lines = false
+# JSON文件中保留原有换行符
+ij_json_keep_line_breaks = true
+# JSON文件中不保留尾部逗号
+ij_json_keep_trailing_comma = false
+# JSON文件中对象属性按行分割
+ij_json_object_wrapping = split_into_lines
+# JSON文件中属性不对齐
+ij_json_property_alignment = do_not_align
+# JSON文件中冒号后添加空格
+ij_json_space_after_colon = true
+# JSON文件中逗号后添加空格
+ij_json_space_after_comma = true
+# JSON文件中冒号前不添加空格
+ij_json_space_before_colon = false
+# JSON文件中逗号前不添加空格
+ij_json_space_before_comma = false
+# JSON文件中大括号内不添加空格
+ij_json_spaces_within_braces = false
+# JSON文件中方括号内不添加空格
+ij_json_spaces_within_brackets = false
+# JSON文件中不强制换行超长行
+ij_json_wrap_long_lines = false
+
+# HTML及相关文件配置
+[{*.htm,*.html,*.sht,*.shtm,*.shtml}]
+# HTML文件缩进大小
+indent_size = 4
+# HTML文件最大行长度
+max_line_length = 300
+# HTML文件Tab宽度
+tab_width = 4
+# HTML文件在标签前添加换行
+ij_html_add_new_line_before_tags = body, div, p, form, h1, h2, h3
+# HTML文件中对齐属性
+ij_html_align_attributes = true
+# HTML文件中不对齐文本
+ij_html_align_text = false
+# HTML文件中属性普通换行
+ij_html_attribute_wrap = normal
+# HTML文件中块注释不添加空格
+ij_html_block_comment_add_space = false
+# HTML文件中块注释在第一列
+ij_html_block_comment_at_first_column = true
+# HTML文件中不对其子元素的最小行数
+ij_html_do_not_align_children_of_min_lines = 0
+# HTML文件中内联标签不换行
+ij_html_do_not_break_if_inline_tags = title, h1, h2, h3, h4, h5, h6, p
+# HTML文件中不缩进特定标签的子元素
+ij_html_do_not_indent_children_of_tags = html, body, thead, tbody, tfoot
+# HTML文件中不强制引号样式
+ij_html_enforce_quotes = false
+# HTML文件中内联标签
+ij_html_inline_tags = a, abbr, acronym, b, basefont, bdo, big, br, cite, cite, code, dfn, em, font, i, img, input, kbd, label, q, s, samp, select, small, span, strike, strong, sub, sup, textarea, tt, u, var
+# HTML文件中保留空行数
+ij_html_keep_blank_lines = 2
+# HTML文件中空行上保留缩进
+ij_html_keep_indents_on_empty_lines = false
+# HTML文件中保留换行符
+ij_html_keep_line_breaks = true
+# HTML文件中文本中保留换行符
+ij_html_keep_line_breaks_in_text = true
+# HTML文件中不保留多余空白
+ij_html_keep_whitespaces = false
+# HTML文件中保留特定标签内的空白
+ij_html_keep_whitespaces_inside = span, pre, textarea
+# HTML文件中行注释在第一列
+ij_html_line_comment_at_first_column = true
+# HTML文件中最后一个属性后不换行
+ij_html_new_line_after_last_attribute = never
+# HTML文件中第一个属性前不换行
+ij_html_new_line_before_first_attribute = never
+# HTML文件中使用双引号
+ij_html_quote_style = double
+# HTML文件中移除br标签前换行
+ij_html_remove_new_line_before_tags = br
+# HTML文件中标签名后不添加空格
+ij_html_space_after_tag_name = false
+# HTML文件中属性等号周围不添加空格
+ij_html_space_around_equality_in_attribute = false
+# HTML文件中空标签内不添加空格
+ij_html_space_inside_empty_tag = false
+# HTML文件中文本普通换行
+ij_html_text_wrap = normal
+
+# HTTP请求文件配置（IntelliJ HTTP Client）
+[{*.http,*.rest}]
+# HTTP请求文件缩进大小
+indent_size = 4
+# HTTP请求调用参数普通换行
+ij_http-request_call_parameters_wrap = normal
+# HTTP请求方法参数按行分割
+ij_http-request_method_parameters_wrap = split_into_lines
+# HTTP请求逗号前添加空格
+ij_http-request_space_before_comma = true
+# HTTP请求赋值运算符周围添加空格
+ij_http-request_spaces_around_assignment_operators = true
+
+
+# Markdown文件配置
+[{*.markdown,*.md}]
+# Markdown文件缩进大小为4个空格
+indent_size = 4
+# Markdown文件Tab宽度为4个空格
+tab_width = 4
+# Markdown文件续行缩进大小为8个空格
+ij_continuation_indent_size = 8
+# Markdown文件中引用符号（>）后强制一个空格
+ij_markdown_force_one_space_after_blockquote_symbol = true
+# Markdown文件中标题符号（#）后强制一个空格
+ij_markdown_force_one_space_after_header_symbol = true
+# Markdown文件中列表符号（-/*）后强制一个空格
+ij_markdown_force_one_space_after_list_bullet = true
+# Markdown文件中单词之间强制一个空格
+ij_markdown_force_one_space_between_words = true
+# Markdown文件中自动格式化表格
+ij_markdown_format_tables = true
+# Markdown文件中换行时自动插入引用箭头
+ij_markdown_insert_quote_arrows_on_wrap = true
+# Markdown文件中空行不保留缩进
+ij_markdown_keep_indents_on_empty_lines = false
+# Markdown文件中文本块内保留换行符
+ij_markdown_keep_line_breaks_inside_text_blocks = true
+# Markdown文件中块元素（代码块、列表等）前后最多1行空行
+ij_markdown_max_lines_around_block_elements = 1
+# Markdown文件中标题前后最多1行空行
+ij_markdown_max_lines_around_header = 1
+# Markdown文件中段落之间最多1行空行
+ij_markdown_max_lines_between_paragraphs = 1
+# Markdown文件中块元素前后最少1行空行
+ij_markdown_min_lines_around_block_elements = 1
+# Markdown文件中标题前后最少1行空行
+ij_markdown_min_lines_around_header = 1
+# Markdown文件中段落之间最少1行空行
+ij_markdown_min_lines_between_paragraphs = 1
+# Markdown文件中超长行自动换行
+ij_markdown_wrap_text_if_long = true
+# Markdown文件中引用块（>）内文本自动换行
+ij_markdown_wrap_text_inside_blockquotes = true
+
+# VBScript文件配置
+[{*.mts,*.vbs}]
+# VBScript文件缩进大小为4个空格
+indent_size = 4
+# VBScript文件Tab宽度为4个空格
+tab_width = 4
+# VBScript中类前后保留1行空行
+ij_vbscript_blank_lines_around_class = 1
+# VBScript中字段前后不保留空行
+ij_vbscript_blank_lines_around_field = 0
+# VBScript中方法前后保留1行空行
+ij_vbscript_blank_lines_around_method = 1
+# VBScript中代码内最多保留2行空行
+ij_vbscript_keep_blank_lines_in_code = 2
+# VBScript中声明区域最多保留2行空行
+ij_vbscript_keep_blank_lines_in_declarations = 2
+# VBScript中保留原有换行符
+ij_vbscript_keep_line_breaks = true
+# VBScript中逗号后添加空格
+ij_vbscript_space_after_comma = true
+# VBScript中方法括号前不添加空格
+ij_vbscript_space_before_method_parentheses = false
+# VBScript中赋值运算符两侧添加空格
+ij_vbscript_spaces_around_assignment_operators = true
+# VBScript中位运算符两侧添加空格
+ij_vbscript_spaces_around_bitwise_operators = true
+# VBScript中逻辑运算符两侧添加空格
+ij_vbscript_spaces_around_logical_operators = true
+# VBScript中括号内不添加空格
+ij_vbscript_spaces_within_parentheses = false
+
+# Protobuf文本格式文件配置
+[{*.pb,*.textproto,*.txtpb}]
+# Protobuf文本中代码内最多保留2行空行
+ij_prototext_keep_blank_lines_in_code = 2
+# Protobuf文本中空行不保留缩进
+ij_prototext_keep_indents_on_empty_lines = false
+# Protobuf文本中保留原有换行符
+ij_prototext_keep_line_breaks = true
+# Protobuf文本中冒号后添加空格
+ij_prototext_space_after_colon = true
+# Protobuf文本中逗号后添加空格
+ij_prototext_space_after_comma = true
+# Protobuf文本中冒号前不添加空格
+ij_prototext_space_before_colon = false
+# Protobuf文本中逗号前不添加空格
+ij_prototext_space_before_comma = false
+# Protobuf文本中大括号内添加空格
+ij_prototext_spaces_within_braces = true
+# Protobuf文本中方括号内不添加空格
+ij_prototext_spaces_within_brackets = false
+
+# Java Properties及Spring配置文件配置
+[{*.properties,spring.handlers,spring.schemas}]
+# Properties文件中不对齐分组字段声明
+ij_properties_align_group_field_declarations = false
+# Properties文件中保留空行
+ij_properties_keep_blank_lines = true
+# Properties文件中键值分隔符使用等号（=）
+ij_properties_key_value_delimiter = equals
+# Properties文件中键值分隔符两侧添加空格
+ij_properties_spaces_around_key_value_delimiter = true
+
+# TOML配置文件配置（含Cargo/Pipfile/Poetry等锁文件）
+[{*.toml,Cargo.lock,Cargo.toml.orig,Gopkg.lock,Pipfile,pdm.lock,poetry.lock,uv.lock}]
+# TOML文件缩进大小为4个空格
+indent_size = 4
+# TOML文件Tab宽度为4个空格
+tab_width = 4
+# TOML文件续行缩进大小为8个空格
+ij_continuation_indent_size = 8
+# TOML文件中空行不保留缩进
+ij_toml_keep_indents_on_empty_lines = false
+
+# YAML配置文件配置
+[{*.yaml,*.yml}]
+# YAML文件中值属性不对齐
+ij_yaml_align_values_properties = do_not_align
+# YAML文件中自动插入序列标记（-）
+ij_yaml_autoinsert_sequence_marker = true
+# YAML文件中块映射不强制换行
+ij_yaml_block_mapping_on_new_line = false
+# YAML文件中序列值缩进（相对父键缩进）
+ij_yaml_indent_sequence_value = true
+# YAML文件中空行保留缩进
+ij_yaml_keep_indents_on_empty_lines = true
+# YAML文件中保留原有换行符
+ij_yaml_keep_line_breaks = true
+# YAML文件中行注释后不添加空格
+ij_yaml_line_comment_add_space = false
+# YAML文件中重新格式化时行注释后不添加空格
+ij_yaml_line_comment_add_space_on_reformat = false
+# YAML文件中行注释从第一列开始
+ij_yaml_line_comment_at_first_column = true
+# YAML文件中序列不强制换行
+ij_yaml_sequence_on_new_line = false
+# YAML文件中冒号前不添加空格
+ij_yaml_space_before_colon = false
+# YAML文件中大括号内添加空格（flow mapping风格）
+ij_yaml_spaces_within_braces = true
+# YAML文件中方括号内添加空格（flow sequence风格）
+ij_yaml_spaces_within_brackets = true
