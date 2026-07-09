@@ -1,5 +1,7 @@
 package com.example.mcp.config;
 
+import com.example.mcp.handler.ExcelHandler;
+import com.example.mcp.handler.FetchHandler;
 import com.example.mcp.handler.FileSystemHandler;
 import com.example.mcp.handler.PictureHandler;
 import com.example.mcp.handler.WeatherHandler;
@@ -70,6 +72,32 @@ public class McpConfiguration {
     public ToolCallbackProvider fileSystemTools(FileSystemHandler fileSystemHandler) {
         return MethodToolCallbackProvider.builder()
                 .toolObjects(fileSystemHandler)
+                .build();
+    }
+
+    /**
+     * 注册 Fetch 工具（FetchHandler），提供 URL 抓取、HTML 转 Markdown 等 MCP 工具功能
+     *
+     * @param fetchHandler Fetch 处理器实例
+     * @return ToolCallbackProvider 对象，提供网页抓取相关的工具功能
+     */
+    @Bean
+    public ToolCallbackProvider fetchTools(FetchHandler fetchHandler) {
+        return MethodToolCallbackProvider.builder()
+                .toolObjects(fetchHandler)
+                .build();
+    }
+
+    /**
+     * 注册 Excel 工具（ExcelHandler），提供 Excel 读取、写入、格式化、截图等 MCP 工具功能
+     *
+     * @param excelHandler Excel 处理器实例
+     * @return ToolCallbackProvider 对象，提供 Excel 相关的工具功能
+     */
+    @Bean
+    public ToolCallbackProvider excelTools(ExcelHandler excelHandler) {
+        return MethodToolCallbackProvider.builder()
+                .toolObjects(excelHandler)
                 .build();
     }
 }

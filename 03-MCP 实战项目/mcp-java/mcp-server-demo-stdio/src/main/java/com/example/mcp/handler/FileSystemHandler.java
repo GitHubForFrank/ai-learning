@@ -1,7 +1,7 @@
 package com.example.mcp.handler;
 
-import com.example.mcp.pojo.EditFileRequest;
-import com.example.mcp.pojo.EditItem;
+import com.example.mcp.pojo.filesystem.EditFileRequest;
+import com.example.mcp.pojo.filesystem.EditItem;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
