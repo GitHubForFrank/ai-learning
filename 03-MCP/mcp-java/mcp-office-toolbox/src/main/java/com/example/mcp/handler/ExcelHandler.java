@@ -7,7 +7,10 @@ import com.example.mcp.pojo.excel.FillInfo;
 import com.example.mcp.pojo.excel.FontInfo;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,29 +19,41 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.imageio.ImageIO;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.ComparisonOperator;
+import org.apache.poi.ss.usermodel.ConditionalFormattingRule;
 import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.DataValidation;
+import org.apache.poi.ss.usermodel.DataValidationConstraint;
+import org.apache.poi.ss.usermodel.DataValidationHelper;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.PatternFormatting;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.SheetConditionalFormatting;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.util.AreaReference;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFTable;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.example.mcp.util.LogUtil;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Service;
@@ -53,8 +68,6 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class ExcelHandler {
-
-    private static final Logger log = LoggerFactory.getLogger(ExcelHandler.class);
 
     /**
      * 默认分页行数
@@ -510,7 +523,7 @@ public class ExcelHandler {
             }
             return JSON.toJSONString(sheets);
         } catch (Exception e) {
-            log.error("excel_describe_sheets 失败: {}", e.getMessage(), e);
+            LogUtil.error("excel_describe_sheets 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -595,7 +608,7 @@ public class ExcelHandler {
                 return JSON.toJSONString(result);
             }
         } catch (Exception e) {
-            log.error("excel_read_sheet 失败: {}", e.getMessage(), e);
+            LogUtil.error("excel_read_sheet 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -649,7 +662,7 @@ public class ExcelHandler {
                 return "成功写入: 文件=" + fileAbsolutePath + ", 工作表=" + sheetName + ", 范围=" + range;
             }
         } catch (Exception e) {
-            log.error("excel_write_to_sheet 失败: {}", e.getMessage(), e);
+            LogUtil.error("excel_write_to_sheet 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -685,7 +698,7 @@ public class ExcelHandler {
                 return "成功复制: 从 '" + srcSheetName + "' 到 '" + dstSheetName + "', 文件=" + fileAbsolutePath;
             }
         } catch (Exception e) {
-            log.error("excel_copy_sheet 失败: {}", e.getMessage(), e);
+            LogUtil.error("excel_copy_sheet 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -756,7 +769,7 @@ public class ExcelHandler {
                     + fileAbsolutePath;
             }
         } catch (Exception e) {
-            log.error("excel_create_table 失败: {}", e.getMessage(), e);
+            LogUtil.error("excel_create_table 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -817,7 +830,7 @@ public class ExcelHandler {
                 return "成功格式化: 文件=" + fileAbsolutePath + ", 工作表=" + sheetName + ", 范围=" + range;
             }
         } catch (Exception e) {
-            log.error("excel_format_range 失败: {}", e.getMessage(), e);
+            LogUtil.error("excel_format_range 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -879,7 +892,7 @@ public class ExcelHandler {
                 return JSON.toJSONString(result);
             }
         } catch (Exception e) {
-            log.error("excel_screen_capture 失败: {}", e.getMessage(), e);
+            LogUtil.error("excel_screen_capture 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -906,7 +919,7 @@ public class ExcelHandler {
             }
             return "空白工作簿已创建: " + fileAbsolutePath;
         } catch (Exception e) {
-            log.error("excelCreateWorkbook 失败: {}", e.getMessage(), e);
+            LogUtil.error("excelCreateWorkbook 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -941,7 +954,7 @@ public class ExcelHandler {
                 return "已删除第 " + (rowIndex + 1) + " 行: " + fileAbsolutePath + ", 工作表=" + sheetName;
             }
         } catch (Exception e) {
-            log.error("excelDeleteRow 失败: {}", e.getMessage(), e);
+            LogUtil.error("excelDeleteRow 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -1001,7 +1014,7 @@ public class ExcelHandler {
                 return "已删除第 " + (columnIndex + 1) + " 列: " + fileAbsolutePath + ", 工作表=" + sheetName;
             }
         } catch (Exception e) {
-            log.error("excelDeleteColumn 失败: {}", e.getMessage(), e);
+            LogUtil.error("excelDeleteColumn 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -1029,7 +1042,695 @@ public class ExcelHandler {
                 return "工作表 '" + sheetName + "' 数据已清空: " + fileAbsolutePath;
             }
         } catch (Exception e) {
-            log.error("excelClearSheet 失败: {}", e.getMessage(), e);
+            LogUtil.error("excelClearSheet 失败: {}", e.getMessage(), e);
+            return "错误: " + e.getMessage();
+        }
+    }
+
+    // ==================== 内部辅助方法（新增） ====================
+
+    private void copyCellValue(Cell src, Cell dest) {
+        switch (src.getCellType()) {
+            case STRING -> dest.setCellValue(src.getStringCellValue());
+            case NUMERIC -> dest.setCellValue(src.getNumericCellValue());
+            case BOOLEAN -> dest.setCellValue(src.getBooleanCellValue());
+            case FORMULA -> dest.setCellFormula(src.getCellFormula());
+            case BLANK -> dest.setBlank();
+            default -> dest.setBlank();
+        }
+    }
+
+    private void copySheetData(Sheet src, Sheet dest, boolean includeHeader) {
+        int startRow = includeHeader ? src.getFirstRowNum() : src.getFirstRowNum() + 1;
+        int destRowIdx = 0;
+        for (int r = startRow; r <= src.getLastRowNum(); r++) {
+            Row srcRow = src.getRow(r);
+            if (srcRow == null) continue;
+            Row destRow = dest.createRow(destRowIdx++);
+            for (int c = srcRow.getFirstCellNum(); c < srcRow.getLastCellNum(); c++) {
+                Cell srcCell = srcRow.getCell(c);
+                if (srcCell == null) continue;
+                Cell destCell = destRow.createCell(c);
+                copyCellValue(srcCell, destCell);
+            }
+        }
+    }
+
+    // ==================== P0: 基础操作补齐 ====================
+
+    // --- 12. excel_insert_row ---
+
+    @Tool(name = "excel_insert_row", description = "在指定位置插入空行，现有行向下移动。行索引从 0 开始。")
+    public String excelInsertRow(@ToolParam(description = "Absolute path to the Excel file") String fileAbsolutePath,
+        @ToolParam(description = "Sheet name in the Excel file") String sheetName,
+        @ToolParam(description = "Row index to insert at (0-based)") int rowIndex) {
+        try {
+            Path path = validateExcelFile(fileAbsolutePath);
+            try (Workbook workbook = openWorkbook(path)) {
+                Sheet sheet = getSheet(workbook, sheetName);
+                int lastRow = sheet.getLastRowNum();
+                if (rowIndex < 0 || rowIndex > lastRow + 1)
+                    return "错误：行索引 " + rowIndex + " 超出范围（0~" + (lastRow + 1) + "）";
+                if (rowIndex <= lastRow) sheet.shiftRows(rowIndex, lastRow, 1);
+                sheet.createRow(rowIndex);
+                saveWorkbook(workbook, path);
+                return "已在第 " + (rowIndex + 1) + " 行插入空行: " + fileAbsolutePath + ", 工作表=" + sheetName;
+            }
+        } catch (Exception e) {
+            LogUtil.error("excelInsertRow 失败: {}", e.getMessage(), e);
+            return "错误: " + e.getMessage();
+        }
+    }
+
+    // --- 13. excel_insert_column ---
+
+    @Tool(name = "excel_insert_column", description = "在指定位置插入空列，现有列向右移动。列索引从 0 开始。")
+    public String excelInsertColumn(@ToolParam(description = "Absolute path to the Excel file") String fileAbsolutePath,
+        @ToolParam(description = "Sheet name in the Excel file") String sheetName,
+        @ToolParam(description = "Column index to insert at (0-based)") int columnIndex) {
+        try {
+            Path path = validateExcelFile(fileAbsolutePath);
+            try (Workbook workbook = openWorkbook(path)) {
+                Sheet sheet = getSheet(workbook, sheetName);
+                if (columnIndex < 0) return "错误：列索引不能为负数";
+                for (int r = 0; r <= sheet.getLastRowNum(); r++) {
+                    Row row = sheet.getRow(r);
+                    if (row != null) {
+                        int lastCol = row.getLastCellNum();
+                        for (int c = lastCol; c > columnIndex; c--) {
+                            Cell srcCell = row.getCell(c - 1);
+                            Cell destCell = row.getCell(c);
+                            if (destCell == null) destCell = row.createCell(c);
+                            if (srcCell != null) copyCellValue(srcCell, destCell);
+                            else destCell.setBlank();
+                        }
+                        Cell insertCell = row.getCell(columnIndex);
+                        if (insertCell != null) insertCell.setBlank();
+                    }
+                }
+                saveWorkbook(workbook, path);
+                return "已在第 " + (columnIndex + 1) + " 列插入空列: " + fileAbsolutePath + ", 工作表=" + sheetName;
+            }
+        } catch (Exception e) {
+            LogUtil.error("excelInsertColumn 失败: {}", e.getMessage(), e);
+            return "错误: " + e.getMessage();
+        }
+    }
+
+    // --- 14. excel_delete_sheet ---
+
+    @Tool(name = "excel_delete_sheet", description = "删除 Excel 工作簿中指定名称的工作表。")
+    public String excelDeleteSheet(@ToolParam(description = "Absolute path to the Excel file") String fileAbsolutePath,
+        @ToolParam(description = "Sheet name to delete") String sheetName) {
+        try {
+            Path path = validateExcelFile(fileAbsolutePath);
+            try (Workbook workbook = openWorkbook(path)) {
+                Sheet sheet = workbook.getSheet(sheetName);
+                if (sheet == null) return "错误: 工作表不存在 '" + sheetName + "'";
+                if (workbook.getNumberOfSheets() <= 1) return "错误: 工作簿至少需要保留一个工作表";
+                int idx = workbook.getSheetIndex(sheet);
+                workbook.removeSheetAt(idx);
+                saveWorkbook(workbook, path);
+                return "已删除工作表 '" + sheetName + "': " + fileAbsolutePath;
+            }
+        } catch (Exception e) {
+            LogUtil.error("excelDeleteSheet 失败: {}", e.getMessage(), e);
+            return "错误: " + e.getMessage();
+        }
+    }
+
+    // --- 15. excel_rename_sheet ---
+
+    @Tool(name = "excel_rename_sheet", description = "重命名 Excel 工作簿中的工作表。")
+    public String excelRenameSheet(@ToolParam(description = "Absolute path to the Excel file") String fileAbsolutePath,
+        @ToolParam(description = "Current sheet name") String oldName,
+        @ToolParam(description = "New sheet name") String newName) {
+        try {
+            Path path = validateExcelFile(fileAbsolutePath);
+            try (Workbook workbook = openWorkbook(path)) {
+                Sheet sheet = workbook.getSheet(oldName);
+                if (sheet == null) return "错误: 工作表不存在 '" + oldName + "'";
+                if (workbook.getSheet(newName) != null) return "错误: 新名称 '" + newName + "' 已存在";
+                int idx = workbook.getSheetIndex(sheet);
+                workbook.setSheetName(idx, newName);
+                saveWorkbook(workbook, path);
+                return "已将工作表 '" + oldName + "' 重命名为 '" + newName + "': " + fileAbsolutePath;
+            }
+        } catch (Exception e) {
+            LogUtil.error("excelRenameSheet 失败: {}", e.getMessage(), e);
+            return "错误: " + e.getMessage();
+        }
+    }
+
+    // ==================== P1: 列宽/行高与视图控制 ====================
+
+    // --- 16. excel_auto_fit_columns ---
+
+    @Tool(name = "excel_auto_fit_columns", description = "自动调整 Excel 工作表中指定列的宽度以适配内容。")
+    public String excelAutoFitColumns(@ToolParam(description = "Absolute path to the Excel file") String fileAbsolutePath,
+        @ToolParam(description = "Sheet name in the Excel file") String sheetName,
+        @ToolParam(description = "Comma-separated column indices to auto-fit (0-based), e.g. \"0,1,2\". Leave empty to auto-fit all columns.", required = false) String columnIndices) {
+        try {
+            Path path = validateExcelFile(fileAbsolutePath);
+            try (Workbook workbook = openWorkbook(path)) {
+                Sheet sheet = getSheet(workbook, sheetName);
+                if (columnIndices == null || columnIndices.isBlank()) {
+                    int maxCol = 0;
+                    for (int r = sheet.getFirstRowNum(); r <= sheet.getLastRowNum(); r++) {
+                        Row row = sheet.getRow(r);
+                        if (row != null && row.getLastCellNum() > maxCol) maxCol = row.getLastCellNum();
+                    }
+                    for (int i = 0; i < maxCol; i++) sheet.autoSizeColumn(i);
+                    return "已自动调整所有列宽: " + fileAbsolutePath + ", 工作表=" + sheetName;
+                } else {
+                    for (String idx : columnIndices.split(",")) {
+                        int colIdx = Integer.parseInt(idx.trim());
+                        sheet.autoSizeColumn(colIdx);
+                    }
+                    return "已自动调整列宽: " + fileAbsolutePath + ", 工作表=" + sheetName + ", 列=" + columnIndices;
+                }
+            }
+        } catch (Exception e) {
+            LogUtil.error("excelAutoFitColumns 失败: {}", e.getMessage(), e);
+            return "错误: " + e.getMessage();
+        }
+    }
+
+    // --- 17. excel_set_column_width ---
+
+    @Tool(name = "excel_set_column_width", description = "设置 Excel 工作表中指定列的宽度（字符数）。")
+    public String excelSetColumnWidth(@ToolParam(description = "Absolute path to the Excel file") String fileAbsolutePath,
+        @ToolParam(description = "Sheet name in the Excel file") String sheetName,
+        @ToolParam(description = "Column index (0-based)") int columnIndex,
+        @ToolParam(description = "Column width in characters") int width) {
+        try {
+            Path path = validateExcelFile(fileAbsolutePath);
+            try (Workbook workbook = openWorkbook(path)) {
+                Sheet sheet = getSheet(workbook, sheetName);
+                if (columnIndex < 0) return "错误：列索引不能为负数";
+                sheet.setColumnWidth(columnIndex, width * 256);
+                saveWorkbook(workbook, path);
+                return "已设置第 " + (columnIndex + 1) + " 列宽度为 " + width + ": " + fileAbsolutePath + ", 工作表=" + sheetName;
+            }
+        } catch (Exception e) {
+            LogUtil.error("excelSetColumnWidth 失败: {}", e.getMessage(), e);
+            return "错误: " + e.getMessage();
+        }
+    }
+
+    // --- 18. excel_set_row_height ---
+
+    @Tool(name = "excel_set_row_height", description = "设置 Excel 工作表中指定行的高度（磅值）。")
+    public String excelSetRowHeight(@ToolParam(description = "Absolute path to the Excel file") String fileAbsolutePath,
+        @ToolParam(description = "Sheet name in the Excel file") String sheetName,
+        @ToolParam(description = "Row index (0-based)") int rowIndex,
+        @ToolParam(description = "Row height in points") float height) {
+        try {
+            Path path = validateExcelFile(fileAbsolutePath);
+            try (Workbook workbook = openWorkbook(path)) {
+                Sheet sheet = getSheet(workbook, sheetName);
+                if (rowIndex < 0) return "错误：行索引不能为负数";
+                Row row = sheet.getRow(rowIndex);
+                if (row == null) row = sheet.createRow(rowIndex);
+                row.setHeightInPoints(height);
+                saveWorkbook(workbook, path);
+                return "已设置第 " + (rowIndex + 1) + " 行高度为 " + height + "pt: " + fileAbsolutePath + ", 工作表=" + sheetName;
+            }
+        } catch (Exception e) {
+            LogUtil.error("excelSetRowHeight 失败: {}", e.getMessage(), e);
+            return "错误: " + e.getMessage();
+        }
+    }
+
+    // --- 19. excel_freeze_panes ---
+
+    @Tool(name = "excel_freeze_panes", description = "冻结 Excel 工作表的窗格，滚动时保持指定行列可见。")
+    public String excelFreezePanes(@ToolParam(description = "Absolute path to the Excel file") String fileAbsolutePath,
+        @ToolParam(description = "Sheet name in the Excel file") String sheetName,
+        @ToolParam(description = "Number of columns to freeze (0-based split index)") int colSplit,
+        @ToolParam(description = "Number of rows to freeze (0-based split index)") int rowSplit) {
+        try {
+            Path path = validateExcelFile(fileAbsolutePath);
+            try (Workbook workbook = openWorkbook(path)) {
+                Sheet sheet = getSheet(workbook, sheetName);
+                sheet.createFreezePane(colSplit, rowSplit);
+                saveWorkbook(workbook, path);
+                return "已冻结窗格: 列=" + colSplit + ", 行=" + rowSplit + ", 文件=" + fileAbsolutePath + ", 工作表=" + sheetName;
+            }
+        } catch (Exception e) {
+            LogUtil.error("excelFreezePanes 失败: {}", e.getMessage(), e);
+            return "错误: " + e.getMessage();
+        }
+    }
+
+    // --- 20. excel_merge_cells ---
+
+    @Tool(name = "excel_merge_cells", description = "合并或取消合并 Excel 工作表中的单元格区域。")
+    public String excelMergeCells(@ToolParam(description = "Absolute path to the Excel file") String fileAbsolutePath,
+        @ToolParam(description = "Sheet name in the Excel file") String sheetName,
+        @ToolParam(description = "Range to merge, e.g. \"A1:C1\"") String range,
+        @ToolParam(description = "True to merge, false to unmerge") boolean merge) {
+        try {
+            Path path = validateExcelFile(fileAbsolutePath);
+            try (Workbook workbook = openWorkbook(path)) {
+                Sheet sheet = getSheet(workbook, sheetName);
+                int[] bounds = parseRange(range);
+                CellRangeAddress cra = new CellRangeAddress(bounds[0], bounds[2], bounds[1], bounds[3]);
+                if (merge) {
+                    sheet.addMergedRegion(cra);
+                    return "已合并单元格: " + range + ", 文件=" + fileAbsolutePath + ", 工作表=" + sheetName;
+                } else {
+                    int numMerged = sheet.getNumMergedRegions();
+                    boolean removed = false;
+                    for (int i = numMerged - 1; i >= 0; i--) {
+                        CellRangeAddress existing = sheet.getMergedRegion(i);
+                        if (existing.formatAsString().equals(range)) {
+                            sheet.removeMergedRegion(i);
+                            removed = true;
+                        }
+                    }
+                    return removed ? "已取消合并单元格: " + range + ", 文件=" + fileAbsolutePath + ", 工作表=" + sheetName
+                        : "未找到合并区域: " + range;
+                }
+            }
+        } catch (Exception e) {
+            LogUtil.error("excelMergeCells 失败: {}", e.getMessage(), e);
+            return "错误: " + e.getMessage();
+        }
+    }
+
+    // ==================== P2: 数据处理与分析 ====================
+
+    // --- 21. excel_sort_range ---
+
+    @Tool(name = "excel_sort_range", description = "按指定列对 Excel 工作表数据区域进行排序。第一行为标题行不参与排序。")
+    public String excelSortRange(@ToolParam(description = "Absolute path to the Excel file") String fileAbsolutePath,
+        @ToolParam(description = "Sheet name in the Excel file") String sheetName,
+        @ToolParam(description = "Range to sort (must include header row), e.g. \"A1:C10\"") String range,
+        @ToolParam(description = "Column index within the range to sort by (0-based)") int sortColumnIndex,
+        @ToolParam(description = "True for ascending, false for descending") boolean ascending) {
+        try {
+            Path path = validateExcelFile(fileAbsolutePath);
+            int[] bounds = parseRange(range);
+            int firstRow = bounds[0];
+            int firstCol = bounds[1];
+            int lastRow = bounds[2];
+            int lastCol = bounds[3];
+            try (Workbook workbook = openWorkbook(path)) {
+                Sheet sheet = getSheet(workbook, sheetName);
+                List<List<Object>> allRows = new ArrayList<>();
+                for (int r = firstRow + 1; r <= lastRow; r++) {
+                    Row row = sheet.getRow(r);
+                    List<Object> rowData = new ArrayList<>();
+                    for (int c = firstCol; c <= lastCol; c++)
+                        rowData.add(getCellJsonValue(row != null ? row.getCell(c) : null, false));
+                    allRows.add(rowData);
+                }
+                int sortIdx = sortColumnIndex;
+                allRows.sort((a, b) -> {
+                    Object va = a.size() > sortIdx ? a.get(sortIdx) : null;
+                    Object vb = b.size() > sortIdx ? b.get(sortIdx) : null;
+                    if (va == null && vb == null) return 0;
+                    if (va == null) return ascending ? 1 : -1;
+                    if (vb == null) return ascending ? -1 : 1;
+                    int cmp;
+                    if (va instanceof Number na && vb instanceof Number nb)
+                        cmp = Double.compare(na.doubleValue(), nb.doubleValue());
+                    else cmp = String.valueOf(va).compareTo(String.valueOf(vb));
+                    return ascending ? cmp : -cmp;
+                });
+                for (int i = 0; i < allRows.size(); i++) {
+                    int targetRow = firstRow + 1 + i;
+                    Row row = sheet.getRow(targetRow);
+                    if (row == null) row = sheet.createRow(targetRow);
+                    List<Object> rowData = allRows.get(i);
+                    for (int c = 0; c < rowData.size(); c++) {
+                        Cell cell = row.getCell(firstCol + c);
+                        if (cell == null) cell = row.createCell(firstCol + c);
+                        writeCellValue(cell, rowData.get(c));
+                    }
+                }
+                saveWorkbook(workbook, path);
+                String dir = ascending ? "升序" : "降序";
+                return "已按第 " + (sortColumnIndex + 1) + " 列" + dir + "排序: " + fileAbsolutePath + ", 工作表=" + sheetName + ", 范围=" + range;
+            }
+        } catch (Exception e) {
+            LogUtil.error("excelSortRange 失败: {}", e.getMessage(), e);
+            return "错误: " + e.getMessage();
+        }
+    }
+
+    // --- 22. excel_filter_range ---
+
+    @Tool(name = "excel_filter_range", description = "为 Excel 工作表数据区域添加自动筛选。")
+    public String excelFilterRange(@ToolParam(description = "Absolute path to the Excel file") String fileAbsolutePath,
+        @ToolParam(description = "Sheet name in the Excel file") String sheetName,
+        @ToolParam(description = "Range to apply filter, e.g. \"A1:C10\"", required = false) String range) {
+        try {
+            Path path = validateExcelFile(fileAbsolutePath);
+            try (Workbook workbook = openWorkbook(path)) {
+                Sheet sheet = getSheet(workbook, sheetName);
+                if (range != null && !range.isBlank()) {
+                    int[] bounds = parseRange(range);
+                    sheet.setAutoFilter(new CellRangeAddress(bounds[0], bounds[2], bounds[1], bounds[3]));
+                } else {
+                    int lastRow = sheet.getLastRowNum();
+                    int lastCol = 0;
+                    for (int r = 0; r <= lastRow; r++) {
+                        Row row = sheet.getRow(r);
+                        if (row != null && row.getLastCellNum() > lastCol) lastCol = row.getLastCellNum();
+                    }
+                    if (lastRow < 0 || lastCol == 0) return "错误: 工作表为空，无法自动添加筛选";
+                    sheet.setAutoFilter(new CellRangeAddress(0, lastRow, 0, lastCol - 1));
+                }
+                saveWorkbook(workbook, path);
+                return "已添加自动筛选: " + fileAbsolutePath + ", 工作表=" + sheetName;
+            }
+        } catch (Exception e) {
+            LogUtil.error("excelFilterRange 失败: {}", e.getMessage(), e);
+            return "错误: " + e.getMessage();
+        }
+    }
+
+    // --- 23. excel_find_replace ---
+
+    @Tool(name = "excel_find_replace", description = "在 Excel 工作表中查找并替换文本内容。")
+    public String excelFindReplace(@ToolParam(description = "Absolute path to the Excel file") String fileAbsolutePath,
+        @ToolParam(description = "Sheet name in the Excel file") String sheetName,
+        @ToolParam(description = "Text to find") String findText,
+        @ToolParam(description = "Text to replace with") String replaceText,
+        @ToolParam(description = "Range to search, e.g. \"A1:C10\". Leave empty to search entire sheet.", required = false) String range) {
+        try {
+            Path path = validateExcelFile(fileAbsolutePath);
+            try (Workbook workbook = openWorkbook(path)) {
+                Sheet sheet = getSheet(workbook, sheetName);
+                int firstRow, firstCol, lastRow, lastCol;
+                if (range != null && !range.isBlank()) {
+                    int[] bounds = parseRange(range);
+                    firstRow = bounds[0]; firstCol = bounds[1]; lastRow = bounds[2]; lastCol = bounds[3];
+                } else {
+                    firstRow = 0; firstCol = 0; lastRow = sheet.getLastRowNum();
+                    lastCol = 0;
+                    for (int r = firstRow; r <= lastRow; r++) {
+                        Row row = sheet.getRow(r);
+                        if (row != null && row.getLastCellNum() > lastCol) lastCol = row.getLastCellNum();
+                    }
+                    lastCol = Math.max(0, lastCol - 1);
+                }
+                int count = 0;
+                for (int r = firstRow; r <= lastRow; r++) {
+                    Row row = sheet.getRow(r);
+                    if (row == null) continue;
+                    for (int c = firstCol; c <= lastCol; c++) {
+                        Cell cell = row.getCell(c);
+                        if (cell != null && cell.getCellType() == CellType.STRING) {
+                            String val = cell.getStringCellValue();
+                            if (val.contains(findText)) {
+                                cell.setCellValue(val.replace(findText, replaceText));
+                                count++;
+                            }
+                        }
+                    }
+                }
+                saveWorkbook(workbook, path);
+                return "已替换 " + count + " 个单元格: 将 '" + findText + "' 替换为 '" + replaceText + "', 文件=" + fileAbsolutePath + ", 工作表=" + sheetName;
+            }
+        } catch (Exception e) {
+            LogUtil.error("excelFindReplace 失败: {}", e.getMessage(), e);
+            return "错误: " + e.getMessage();
+        }
+    }
+
+    // --- 24. excel_remove_duplicates ---
+
+    @Tool(name = "excel_remove_duplicates", description = "按指定列去除 Excel 工作表中的重复行，保留第一次出现的行。")
+    public String excelRemoveDuplicates(@ToolParam(description = "Absolute path to the Excel file") String fileAbsolutePath,
+        @ToolParam(description = "Sheet name in the Excel file") String sheetName,
+        @ToolParam(description = "Comma-separated column indices (0-based) to check for duplicates, e.g. \"0,1\"") String columnIndices,
+        @ToolParam(description = "Row index to start from (0-based). [default: 0, first row is header]", required = false) Integer startRow) {
+        try {
+            Path path = validateExcelFile(fileAbsolutePath);
+            String[] colStr = columnIndices.split(",");
+            int[] cols = new int[colStr.length];
+            for (int i = 0; i < colStr.length; i++) cols[i] = Integer.parseInt(colStr[i].trim());
+            int start = startRow != null ? startRow : 0;
+            try (Workbook workbook = openWorkbook(path)) {
+                Sheet sheet = getSheet(workbook, sheetName);
+                Set<String> seen = new HashSet<>();
+                int removed = 0;
+                for (int r = sheet.getLastRowNum(); r >= start; r--) {
+                    Row row = sheet.getRow(r);
+                    if (row == null) continue;
+                    StringBuilder key = new StringBuilder();
+                    for (int c : cols) {
+                        Cell cell = row.getCell(c);
+                        key.append(getCellStringValue(cell, false)).append("\t");
+                    }
+                    if (!seen.add(key.toString())) {
+                        sheet.removeRow(row);
+                        if (r < sheet.getLastRowNum()) sheet.shiftRows(r + 1, sheet.getLastRowNum(), -1);
+                        removed++;
+                    }
+                }
+                saveWorkbook(workbook, path);
+                return "已移除 " + removed + " 个重复行: " + fileAbsolutePath + ", 工作表=" + sheetName + ", 检查列=" + columnIndices;
+            }
+        } catch (Exception e) {
+            LogUtil.error("excelRemoveDuplicates 失败: {}", e.getMessage(), e);
+            return "错误: " + e.getMessage();
+        }
+    }
+
+    // --- 25. excel_apply_formula ---
+
+    @Tool(name = "excel_apply_formula", description = "对 Excel 工作表中的单元格范围批量应用公式（如 SUM、AVERAGE 等）。")
+    public String excelApplyFormula(@ToolParam(description = "Absolute path to the Excel file") String fileAbsolutePath,
+        @ToolParam(description = "Sheet name in the Excel file") String sheetName,
+        @ToolParam(description = "Target cell or range to apply formula, e.g. \"D2\" or \"D2:D10\"") String target,
+        @ToolParam(description = "Formula to apply (starting with =), e.g. \"=SUM(A2:A10)\"") String formula) {
+        try {
+            Path path = validateExcelFile(fileAbsolutePath);
+            try (Workbook workbook = openWorkbook(path)) {
+                Sheet sheet = getSheet(workbook, sheetName);
+                String formulaStr = formula.startsWith("=") ? formula.substring(1) : formula;
+                int[] bounds = parseRange(target);
+                for (int r = bounds[0]; r <= bounds[2]; r++) {
+                    Row row = sheet.getRow(r);
+                    if (row == null) row = sheet.createRow(r);
+                    for (int c = bounds[1]; c <= bounds[3]; c++) {
+                        Cell cell = row.getCell(c);
+                        if (cell == null) cell = row.createCell(c);
+                        cell.setCellFormula(formulaStr);
+                    }
+                }
+                saveWorkbook(workbook, path);
+                return "已应用公式 '" + formula + "' 到范围 " + target + ": " + fileAbsolutePath + ", 工作表=" + sheetName;
+            }
+        } catch (Exception e) {
+            LogUtil.error("excelApplyFormula 失败: {}", e.getMessage(), e);
+            return "错误: " + e.getMessage();
+        }
+    }
+
+    // ==================== P3: 高级功能 ====================
+
+    // --- 26. excel_data_validation ---
+
+    @Tool(name = "excel_data_validation", description = "为 Excel 工作表单元格添加数据验证，支持下拉列表。")
+    public String excelDataValidation(@ToolParam(description = "Absolute path to the Excel file") String fileAbsolutePath,
+        @ToolParam(description = "Sheet name in the Excel file") String sheetName,
+        @ToolParam(description = "Range to apply validation, e.g. \"A2:A10\"") String range,
+        @ToolParam(description = "Comma-separated list of allowed values for dropdown, e.g. \"是,否\"") String allowedValues) {
+        try {
+            Path path = validateExcelFile(fileAbsolutePath);
+            try (Workbook workbook = openWorkbook(path)) {
+                Sheet sheet = getSheet(workbook, sheetName);
+                int[] bounds = parseRange(range);
+                DataValidationHelper helper = sheet.getDataValidationHelper();
+                DataValidationConstraint constraint = helper.createExplicitListConstraint(allowedValues.split(","));
+                CellRangeAddressList addressList = new CellRangeAddressList(bounds[0], bounds[2], bounds[1], bounds[3]);
+                DataValidation validation = helper.createValidation(constraint, addressList);
+                validation.setShowErrorBox(true);
+                validation.setErrorStyle(DataValidation.ErrorStyle.STOP);
+                validation.createErrorBox("输入错误", "请从下拉列表中选择有效值");
+                sheet.addValidationData(validation);
+                saveWorkbook(workbook, path);
+                return "已添加数据验证: 范围=" + range + ", 允许值=" + allowedValues + ", 文件=" + fileAbsolutePath + ", 工作表=" + sheetName;
+            }
+        } catch (Exception e) {
+            LogUtil.error("excelDataValidation 失败: {}", e.getMessage(), e);
+            return "错误: " + e.getMessage();
+        }
+    }
+
+    // --- 27. excel_convert_csv ---
+
+    @Tool(name = "excel_convert_csv", description = "CSV 与 Excel 文件互转。根据源文件扩展名自动判断转换方向。")
+    public String excelConvertCsv(@ToolParam(description = "Absolute path to the source file (.csv or .xlsx)") String sourceFilePath,
+        @ToolParam(description = "Absolute path to the target file (.xlsx or .csv)") String targetFilePath) {
+        try {
+            String srcLower = sourceFilePath.toLowerCase();
+            String tgtLower = targetFilePath.toLowerCase();
+            if (srcLower.endsWith(".csv") && tgtLower.endsWith(".xlsx")) {
+                Path srcPath = Paths.get(sourceFilePath);
+                if (!Files.exists(srcPath)) return "错误: 源文件不存在: " + sourceFilePath;
+                Path tgtPath = Paths.get(targetFilePath);
+                Path parent = tgtPath.getParent();
+                if (parent != null && !Files.exists(parent)) Files.createDirectories(parent);
+                try (BufferedReader reader = new BufferedReader(new FileReader(sourceFilePath));
+                     Workbook workbook = new XSSFWorkbook()) {
+                    Sheet sheet = workbook.createSheet("Sheet1");
+                    String line;
+                    int rowNum = 0;
+                    while ((line = reader.readLine()) != null) {
+                        Row row = sheet.createRow(rowNum++);
+                        String[] parts = parseCsvLine(line);
+                        for (int i = 0; i < parts.length; i++) row.createCell(i).setCellValue(parts[i]);
+                    }
+                    saveWorkbook(workbook, tgtPath);
+                }
+                return "已从 CSV 转换为 Excel: " + sourceFilePath + " → " + targetFilePath;
+            } else if ((srcLower.endsWith(".xlsx") || srcLower.endsWith(".xls")) && tgtLower.endsWith(".csv")) {
+                Path srcPath = validateExcelFile(sourceFilePath);
+                Path tgtPath = Paths.get(targetFilePath);
+                Path parent = tgtPath.getParent();
+                if (parent != null && !Files.exists(parent)) Files.createDirectories(parent);
+                try (Workbook workbook = openWorkbook(srcPath);
+                     FileWriter writer = new FileWriter(targetFilePath)) {
+                    Sheet sheet = workbook.getSheetAt(0);
+                    for (int r = 0; r <= sheet.getLastRowNum(); r++) {
+                        Row row = sheet.getRow(r);
+                        StringBuilder sb = new StringBuilder();
+                        if (row != null) {
+                            for (int c = 0; c < row.getLastCellNum(); c++) {
+                                if (c > 0) sb.append(",");
+                                Cell cell = row.getCell(c);
+                                String val = getCellStringValue(cell, false);
+                                if (val.contains(",") || val.contains("\"") || val.contains("\n"))
+                                    val = "\"" + val.replace("\"", "\"\"") + "\"";
+                                sb.append(val);
+                            }
+                        }
+                        writer.write(sb.toString() + "\n");
+                    }
+                }
+                return "已从 Excel 转换为 CSV: " + sourceFilePath + " → " + targetFilePath;
+            } else {
+                return "错误: 不支持的文件格式组合。请使用 .csv → .xlsx 或 .xls/.xlsx → .csv";
+            }
+        } catch (Exception e) {
+            LogUtil.error("excelConvertCsv 失败: {}", e.getMessage(), e);
+            return "错误: " + e.getMessage();
+        }
+    }
+
+    private String[] parseCsvLine(String line) {
+        List<String> result = new ArrayList<>();
+        boolean inQuotes = false;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (inQuotes) {
+                if (c == '"') {
+                    if (i + 1 < line.length() && line.charAt(i + 1) == '"') { sb.append('"'); i++; }
+                    else inQuotes = false;
+                } else sb.append(c);
+            } else {
+                if (c == '"') inQuotes = true;
+                else if (c == ',') { result.add(sb.toString()); sb.setLength(0); }
+                else sb.append(c);
+            }
+        }
+        result.add(sb.toString());
+        return result.toArray(new String[0]);
+    }
+
+    // --- 28. excel_merge_workbooks ---
+
+    @Tool(name = "excel_merge_workbooks", description = "将多个 Excel 工作簿的所有工作表合并到一个目标工作簿中。")
+    public String excelMergeWorkbooks(@ToolParam(description = "Absolute path to the target Excel file (will be created if not exists)") String targetFilePath,
+        @ToolParam(description = "Comma-separated absolute paths to source Excel files") String sourceFilePaths,
+        @ToolParam(description = "Whether to include header row when copying data", required = false) Boolean includeHeader) {
+        try {
+            boolean includeHdr = includeHeader != null && includeHeader;
+            String[] sources = sourceFilePaths.split(",");
+            Path tgtPath = Paths.get(targetFilePath);
+            Path parent = tgtPath.getParent();
+            if (parent != null && !Files.exists(parent)) Files.createDirectories(parent);
+            try (Workbook targetWorkbook = new XSSFWorkbook()) {
+                int totalSheets = 0;
+                for (String src : sources) {
+                    Path srcFile = Paths.get(src.trim());
+                    if (!Files.exists(srcFile)) return "错误: 源文件不存在: " + src.trim();
+                    try (Workbook sourceWorkbook = openWorkbook(srcFile)) {
+                        for (int i = 0; i < sourceWorkbook.getNumberOfSheets(); i++) {
+                            Sheet srcSheet = sourceWorkbook.getSheetAt(i);
+                            String sheetName = srcSheet.getSheetName();
+                            int suffix = 1;
+                            String baseName = sheetName;
+                            while (targetWorkbook.getSheet(sheetName) != null)
+                                sheetName = baseName + "_" + (suffix++);
+                            Sheet destSheet = targetWorkbook.createSheet(sheetName);
+                            copySheetData(srcSheet, destSheet, includeHdr);
+                            totalSheets++;
+                        }
+                    }
+                }
+                saveWorkbook(targetWorkbook, tgtPath);
+                return "已合并 " + sources.length + " 个工作簿（共 " + totalSheets + " 个工作表）到: " + targetFilePath;
+            }
+        } catch (Exception e) {
+            LogUtil.error("excelMergeWorkbooks 失败: {}", e.getMessage(), e);
+            return "错误: " + e.getMessage();
+        }
+    }
+
+    // --- 29. excel_conditional_format ---
+
+    @Tool(name = "excel_conditional_format", description = "为 Excel 工作表单元格添加条件格式，根据数值大小高亮显示。")
+    public String excelConditionalFormat(@ToolParam(description = "Absolute path to the Excel file") String fileAbsolutePath,
+        @ToolParam(description = "Sheet name in the Excel file") String sheetName,
+        @ToolParam(description = "Range to apply conditional formatting, e.g. \"A2:A10\"") String range,
+        @ToolParam(description = "Type: \"cellValue\" (highlight cells based on value), \"dataBar\" (data bar)") String type,
+        @ToolParam(description = "Comparison operator: \">\", \">=\", \"<\", \"<=\", \"=\", \"!=\" (for cellValue type)") String operator,
+        @ToolParam(description = "Threshold value for comparison (for cellValue type)") String value,
+        @ToolParam(description = "Fill color name from predefined set: RED, YELLOW, GREEN, BLUE, ORANGE, PINK, GREY_25_PERCENT, LIGHT_BLUE, etc.") String fillColor) {
+        try {
+            Path path = validateExcelFile(fileAbsolutePath);
+            try (Workbook workbook = openWorkbook(path)) {
+                Sheet sheet = getSheet(workbook, sheetName);
+                SheetConditionalFormatting scf = sheet.getSheetConditionalFormatting();
+                ConditionalFormattingRule rule;
+                if ("cellValue".equals(type)) {
+                    byte op = switch (operator) {
+                        case ">" -> ComparisonOperator.GT;
+                        case ">=" -> ComparisonOperator.GE;
+                        case "<" -> ComparisonOperator.LT;
+                        case "<=" -> ComparisonOperator.LE;
+                        case "=" -> ComparisonOperator.EQUAL;
+                        case "!=" -> ComparisonOperator.NOT_EQUAL;
+                        default -> throw new IllegalArgumentException("不支持的操作符: " + operator);
+                    };
+                    rule = scf.createConditionalFormattingRule(op, value, null);
+                } else {
+                    return "错误: 不支持的条件格式类型 '" + type + "', 支持: cellValue";
+                }
+                PatternFormatting fill = rule.createPatternFormatting();
+                try {
+                    IndexedColors color = IndexedColors.valueOf(fillColor.toUpperCase());
+                    fill.setFillBackgroundColor(color.index);
+                } catch (IllegalArgumentException e) {
+                    fill.setFillBackgroundColor(IndexedColors.RED.index);
+                }
+                fill.setFillPattern(PatternFormatting.SOLID_FOREGROUND);
+                int[] bounds = parseRange(range);
+                CellRangeAddress[] regions = {new CellRangeAddress(bounds[0], bounds[2], bounds[1], bounds[3])};
+                scf.addConditionalFormatting(regions, rule);
+                saveWorkbook(workbook, path);
+                return "已添加条件格式: 类型=" + type + ", 范围=" + range + ", 文件=" + fileAbsolutePath + ", 工作表=" + sheetName;
+            }
+        } catch (Exception e) {
+            LogUtil.error("excelConditionalFormat 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }

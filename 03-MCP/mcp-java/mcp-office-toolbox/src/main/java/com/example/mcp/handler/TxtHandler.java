@@ -7,10 +7,11 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.example.mcp.util.LogUtil;
 import org.springframework.ai.tool.annotation.Tool;
+import com.example.mcp.util.LogUtil;
 import org.springframework.ai.tool.annotation.ToolParam;
+import com.example.mcp.util.LogUtil;
 import org.springframework.stereotype.Service;
 
 /**
@@ -22,8 +23,6 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class TxtHandler {
-
-    private static final Logger log = LoggerFactory.getLogger(TxtHandler.class);
 
     /**
      * 解析文件路径
@@ -49,7 +48,7 @@ public class TxtHandler {
             Files.writeString(path, "", StandardCharsets.UTF_8);
             return "空白 TXT 文件已创建: " + path;
         } catch (Exception e) {
-            log.error("createTxtFile 失败: {}", e.getMessage(), e);
+            LogUtil.error("createTxtFile 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -68,7 +67,7 @@ public class TxtHandler {
             }
             return Files.readString(path, StandardCharsets.UTF_8);
         } catch (Exception e) {
-            log.error("readTxtFull 失败: {}", e.getMessage(), e);
+            LogUtil.error("readTxtFull 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -105,7 +104,7 @@ public class TxtHandler {
             return sb.toString()
                      .trim();
         } catch (Exception e) {
-            log.error("readTxtLines 失败: {}", e.getMessage(), e);
+            LogUtil.error("readTxtLines 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -147,7 +146,7 @@ public class TxtHandler {
             return sb.toString()
                      .trim();
         } catch (Exception e) {
-            log.error("readTxtSpecificLines 失败: {}", e.getMessage(), e);
+            LogUtil.error("readTxtSpecificLines 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -170,7 +169,7 @@ public class TxtHandler {
             Files.writeString(path, content, StandardCharsets.UTF_8);
             return "TXT 文件写入成功: " + path;
         } catch (Exception e) {
-            log.error("writeTxt 失败: {}", e.getMessage(), e);
+            LogUtil.error("writeTxt 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -198,7 +197,7 @@ public class TxtHandler {
             }
             return "内容已追加到 TXT 文件: " + path;
         } catch (Exception e) {
-            log.error("appendTxt 失败: {}", e.getMessage(), e);
+            LogUtil.error("appendTxt 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -218,7 +217,7 @@ public class TxtHandler {
             Files.writeString(path, "", StandardCharsets.UTF_8);
             return "TXT 文件内容已清空: " + path;
         } catch (Exception e) {
-            log.error("clearTxt 失败: {}", e.getMessage(), e);
+            LogUtil.error("clearTxt 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -270,7 +269,7 @@ public class TxtHandler {
             }
             return sb.toString();
         } catch (Exception e) {
-            log.error("searchTxt 失败: {}", e.getMessage(), e);
+            LogUtil.error("searchTxt 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -298,7 +297,7 @@ public class TxtHandler {
             Files.writeString(path, modifiedContent, StandardCharsets.UTF_8);
             return "TXT 文件替换成功: " + path;
         } catch (Exception e) {
-            log.error("replaceTxt 失败: {}", e.getMessage(), e);
+            LogUtil.error("replaceTxt 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }

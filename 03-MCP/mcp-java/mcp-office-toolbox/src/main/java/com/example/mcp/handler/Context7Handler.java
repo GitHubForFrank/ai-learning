@@ -7,12 +7,15 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.example.mcp.util.LogUtil;
 import org.springframework.ai.tool.annotation.Tool;
+import com.example.mcp.util.LogUtil;
 import org.springframework.ai.tool.annotation.ToolParam;
+import com.example.mcp.util.LogUtil;
 import org.springframework.http.ResponseEntity;
+import com.example.mcp.util.LogUtil;
 import org.springframework.stereotype.Service;
+import com.example.mcp.util.LogUtil;
 import org.springframework.web.client.RestClient;
 
 /**
@@ -25,8 +28,6 @@ import org.springframework.web.client.RestClient;
  */
 @Service
 public class Context7Handler {
-
-    private static final Logger log = LoggerFactory.getLogger(Context7Handler.class);
 
     /**
      * Context7 API 基础地址
@@ -62,7 +63,7 @@ public class Context7Handler {
     @Tool(name = "resolve-library-id", description = "将库名称解析为 Context7 标准库 ID。输入库名称，返回匹配的库 ID 列表及元数据。")
     public String resolveLibraryId(@ToolParam(description = "请求参数，包含 query（用户问题）和 libraryName（库名称）") ResolveLibraryRequest request) {
         try {
-            log.info("resolve-library-id: libraryName={}, query={}", request.libraryName(), request.query());
+            LogUtil.info("resolve-library-id: libraryName={}, query={}", request.libraryName(), request.query());
 
             ResponseEntity<Map> response = restClient.get()
                                                      .uri(URI.create(
@@ -134,7 +135,7 @@ public class Context7Handler {
             return sb.toString()
                      .trim();
         } catch (Exception e) {
-            log.error("resolve-library-id 失败: {}", e.getMessage(), e);
+            LogUtil.error("resolve-library-id 失败: {}", e.getMessage(), e);
             return "错误：解析库 ID 失败 - " + e.getMessage();
         }
     }
@@ -150,7 +151,7 @@ public class Context7Handler {
     public String queryDocs(
         @ToolParam(description = "请求参数，包含 libraryId（库 ID）、query（查询主题）和 tokens（最大 token 数）") QueryDocsRequest request) {
         try {
-            log.info("query-docs: libraryId={}, query={}, tokens={}", request.libraryId(), request.query(), request.tokens());
+            LogUtil.info("query-docs: libraryId={}, query={}, tokens={}", request.libraryId(), request.query(), request.tokens());
 
             String url = API_BASE_URL + "/v2/context?libraryId=" + encode(request.libraryId()) + "&query=" + encode(request.query()) + "&tokens="
                 + request.tokens() + "&type=json";
@@ -228,7 +229,7 @@ public class Context7Handler {
             return sb.toString()
                      .trim();
         } catch (Exception e) {
-            log.error("query-docs 失败: {}", e.getMessage(), e);
+            LogUtil.error("query-docs 失败: {}", e.getMessage(), e);
             return "错误：查询文档失败 - " + e.getMessage();
         }
     }

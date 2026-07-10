@@ -8,10 +8,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.example.mcp.util.LogUtil;
 import org.springframework.ai.tool.annotation.Tool;
+import com.example.mcp.util.LogUtil;
 import org.springframework.ai.tool.annotation.ToolParam;
+import com.example.mcp.util.LogUtil;
 import org.springframework.stereotype.Service;
 
 /**
@@ -23,8 +24,6 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class ZipHandler {
-
-    private static final Logger log = LoggerFactory.getLogger(ZipHandler.class);
 
     /**
      * 格式化文件大小为可读字符串
@@ -73,7 +72,7 @@ public class ZipHandler {
             long zipSize = Files.size(outputPath);
             return "压缩成功：" + zipOutputPath + "，文件大小 " + formatSize(zipSize);
         } catch (Exception e) {
-            log.error("zipCompress 失败: {}", e.getMessage(), e);
+            LogUtil.error("zipCompress 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -98,7 +97,7 @@ public class ZipHandler {
                 return "解压成功：" + destDirPath + "，共解压到 " + count + " 个顶级条目";
             }
         } catch (Exception e) {
-            log.error("zipDecompress 失败: {}", e.getMessage(), e);
+            LogUtil.error("zipDecompress 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -151,7 +150,7 @@ public class ZipHandler {
 
             return sb.toString();
         } catch (Exception e) {
-            log.error("zipList 失败: {}", e.getMessage(), e);
+            LogUtil.error("zipList 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -187,7 +186,7 @@ public class ZipHandler {
             long zipSize = Files.size(outputPath);
             return "目录压缩成功：" + dirPath + " → " + outputPath + "，文件大小 " + formatSize(zipSize);
         } catch (Exception e) {
-            log.error("zipCompressDirectory 失败: {}", e.getMessage(), e);
+            LogUtil.error("zipCompressDirectory 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }

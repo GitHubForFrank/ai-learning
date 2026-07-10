@@ -14,10 +14,11 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.example.mcp.util.LogUtil;
 import org.springframework.ai.tool.annotation.Tool;
+import com.example.mcp.util.LogUtil;
 import org.springframework.ai.tool.annotation.ToolParam;
+import com.example.mcp.util.LogUtil;
 import org.springframework.stereotype.Service;
 
 /**
@@ -30,8 +31,6 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class CsvHandler {
-
-    private static final Logger log = LoggerFactory.getLogger(CsvHandler.class);
 
     // --- 1. csv_create ---
 
@@ -56,7 +55,7 @@ public class CsvHandler {
                 return "空白 CSV 文件已创建: " + path;
             }
         } catch (Exception e) {
-            log.error("csvCreate 失败: {}", e.getMessage(), e);
+            LogUtil.error("csvCreate 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -109,7 +108,7 @@ public class CsvHandler {
 
             return com.alibaba.fastjson2.JSON.toJSONString(result);
         } catch (Exception e) {
-            log.error("csvRead 失败: {}", e.getMessage(), e);
+            LogUtil.error("csvRead 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -144,7 +143,7 @@ public class CsvHandler {
 
             return com.alibaba.fastjson2.JSON.toJSONString(result);
         } catch (Exception e) {
-            log.error("csvReadHeaders 失败: {}", e.getMessage(), e);
+            LogUtil.error("csvReadHeaders 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -185,7 +184,7 @@ public class CsvHandler {
             writer.close();
             return "CSV 文件写入成功: " + path;
         } catch (Exception e) {
-            log.error("csvWrite 失败: {}", e.getMessage(), e);
+            LogUtil.error("csvWrite 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -216,7 +215,7 @@ public class CsvHandler {
             writer.close();
             return "CSV 数据追加成功: " + path;
         } catch (Exception e) {
-            log.error("csvAppend 失败: {}", e.getMessage(), e);
+            LogUtil.error("csvAppend 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -262,7 +261,7 @@ public class CsvHandler {
             }
             return sb.toString();
         } catch (Exception e) {
-            log.error("csvInfo 失败: {}", e.getMessage(), e);
+            LogUtil.error("csvInfo 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }

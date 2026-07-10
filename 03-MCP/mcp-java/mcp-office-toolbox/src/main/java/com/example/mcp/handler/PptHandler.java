@@ -15,10 +15,11 @@ import org.apache.poi.xslf.usermodel.XSLFTextBox;
 import org.apache.poi.xslf.usermodel.XSLFTextParagraph;
 import org.apache.poi.xslf.usermodel.XSLFTextRun;
 import org.apache.poi.xslf.usermodel.XSLFTextShape;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.example.mcp.util.LogUtil;
 import org.springframework.ai.tool.annotation.Tool;
+import com.example.mcp.util.LogUtil;
 import org.springframework.ai.tool.annotation.ToolParam;
+import com.example.mcp.util.LogUtil;
 import org.springframework.stereotype.Service;
 
 /**
@@ -30,8 +31,6 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class PptHandler {
-
-    private static final Logger log = LoggerFactory.getLogger(PptHandler.class);
 
     /**
      * 校验 PPT 文件路径
@@ -80,7 +79,7 @@ public class PptHandler {
             }
             return "空白 PPT 文件已创建: " + fileAbsolutePath;
         } catch (Exception e) {
-            log.error("createPpt 失败: {}", e.getMessage(), e);
+            LogUtil.error("createPpt 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -111,7 +110,7 @@ public class PptHandler {
                                               .size() + " 张幻灯片: " + fileAbsolutePath;
             }
         } catch (Exception e) {
-            log.error("addPptSlide 失败: {}", e.getMessage(), e);
+            LogUtil.error("addPptSlide 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -136,7 +135,7 @@ public class PptHandler {
                 return "已删除第 " + (slideIndex + 1) + " 张幻灯片: " + fileAbsolutePath;
             }
         } catch (Exception e) {
-            log.error("deletePptSlide 失败: {}", e.getMessage(), e);
+            LogUtil.error("deletePptSlide 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -180,7 +179,7 @@ public class PptHandler {
                          .trim();
             }
         } catch (Exception e) {
-            log.error("readPptText 失败: {}", e.getMessage(), e);
+            LogUtil.error("readPptText 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -223,7 +222,7 @@ public class PptHandler {
                 return "幻灯片 " + (slideIndex + 1) + " 文字修改完成: " + fileAbsolutePath + "，共替换 " + replaceCount + " 处";
             }
         } catch (Exception e) {
-            log.error("modifyPptSlideText 失败: {}", e.getMessage(), e);
+            LogUtil.error("modifyPptSlideText 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -247,7 +246,7 @@ public class PptHandler {
             Files.copy(source, target);
             return "PPT 文件已另存为: " + targetPath;
         } catch (Exception e) {
-            log.error("savePptAs 失败: {}", e.getMessage(), e);
+            LogUtil.error("savePptAs 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }

@@ -6,10 +6,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.example.mcp.util.LogUtil;
 import org.springframework.ai.tool.annotation.Tool;
+import com.example.mcp.util.LogUtil;
 import org.springframework.ai.tool.annotation.ToolParam;
+import com.example.mcp.util.LogUtil;
 import org.springframework.stereotype.Service;
 
 /**
@@ -22,8 +23,6 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class MarkdownHandler {
-
-    private static final Logger log = LoggerFactory.getLogger(MarkdownHandler.class);
 
     /**
      * 解析文件路径
@@ -49,7 +48,7 @@ public class MarkdownHandler {
             Files.writeString(path, "", StandardCharsets.UTF_8);
             return "空白 MD 文件已创建: " + path;
         } catch (Exception e) {
-            log.error("createMdFile 失败: {}", e.getMessage(), e);
+            LogUtil.error("createMdFile 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -68,7 +67,7 @@ public class MarkdownHandler {
             }
             return Files.readString(path, StandardCharsets.UTF_8);
         } catch (Exception e) {
-            log.error("readMd 失败: {}", e.getMessage(), e);
+            LogUtil.error("readMd 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -105,7 +104,7 @@ public class MarkdownHandler {
             }
             return "内容已追加到 MD 文件: " + path;
         } catch (Exception e) {
-            log.error("appendMd 失败: {}", e.getMessage(), e);
+            LogUtil.error("appendMd 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -147,7 +146,7 @@ public class MarkdownHandler {
             Files.writeString(path, String.join("\n", lines), StandardCharsets.UTF_8);
             return "内容已插入到 MD 文件第 " + lineNumber + " 行: " + path;
         } catch (Exception e) {
-            log.error("insertMd 失败: {}", e.getMessage(), e);
+            LogUtil.error("insertMd 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -294,7 +293,7 @@ public class MarkdownHandler {
             Files.writeString(path, modifiedContent, StandardCharsets.UTF_8);
             return "MD 段落修改成功: " + path;
         } catch (Exception e) {
-            log.error("modifyMdParagraph 失败: {}", e.getMessage(), e);
+            LogUtil.error("modifyMdParagraph 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -322,7 +321,7 @@ public class MarkdownHandler {
             Files.writeString(path, modifiedContent, StandardCharsets.UTF_8);
             return "MD 全文替换成功: " + path;
         } catch (Exception e) {
-            log.error("replaceMdContent 失败: {}", e.getMessage(), e);
+            LogUtil.error("replaceMdContent 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -345,7 +344,7 @@ public class MarkdownHandler {
             Files.writeString(path, content, StandardCharsets.UTF_8);
             return "MD 文件已保存: " + path;
         } catch (Exception e) {
-            log.error("saveMd 失败: {}", e.getMessage(), e);
+            LogUtil.error("saveMd 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -372,7 +371,7 @@ public class MarkdownHandler {
             Files.copy(source, target);
             return "MD 文件已另存为: " + targetPath;
         } catch (Exception e) {
-            log.error("saveMdAs 失败: {}", e.getMessage(), e);
+            LogUtil.error("saveMdAs 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }

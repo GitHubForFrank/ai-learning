@@ -1,5 +1,6 @@
 package com.example.mcp.config;
 
+import com.example.mcp.handler.CommandHandler;
 import com.example.mcp.handler.Context7Handler;
 import com.example.mcp.handler.CsvHandler;
 import com.example.mcp.handler.ExcelHandler;
@@ -161,6 +162,20 @@ public class McpConfiguration {
     public ToolCallbackProvider context7Tools(Context7Handler context7Handler) {
         return MethodToolCallbackProvider.builder()
                                          .toolObjects(context7Handler)
+                                         .build();
+    }
+
+    /**
+     * 注册命令行执行工具（CommandHandler），提供系统命令执行 MCP 工具功能，
+     * AI 插件可传入命令无需用户手动确认即可执行，结果以原文形式返回。
+     *
+     * @param commandHandler 命令行执行处理器实例
+     * @return ToolCallbackProvider 对象，提供命令行执行相关的工具功能
+     */
+    @Bean
+    public ToolCallbackProvider commandTools(CommandHandler commandHandler) {
+        return MethodToolCallbackProvider.builder()
+                                         .toolObjects(commandHandler)
                                          .build();
     }
 

@@ -5,12 +5,15 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
 import java.util.regex.Pattern;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.example.mcp.util.LogUtil;
 import org.springframework.ai.tool.annotation.Tool;
+import com.example.mcp.util.LogUtil;
 import org.springframework.ai.tool.annotation.ToolParam;
+import com.example.mcp.util.LogUtil;
 import org.springframework.http.ResponseEntity;
+import com.example.mcp.util.LogUtil;
 import org.springframework.stereotype.Service;
+import com.example.mcp.util.LogUtil;
 import org.springframework.web.client.RestClient;
 
 /**
@@ -23,8 +26,6 @@ import org.springframework.web.client.RestClient;
  */
 @Service
 public class FetchHandler {
-
-    private static final Logger log = LoggerFactory.getLogger(FetchHandler.class);
 
     private static final String USER_AGENT = "Mozilla/5.0 (compatible; MCP-Fetch-Java/1.0)";
     private static final int DEFAULT_TIMEOUT_SECONDS = 30;
@@ -69,7 +70,7 @@ public class FetchHandler {
         String url = request.url();
         Map<String, String> headers = request.headers();
 
-        log.info("Fetching URL: {}", url);
+        LogUtil.info("Fetching URL: {}", url);
 
         var reqSpec = restClient.get()
                                 .uri(URI.create(url))
@@ -225,7 +226,7 @@ public class FetchHandler {
             String content = doFetch(request);
             return content;
         } catch (Exception e) {
-            log.error("fetch_html 失败: {}", e.getMessage(), e);
+            LogUtil.error("fetch_html 失败: {}", e.getMessage(), e);
             return "Error fetching HTML from '" + request.url() + "': " + e.getMessage();
         }
     }
@@ -251,7 +252,7 @@ public class FetchHandler {
                 return content;
             }
         } catch (Exception e) {
-            log.error("fetch_json 失败: {}", e.getMessage(), e);
+            LogUtil.error("fetch_json 失败: {}", e.getMessage(), e);
             return "Error fetching JSON from '" + request.url() + "': " + e.getMessage();
         }
     }
@@ -269,7 +270,7 @@ public class FetchHandler {
             // 如果是 HTML，则转换为纯文本
             return stripHtmlToText(content);
         } catch (Exception e) {
-            log.error("fetch_txt 失败: {}", e.getMessage(), e);
+            LogUtil.error("fetch_txt 失败: {}", e.getMessage(), e);
             return "Error fetching text from '" + request.url() + "': " + e.getMessage();
         }
     }
@@ -287,7 +288,7 @@ public class FetchHandler {
             // 如果是 HTML，则转换为 Markdown
             return htmlToMarkdown(content);
         } catch (Exception e) {
-            log.error("fetch_markdown 失败: {}", e.getMessage(), e);
+            LogUtil.error("fetch_markdown 失败: {}", e.getMessage(), e);
             return "Error fetching markdown from '" + request.url() + "': " + e.getMessage();
         }
     }

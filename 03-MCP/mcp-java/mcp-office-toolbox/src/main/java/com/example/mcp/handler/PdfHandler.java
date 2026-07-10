@@ -11,10 +11,11 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.text.PDFTextStripper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.example.mcp.util.LogUtil;
 import org.springframework.ai.tool.annotation.Tool;
+import com.example.mcp.util.LogUtil;
 import org.springframework.ai.tool.annotation.ToolParam;
+import com.example.mcp.util.LogUtil;
 import org.springframework.stereotype.Service;
 
 /**
@@ -26,8 +27,6 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class PdfHandler {
-
-    private static final Logger log = LoggerFactory.getLogger(PdfHandler.class);
 
     /**
      * 校验 PDF 文件路径
@@ -55,7 +54,7 @@ public class PdfHandler {
                 return text;
             }
         } catch (Exception e) {
-            log.error("readPdfText 失败: {}", e.getMessage(), e);
+            LogUtil.error("readPdfText 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -87,7 +86,7 @@ public class PdfHandler {
                 return text;
             }
         } catch (Exception e) {
-            log.error("readPdfPage 失败: {}", e.getMessage(), e);
+            LogUtil.error("readPdfPage 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -136,7 +135,7 @@ public class PdfHandler {
                 return sb.toString();
             }
         } catch (Exception e) {
-            log.error("getPdfInfo 失败: {}", e.getMessage(), e);
+            LogUtil.error("getPdfInfo 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
@@ -178,7 +177,7 @@ public class PdfHandler {
 
             return "PDF 已成功转换为 TXT: " + output;
         } catch (Exception e) {
-            log.error("convertPdfToTxt 失败: {}", e.getMessage(), e);
+            LogUtil.error("convertPdfToTxt 失败: {}", e.getMessage(), e);
             return "错误: " + e.getMessage();
         }
     }
