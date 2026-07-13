@@ -3,6 +3,7 @@ package com.example.mcp.handler;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.example.mcp.handler.system.CommandHandler;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,7 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 /**
  * CommandHandler 单元测试
  *
- * @author FrankKang
+ * @author Frank Kang
  * @since 2026-07-10
  */
 @SpringBootTest
@@ -83,7 +84,8 @@ class CommandHandlerTest {
     @Test
     void testTimeoutShouldWork() {
         // 使用 ping 命令模拟长时间执行（ping 6次约5秒，超时2秒必然触发）
-        String osName = System.getProperty("os.name").toLowerCase();
+        String osName = System.getProperty("os.name")
+                              .toLowerCase();
         String sleepCmd;
         if (osName.contains("win")) {
             sleepCmd = "ping -n 6 127.0.0.1";
@@ -92,13 +94,13 @@ class CommandHandlerTest {
         }
         // 设置超时 2 秒，workDir 用 null 避免 tempDir 被进程锁定导致清理失败
         String result = commandHandler.commandExecute(sleepCmd, null, 2);
-        assertTrue(result.contains("超时") || result.contains("退出码: -1"),
-                "Expected timeout but got: " + result);
+        assertTrue(result.contains("超时") || result.contains("退出码: -1"), "Expected timeout but got: " + result);
     }
 
     @Test
     void testNonExistentWorkDirFallback() {
-        File nonExistent = tempDir.resolve("nonExistentDir").toFile();
+        File nonExistent = tempDir.resolve("nonExistentDir")
+                                  .toFile();
         String result = commandHandler.commandExecute("echo fallback", nonExistent.getAbsolutePath(), null);
         assertTrue(result.contains("退出码: 0"));
     }

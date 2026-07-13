@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.example.mcp.handler.file.FileSystemHandler;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -18,7 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 /**
  * FileSystemHandler 单元测试
  *
- * @author FrankKang
+ * @author Frank Kang
  * @since 2026-07-09
  */
 @SpringBootTest

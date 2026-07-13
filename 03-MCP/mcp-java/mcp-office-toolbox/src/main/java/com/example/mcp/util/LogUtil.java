@@ -4,11 +4,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.URI;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -21,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  * 每天自动备份为 mcp-office-toolbox_yyyy_MM_dd.log。
  * 支持 info、error、warn、debug 等静态方法，所有日志异步写入，不阻塞主进程。
  *
- * @author FrankKang
+ * @author Frank Kang
  * @since 2026-07-10
  */
 public final class LogUtil {
@@ -33,11 +29,11 @@ public final class LogUtil {
     private static final int QUEUE_CAPACITY = 10000;
 
     private static final BlockingQueue<LogEntry> QUEUE = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
+    private static final Object WRITER_LOCK = new Object();
     private static volatile boolean initialized;
     private static Path logDir;
     private static LocalDate currentDate;
     private static BufferedWriter writer;
-    private static final Object WRITER_LOCK = new Object();
 
     static {
         init();
@@ -53,12 +49,7 @@ public final class LogUtil {
         if (initialized) {
             return;
         }
-        logDir = resolveLogDir();
-        try {
-            Files.createDirectories(logDir);
-        } catch (IOException e) {
-            System.err.println("[LogUtil] 无法创建日志目录: " + logDir + " - " + e.getMessage());
-        }
+        logDir = AbstractAsyncLogger.initLogDir(LogUtil.class, "LogUtil");
         currentDate = LocalDate.now();
 
         Thread writerThread = new Thread(LogUtil::writeLoop, "log-writer");
@@ -70,40 +61,17 @@ public final class LogUtil {
     }
 
     /**
-     * 解析日志根目录：IDE 开发时定位到项目根目录；jar 包运行时定位到 jar 所在目录。
+     * 解析日志根目录，委托给 {@link AbstractAsyncLogger#resolveLogDir(Class)}。
      */
     private static Path resolveLogDir() {
-        try {
-            URI uri = LogUtil.class.getProtectionDomain()
-                                   .getCodeSource()
-                                   .getLocation()
-                                   .toURI();
-            Path codePath = Paths.get(uri);
-
-            if (codePath.toString().endsWith(".jar")) {
-                // jar 包运行：logs 放在 jar 同级目录
-                return codePath.getParent().resolve(LOG_DIR);
-            } else {
-                // IDE 开发：从 classes 目录向上查找项目根目录（包含 pom.xml 或 src 目录）
-                Path current = codePath;
-                while (current != null) {
-                    if (Files.exists(current.resolve("pom.xml")) || Files.exists(current.resolve("src"))) {
-                        return current.resolve(LOG_DIR);
-                    }
-                    current = current.getParent();
-                }
-                // 兜底：user.dir/logs
-                return Paths.get(System.getProperty("user.dir")).resolve(LOG_DIR);
-            }
-        } catch (Exception e) {
-            return Paths.get(System.getProperty("user.dir")).resolve(LOG_DIR);
-        }
+        return AbstractAsyncLogger.resolveLogDir(LogUtil.class);
     }
 
     // ==================== 异步写循环 ====================
 
     private static void writeLoop() {
-        while (!Thread.currentThread().isInterrupted()) {
+        while (!Thread.currentThread()
+                      .isInterrupted()) {
             try {
                 LogEntry entry = QUEUE.poll(1, TimeUnit.SECONDS);
                 if (entry != null) {
@@ -116,7 +84,8 @@ public final class LogUtil {
                     }
                 }
             } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+                Thread.currentThread()
+                      .interrupt();
                 break;
             } catch (Exception e) {
                 System.err.println("[LogUtil] 写入异常: " + e.getMessage());
@@ -126,58 +95,27 @@ public final class LogUtil {
     }
 
     private static void ensureWriter() throws IOException {
-        if (writer == null) {
-            writer = Files.newBufferedWriter(
-                    logDir.resolve(LOG_FILE_NAME),
-                    StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-        }
+        writer = AbstractAsyncLogger.ensureWriter(writer, logDir, LOG_FILE_NAME);
     }
 
     private static void closeWriter() {
-        synchronized (WRITER_LOCK) {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException ignored) {
-                }
-                writer = null;
-            }
-        }
+        writer = AbstractAsyncLogger.closeWriter(writer, WRITER_LOCK);
     }
 
     // ==================== 日志轮转 ====================
 
     private static void checkAndRotate() {
-        LocalDate today = LocalDate.now();
-        if (!today.equals(currentDate)) {
-            synchronized (WRITER_LOCK) {
-                if (!today.equals(currentDate)) {
-                    // 备份当前日志文件
-                    String backupName = LOG_FILE_NAME.replace(".log", "_" + currentDate.format(DATE_FMT) + ".log");
-                    Path logPath = logDir.resolve(LOG_FILE_NAME);
-                    Path backupPath = logDir.resolve(backupName);
-                    try {
-                        closeWriter();
-                        if (Files.exists(logPath) && Files.size(logPath) > 0) {
-                            Files.move(logPath, backupPath);
-                        }
-                    } catch (IOException e) {
-                        System.err.println("[LogUtil] 日志轮转异常: " + e.getMessage());
-                    }
-                    currentDate = today;
-                }
-            }
-        }
+        AbstractAsyncLogger.RotationResult result = AbstractAsyncLogger.checkAndRotate(currentDate, LOG_FILE_NAME, "LogUtil", DATE_FMT, logDir,
+                                                                                       WRITER_LOCK, writer);
+        currentDate = result.newDate();
+        writer = result.newWriter();
     }
 
     // ==================== 格式化 ====================
 
     private static String formatEntry(LogEntry entry) {
-        return String.format("%s [%s] [%s] %s",
-                LocalDateTime.now().format(TIME_FMT),
-                entry.level(),
-                entry.caller(),
-                entry.message());
+        return String.format("%s [%s] [%s] %s", LocalDateTime.now()
+                                                             .format(TIME_FMT), entry.level(), entry.caller(), entry.message());
     }
 
     /**
@@ -186,11 +124,11 @@ public final class LogUtil {
     private static String getCallerClassName() {
         // 利用 StackWalker 高效获取调用栈
         return StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
-                          .walk(frames -> frames
-                                  .filter(f -> f.getDeclaringClass() != LogUtil.class)
-                                  .findFirst()
-                                  .map(f -> f.getDeclaringClass().getSimpleName())
-                                  .orElse("Unknown"));
+                          .walk(frames -> frames.filter(f -> f.getDeclaringClass() != LogUtil.class)
+                                                .findFirst()
+                                                .map(f -> f.getDeclaringClass()
+                                                           .getSimpleName())
+                                                .orElse("Unknown"));
     }
 
     private static String getStackTraceString(Throwable t) {
@@ -289,7 +227,8 @@ public final class LogUtil {
         int pos = 0;
         while ((pos = sb.indexOf("{}", pos)) != -1 && argIdx < args.length) {
             sb.replace(pos, pos + 2, String.valueOf(args[argIdx++]));
-            pos += String.valueOf(args[argIdx - 1]).length();
+            pos += String.valueOf(args[argIdx - 1])
+                         .length();
         }
         return sb.toString();
     }
@@ -297,5 +236,6 @@ public final class LogUtil {
     // ==================== 日志条目 ====================
 
     private record LogEntry(String level, String caller, String message) {
+
     }
 }

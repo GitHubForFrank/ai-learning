@@ -2,6 +2,7 @@ package com.example.mcp.pojo.fetch;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Fetch MCP 工具请求参数
@@ -14,6 +15,10 @@ import java.util.Map;
 public record FetchRequest(String url, Map<String, String> headers) {
 
     public FetchRequest {
+        Objects.requireNonNull(url, "url 不能为空");
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            throw new IllegalArgumentException("url 必须以 http:// 或 https:// 开头");
+        }
         if (headers == null) {
             headers = Collections.emptyMap();
         }

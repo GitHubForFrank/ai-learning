@@ -1,6 +1,7 @@
 package com.example.mcp.pojo.filesystem;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 编辑文件请求参数
@@ -10,4 +11,8 @@ import java.util.List;
  */
 public record EditFileRequest(String path, List<EditItem> edits, boolean dryRun) {
 
+    public EditFileRequest {
+        Objects.requireNonNull(path, "path 不能为空");
+        Objects.requireNonNull(edits, "edits 不能为空");
+    }
 }

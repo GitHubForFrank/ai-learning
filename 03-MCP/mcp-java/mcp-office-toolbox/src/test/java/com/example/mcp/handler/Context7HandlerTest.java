@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.example.mcp.handler.context7.Context7Handler;
 import com.example.mcp.pojo.context7.QueryDocsRequest;
 import com.example.mcp.pojo.context7.ResolveLibraryRequest;
 import org.junit.jupiter.api.Test;
@@ -13,7 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 /**
  * Context7Handler 单元测试
  *
- * @author FrankKang
+ * @author Frank Kang
  * @since 2026-07-10
  */
 @SpringBootTest
@@ -58,7 +59,7 @@ class Context7HandlerTest {
         String result = context7Handler.queryDocs(request);
         assertNotNull(result);
         // 应该返回错误信息
-        assertTrue(result.contains("错误") || result.contains("not found"));
+        assertTrue(result.startsWith("错误") || result.contains("not found"));
     }
 
     @Test
