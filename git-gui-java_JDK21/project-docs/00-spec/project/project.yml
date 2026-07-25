@@ -1,0 +1,55 @@
+# git-gui 项目参数配置
+# 本文件为项目集中参数化配置，供各 spec 文件和工具脚本引用
+
+project:
+  # 项目名称
+  name: git-gui
+  # 应用基础包名
+  base-package: com.gitgui
+  # JavaFX 应用主类
+  app-class: GitGuiApp
+
+app:
+  # 用户数据目录（应用配置、数据库、日志、锁文件的根目录）
+  data-dir: ~/.git-gui
+  # SQLite 数据库文件路径
+  db-path: ~/.git-gui/db/git-gui.db
+  # 数据库迁移脚本目录（classpath 加载，Flyway 配置 locations=classpath:db/migration）
+  migration-dir: app-backend/src/main/resources/db/migration
+  # 日志目录
+  log-path: ~/.git-gui/logs
+  # 单实例锁文件路径
+  lock-file: ~/.git-gui/.git-gui.lock
+  # 本地 Git 可执行文件路径（为空时从 PATH 检测）
+  git-executable: ""
+  # 多仓库自动检索默认深度
+  repo-scan-default-depth: 3
+  # 最近仓库列表最大保留条数
+  recent-repo-max-keep: 20
+
+git:
+  # 命令行调用强制编码
+  encoding: UTF-8
+  # Windows 中文路径防乱码
+  core-quotepath: false
+
+security:
+  # 命令红线总开关（关闭时所有阻断降级为二次确认，不推荐关闭）
+  red-line-enabled: true
+  # 推送超大文件阈值（MB，非 LFS）
+  large-file-threshold-mb: 50
+  # 项目禁用清单（这些技术/库在本项目中明确不使用）
+  forbid:
+    - Spring Boot
+    - Spring Security
+    - Spring MVC
+    - JWT
+    - BCrypt
+    - MySQL
+    - PostgreSQL
+    - Testcontainers
+    - Docker
+    - Tauri
+    - Electron
+    - WebView
+    - "@SneakyThrows"

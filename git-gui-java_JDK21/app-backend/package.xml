@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly>
+
+    <!-- 附加标识，生成文件名为 git-gui-1.0.0-bin.zip -->
+    <id>bin</id>
+
+    <formats>
+        <format>zip</format>
+    </formats>
+
+    <!-- 在 zip 内包含根目录 git-gui/ -->
+    <includeBaseDirectory>true</includeBaseDirectory>
+    <baseDirectory>git-gui</baseDirectory>
+
+
+    <fileSets>
+        <!-- fat jar：maven-shade-plugin 产物 -->
+        <fileSet>
+            <directory>${project.build.directory}</directory>
+            <outputDirectory>./</outputDirectory>
+            <includes>
+                <include>${project.build.finalName}.jar</include>
+            </includes>
+        </fileSet>
+
+        <!-- 启动脚本 (Windows + Mac/Linux) -->
+        <fileSet>
+            <directory>${project.basedir}/scripts</directory>
+            <outputDirectory>./</outputDirectory>
+            <includes>
+                <include>*.bat</include>
+                <include>*.sh</include>
+            </includes>
+            <fileMode>0755</fileMode>
+        </fileSet>
+    </fileSets>
+
+</assembly>

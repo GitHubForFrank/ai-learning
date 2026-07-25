@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  MainView.fxml - 主窗口布局
+  顶部菜单栏 + 左侧侧边栏（收藏 / 仓库 双区段）+ 中间内容区（多 Tab） + 底部状态栏
+  对应 PRD 第五章 UI 架构 + 侧边栏多仓库管理需求
+  @author FrankKang
+  @since 2026-05-27
+-->
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.gitgui.ui.main.MainController">
+    <!-- 顶部菜单栏 -->
+    <MenuBar fx:id="menuBar">
+        <Menu text="%menu.file">
+            <MenuItem text="%menu.file.open" onAction="#onOpenRepository"/>
+            <MenuItem text="%menu.file.clone" onAction="#onClone"/>
+            <MenuItem text="%menu.file.init" onAction="#onInit"/>
+            <SeparatorMenuItem/>
+            <MenuItem text="%menu.file.exit" onAction="#onExit"/>
+        </Menu>
+        <Menu text="%menu.operation">
+            <MenuItem text="%menu.operation.commit" onAction="#onCommit"/>
+            <MenuItem text="%menu.operation.pull" onAction="#onPull"/>
+            <MenuItem text="%menu.operation.push" onAction="#onPush"/>
+            <MenuItem text="%menu.operation.fetch" onAction="#onFetch"/>
+            <SeparatorMenuItem/>
+            <MenuItem text="%menu.operation.switch" onAction="#onSwitchBranch"/>
+            <SeparatorMenuItem/>
+            <MenuItem text="%menu.operation.remote" onAction="#onRemoteConfig"/>
+        </Menu>
+        <Menu text="%menu.view">
+            <MenuItem text="%menu.view.settings" onAction="#onSettings"/>
+            <SeparatorMenuItem/>
+            <Menu text="%menu.view.theme">
+                <RadioMenuItem text="%menu.view.theme.light" onAction="#onThemeLight"/>
+                <RadioMenuItem text="%menu.view.theme.dark" onAction="#onThemeDark"/>
+                <RadioMenuItem text="%menu.view.theme.system" onAction="#onThemeSystem"/>
+            </Menu>
+            <Menu text="%menu.view.language">
+                <RadioMenuItem text="中文" onAction="#onLanguageZh"/>
+                <RadioMenuItem text="English" onAction="#onLanguageEn"/>
+            </Menu>
+        </Menu>
+        <Menu text="%menu.help">
+            <MenuItem text="%menu.help.about" onAction="#onAbout"/>
+        </Menu>
+    </MenuBar>
+
+    <!-- 主内容区：左侧侧边栏 + 中间内容 -->
+    <SplitPane dividerPositions="0.25" VBox.vgrow="ALWAYS">
+        <!-- 左侧侧边栏：收藏 + 仓库 -->
+        <VBox minWidth="220" styleClass="sidebar">
+            <!-- 收藏区段 -->
+            <TitledPane fx:id="favoritesPane" text="%sidebar.favorites" expanded="true" collapsible="true" VBox.vgrow="ALWAYS">
+                <ListView fx:id="favoritesList" VBox.vgrow="ALWAYS" styleClass="favorites-list"/>
+            </TitledPane>
+            <!-- 仓库区段 -->
+            <TitledPane fx:id="repositoriesPane" text="%sidebar.repositories" expanded="true" collapsible="true" VBox.vgrow="ALWAYS">
+                <VBox>
+                    <!-- 工具栏：选择根目录 + 重新扫描 -->
+                    <HBox styleClass="sidebar-toolbar" spacing="4">
+                        <Button fx:id="addRootButton" text="%sidebar.repositories.scanRoot" onAction="#onAddScanRoot"
+                                styleClass="sidebar-toolbar-button" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="rescanAllButton" text="%sidebar.repositories.rescanAll" onAction="#onRescanAll"
+                                styleClass="sidebar-toolbar-button"/>
+                    </HBox>
+                    <!-- 仓库列表 -->
+                    <ListView fx:id="repositoriesList" VBox.vgrow="ALWAYS" styleClass="repositories-list"/>
+                </VBox>
+            </TitledPane>
+        </VBox>
+
+        <!-- 中间内容区：多 Tab -->
+        <TabPane fx:id="contentTabs" tabClosingPolicy="UNAVAILABLE">
+            <Tab text="%main.tab.status">
+                <TableView fx:id="fileStatusTable" styleClass="file-status-table">
+                    <columns>
+                        <TableColumn fx:id="fileColStatus" text="%file.col.status" prefWidth="100"/>
+                        <TableColumn fx:id="fileColPath" text="%file.col.path" prefWidth="380"/>
+                        <TableColumn fx:id="fileColExt" text="%file.col.extension" prefWidth="100"/>
+                        <TableColumn fx:id="fileColAdded" text="%file.col.added" prefWidth="60"/>
+                        <TableColumn fx:id="fileColRemoved" text="%file.col.removed" prefWidth="60"/>
+                    </columns>
+                </TableView>
+            </Tab>
+            <Tab text="%main.tab.log">
+                <TableView fx:id="logTable" styleClass="log-table">
+                    <columns>
+                        <TableColumn fx:id="logColHash" text="%log.col.hash" prefWidth="80"/>
+                        <TableColumn fx:id="logColRefs" text="%log.col.refs" prefWidth="120"/>
+                        <TableColumn fx:id="logColAuthor" text="%log.col.author" prefWidth="120"/>
+                        <TableColumn fx:id="logColDate" text="%log.col.date" prefWidth="150"/>
+                        <TableColumn fx:id="logColMessage" text="%log.col.message" prefWidth="-1"/>
+                    </columns>
+                </TableView>
+            </Tab>
+            <Tab text="%main.tab.blame">
+                <TextArea fx:id="blameArea" editable="false"/>
+            </Tab>
+            <Tab text="%main.tab.reflog">
+                <ListView fx:id="reflogList"/>
+            </Tab>
+        </TabPane>
+    </SplitPane>
+
+    <!-- 底部状态栏 -->
+    <HBox styleClass="status-bar">
+        <Label fx:id="repoLabel" text="%main.status.currentRepo"/>
+        <Label fx:id="branchLabel" text="%main.status.currentBranch"/>
+        <Label fx:id="taskStatusLabel"/>
+    </HBox>
+</VBox>
