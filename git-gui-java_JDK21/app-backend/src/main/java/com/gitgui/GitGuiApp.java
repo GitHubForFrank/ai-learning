@@ -13,8 +13,10 @@ import com.gitgui.di.ServiceModule;
 import com.gitgui.infrastructure.cli.GitExecutableDetector;
 import com.gitgui.infrastructure.cli.GitProcessBuilder;
 import com.gitgui.ui.MainAppLauncher;
+import java.nio.channels.FileChannel;
 import javafx.application.Application;
 import javafx.stage.Stage;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,12 +44,11 @@ import java.nio.file.Paths;
 public class GitGuiApp extends Application {
 
     private static final Logger log = LoggerFactory.getLogger(GitGuiApp.class);
-
-    /** Guice 注入器（静态持有，供非注入对象获取依赖） */
+    @Getter
     private static Injector injector;
 
     /** 单实例锁文件句柄 */
-    private static java.nio.channels.FileChannel lockChannel;
+    private static FileChannel lockChannel;
 
     @Override
     public void start(Stage primaryStage) {
@@ -72,7 +73,7 @@ public class GitGuiApp extends Application {
                 GitProcessBuilder.setGitExecutable(gitPath);
                 log.info("本地 Git 检测成功：{}", gitPath);
             } else {
-                log.warn("未检测到本地 Git，降级为纯 JGit 模式（LFS/Hook 等场景受限）");
+                log.warn("未检测到本地 Git，Git 操作将不可用（LFS/Hook 等场景受限）");
             }
 
             // 4. 加载默认设置（V1 迁移已初始化内置默认值）
@@ -99,15 +100,6 @@ public class GitGuiApp extends Application {
         }
         releaseSingleInstanceLock();
         log.info("git-gui 已退出");
-    }
-
-    /**
-     * 获取 Guice 注入器（供非注入对象获取依赖）。
-     *
-     * @return 注入器
-     */
-    public static Injector getInjector() {
-        return injector;
     }
 
     /**

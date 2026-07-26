@@ -1,7 +1,7 @@
 # 后端实现模式 — git-gui 项目专属
 
 > **基座**：继承 [shared/03-backend-base.md](../shared/03-backend-base.md) — DDD 分层、包结构、Model/Repository/Service 规范、适配器规范、框架兼容性。
-> 本文档为 git-gui 项目专属的 JGit/CLI 适配器、命令红线拦截器、异步任务体系、Guice 绑定结构。
+> 本文档为 git-gui 项目专属的 CLI 适配器、命令红线拦截器、异步任务体系、Guice 绑定结构。
 
 ---
 
@@ -24,12 +24,11 @@
 └───────────────────┬──────────────────────────────┘
                     ↓ Guice 绑定（接口 → 实现）
 ┌──────────────────────────────────────────────────┐
-│  基础设施层  infrastructure/jgit/                │  JGit 适配器（主）
-│              infrastructure/cli/                 │  Git CLI 兜底适配器
+│  基础设施层  infrastructure/cli/                 │  Git CLI 适配器
 │              infrastructure/persistence/         │  SQLite 仓储实现 + Flyway
 │              infrastructure/credential/          │  系统 credential helper
 └───────────────────┬──────────────────────────────┘
-                    ↓ JGit API / 进程 / SQL
+                    ↓ 进程 / SQL
                   {Git 仓库} / {SQLite}
 ```
 
@@ -61,8 +60,7 @@ com.gitgui/
     service/                       # 服务接口契约（参见 02-api.md，UI 注入此包）
     redline/                       # RedLineContext、RedLineResult、RedLineRule 接口
   infrastructure/
-    jgit/                          # JGitRepository、JGitOperationExecutor（主）
-    cli/                           # CliGitExecutor（兜底）、GitProcessBuilder（UTF-8 + quotepath）
+    cli/                           # CliGitExecutor、GitProcessBuilder（UTF-8 + quotepath）
     persistence/
       entity/                      # SQLite Entity（MyBatis-Plus 领域模型直接映射）
       mapper/                      # MyBatis-Plus Mapper 接口（extends BaseMapper）
@@ -74,7 +72,7 @@ com.gitgui/
 
 ---
 
-## JGit + CLI 兜底适配器模式
+## Git CLI 适配器模式
 
 ### 适配器接口
 
@@ -88,19 +86,11 @@ public interface GitOperationExecutor {
 
 | 适配器 | 职责 |
 | -------- | ------ |
-| `JGitOperationExecutor` | JGit 纯 Java 实现（主），进度可控、无进程开销 |
-| `CliGitExecutor` | Git 命令行兜底，JGit 不支持或支持不足的场景回退 |
-| `GitExecutorRouter` | 按操作类型路由（白名单决定走 JGit 还是 CLI） |
+| `CliGitExecutor` | 通过本地 git CLI 执行所有 Git 操作，支持进度反馈、强制 UTF-8 + quotepath |
 
-### CLI 兜底场景
+### 支持场景
 
-LFS / Hook / 复杂交互式 Rebase / Worktree / Submodule / filter-branch / filter-repo 等场景回退 CLI。
-
-### 直通优先策略
-
-- 能用 JGit 完成的操作优先 JGit
-- JGit 不支持或异常时降级为 CLI
-- 降级切换过程 `log.info` 记录（预期内降级用 `log.info`，严重错误用 `log.error`）
+`CliGitExecutor` 通过 `git` 命令行统一执行全部 Git 操作，覆盖 LFS / Hook / 交互式 Rebase / Worktree / Submodule / filter-branch / filter-repo 等全部场景。
 
 ### 编码约束
 
@@ -156,8 +146,7 @@ LFS / Hook / 复杂交互式 Rebase / Worktree / Submodule / filter-branch / fil
 
 ### ProgressCallback
 
-- 适配 JGit `ProgressMonitor`（`update(completed)` / `isCancelled()`）与 CLI 输出解析
-- 实时反馈进度百分比与命令输出
+- 适配 CLI 输出解析，实时反馈进度百分比与命令输出
 
 ### 任务持久化
 
@@ -166,8 +155,7 @@ LFS / Hook / 复杂交互式 Rebase / Worktree / Submodule / filter-branch / fil
 
 ### 取消机制
 
-- JGit 通过 `ProgressMonitor.cancel`
-- CLI 通过终止进程
+- CLI 任务通过终止进程实现取消
 
 ---
 
@@ -177,7 +165,7 @@ LFS / Hook / 复杂交互式 Rebase / Worktree / Submodule / filter-branch / fil
 | ------ | ------ |
 | `AppModule` | 核心常量、路径、异常处理器 |
 | `DatabaseModule` | DataSource、Flyway、各 Repository 接口 → 实现 |
-| `GitModule` | `GitOperationExecutor` → `JGitOperationExecutor`（主）、`CliGitExecutor`、`GitExecutorRouter` |
+| `GitModule` | `CliGitExecutor`、`GitProcessBuilder`、`SystemCredentialHelper` |
 | `ServiceModule` | `domain/service/*` 接口 → `application/service/*` 实现 |
 | `RedLineModule` | `CommandRedLineService` + `Multibindings<RedLineRule>` 收集所有规则 |
 | `AsyncModule` | `TaskManager` 单例 |
@@ -217,9 +205,7 @@ Git 可执行文件检测（BR-41）
 | `GitGuiApp` | JavaFX Application 入口，创建 Guice Injector，启动流程编排 |
 | `CommandInterceptor` | 写操作前置拦截，调 `CommandRedLineService.check`，处理 PASS/BLOCK/CONFIRM |
 | `TaskManager` | 异步任务队列调度，同仓库写串行，读并发 |
-| `JGitOperationExecutor` | JGit 适配器主实现，纯 Java Git 操作 |
-| `CliGitExecutor` | CLI 兜底适配器，强制 UTF-8 + quotepath |
-| `GitExecutorRouter` | 按操作类型路由 JGit / CLI |
+| `CliGitExecutor` | CLI 适配器实现，通过 git 命令行执行 Git 操作，强制 UTF-8 + quotepath |
 | `CommandRedLineService` | 红线规则校验 + 审计日志持久化 |
 | `FavoriteService` | 收藏 CRUD（BR-03/BR-04） |
 | `RecentRepoService` | 最近仓库 upsert + 淘汰（BR-05） |
@@ -235,4 +221,4 @@ Git 可执行文件检测（BR-41）
 
 | 版本 | 日期 | 变更 |
 | ----- | ------ | ----- |
-| `v1` | 2026-07-23 | 初版，定义桌面 DDD 分层 + JGit/CLI 适配器 + 命令红线拦截器 + 异步任务体系 + Guice 绑定 |
+| `v1` | 2026-07-23 | 初版，定义桌面 DDD 分层 + CLI 适配器 + 命令红线拦截器 + 异步任务体系 + Guice 绑定 |

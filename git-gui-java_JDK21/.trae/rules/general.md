@@ -7,7 +7,7 @@ description: 项目全局开发约定，所有对话均生效
 
 ## 项目定位
 
-git-gui 是一个 Java 图形化 Git 客户端（类 TortoiseGit），基于 JavaFX 21 + Google Guice + JGit + SQLite，跨平台桌面应用。
+git-gui 是一个 Java 图形化 Git 客户端（类 TortoiseGit），基于 JavaFX 21 + Google Guice + Git CLI + SQLite，跨平台桌面应用。
 
 ## 按需加载原则
 

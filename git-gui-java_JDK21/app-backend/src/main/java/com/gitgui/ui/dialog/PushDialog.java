@@ -17,6 +17,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
+import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -196,10 +197,10 @@ public class PushDialog extends Dialog<Void> {
     private void loadBranches(String remote) {
         AsyncUiLoader.submitRead(repoPath, TaskType.STATUS, () -> {
             try {
-                com.gitgui.infrastructure.jgit.JGitOperationExecutor jgit =
-                        com.gitgui.GitGuiApp.getInjector().getInstance(com.gitgui.infrastructure.jgit.JGitOperationExecutor.class);
-                List<String> branches = jgit.listBranches(repoPath);
-                String current = jgit.getCurrentBranch(repoPath);
+                com.gitgui.infrastructure.cli.CliGitExecutor gitExecutor =
+                        com.gitgui.GitGuiApp.getInjector().getInstance(com.gitgui.infrastructure.cli.CliGitExecutor.class);
+                List<String> branches = gitExecutor.listBranches(repoPath);
+                String current = gitExecutor.getCurrentBranch(repoPath);
                 Platform.runLater(() -> {
                     branchCombo.getItems().clear();
                     for (String b : branches) {
@@ -221,8 +222,8 @@ public class PushDialog extends Dialog<Void> {
 
     /**
      * 执行推送。
-     * <p>校验 Remote/分支非空后（BR-09），通过 {@link GitOperationService#push} 提交异步写任务（BR-33），
-     * 注册进度/成功/失败回调，成功后弹出提示并关闭对话框；命中红线或异常时弹错。</p>
+     * <p>校验 Remote/分支非空后（BR-09），关闭当前参数对话框并改用 {@link ProgressDialog} 实时展示
+     * git push 的所有输出行、进度百分比、成功/失败状态。</p>
      */
     private void doPush() {
         String remote = remoteCombo.getValue();
@@ -251,66 +252,36 @@ public class PushDialog extends Dialog<Void> {
                 .deleteRemoteBranch(deleteRemoteBranchCheck.isSelected())
                 .build();
 
-        progressBar.setVisible(true);
-        progressLabel.setVisible(true);
-        progressBar.setProgress(0);
-        progressLabel.setText(I18nUtil.get("button.push") + "...");
+        // 先拿到 stage 引用，再关闭（与 Commit push 模式一致）
+        Stage owner = (getDialogPane().getScene() == null) ? null
+                : (Stage) getDialogPane().getScene().getWindow();
+        close();
 
-        ProgressCallback cb = new ProgressCallback() {
-            @Override
-            public void onProgress(int percent, String message) {
-                Platform.runLater(() -> {
-                    progressBar.setProgress(percent / 100.0);
-                    progressLabel.setText(message);
-                });
+        // 延迟一帧打开 ProgressDialog，确保 PushDialog 完全关闭后再渲染进度窗口
+        Platform.runLater(() -> {
+            ProgressDialog progress = new ProgressDialog(
+                    owner,
+                    I18nUtil.get("push.title") + "  →  " + remote + "/" + branch,
+                    I18nUtil.get("progress.headerOperating")
+            );
+            ProgressCallback sharedCb = progress.asCallback();
+            try {
+                TaskHandle handle = gitOperationService.push(req, sharedCb);
+                progress.attach(handle);
+                // 推送完成后进度条到 100%，console 显示结果，用户手动关闭
+                progress.showAndWaitForTask();
+            } catch (RedLineBlockedException e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle(I18nUtil.get("redline.blocked.title"));
+                alert.setHeaderText(I18nUtil.get("redline.blocked.hitRule") + e.getRuleCode());
+                alert.setContentText(e.getMessage());
+                alert.showAndWait();
+                Platform.runLater(progress::close);
+            } catch (Exception e) {
+                log.error("推送异常", e);
+                new Alert(Alert.AlertType.ERROR, I18nUtil.get("push.error") + e.getMessage()).showAndWait();
+                Platform.runLater(progress::close);
             }
-
-            @Override
-            public void onOutput(String line) {
-                Platform.runLater(() -> progressLabel.setText(line));
-            }
-
-            @Override
-            public boolean isCancelled() {
-                return false;
-            }
-        };
-
-        try {
-            TaskHandle handle = gitOperationService.push(req, cb);
-            handle.onSuccess(result -> Platform.runLater(() -> {
-                progressBar.setProgress(1.0);
-                progressLabel.setText(I18nUtil.get("push.success"));
-                new Alert(Alert.AlertType.INFORMATION, I18nUtil.get("push.success")).showAndWait();
-                close();
-            }));
-            handle.onFailure(error -> Platform.runLater(() -> {
-                progressBar.setProgress(0);
-                if (error instanceof RedLineBlockedException rbe) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle(I18nUtil.get("redline.blocked.title"));
-                    alert.setHeaderText(I18nUtil.get("redline.blocked.hitRule") + rbe.getRuleCode());
-                    alert.setContentText(rbe.getMessage());
-                    alert.showAndWait();
-                } else {
-                    progressLabel.setText(I18nUtil.get("push.failed") + error.getMessage());
-                    new Alert(Alert.AlertType.ERROR, I18nUtil.get("push.failed") + error.getMessage()).showAndWait();
-                }
-                log.error("推送失败", error);
-            }));
-        } catch (RedLineBlockedException e) {
-            progressBar.setVisible(false);
-            progressLabel.setVisible(false);
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle(I18nUtil.get("redline.blocked.title"));
-            alert.setHeaderText(I18nUtil.get("redline.blocked.hitRule") + e.getRuleCode());
-            alert.setContentText(e.getMessage());
-            alert.showAndWait();
-        } catch (Exception e) {
-            log.error("推送异常", e);
-            progressBar.setVisible(false);
-            progressLabel.setVisible(false);
-            new Alert(Alert.AlertType.ERROR, I18nUtil.get("push.error") + e.getMessage()).showAndWait();
-        }
+        });
     }
 }

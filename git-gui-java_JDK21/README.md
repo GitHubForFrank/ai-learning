@@ -10,7 +10,7 @@
 | ---- | ---- |
 | 语言 | Java 21（LTS） |
 | GUI | JavaFX 21 |
-| Git 操作 | JGit（主）+ 本地 Git CLI（兜底） |
+| Git 操作 | 本地 Git CLI |
 | IoC | Google Guice |
 | 数据库 | SQLite（sqlite-jdbc + Flyway） |
 | 构建 | Maven（单 `app-backend/` 模块，含 Flyway 迁移脚本） |

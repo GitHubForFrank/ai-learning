@@ -38,7 +38,7 @@
 | ---- | ---- | ---- |
 | 语言 | Java 21 | JDK 21 |
 | IoC | Google Guice | 轻量级依赖注入，Module 绑定，非 Spring |
-| Git 操作 | JGit（主）+ 本地 Git CLI（兜底） | JGit 纯 Java、进度可控；LFS/Hook/复杂 Rebase 回退 CLI |
+| Git 操作 | 本地 Git CLI | 通过进程调用本地 git 可执行文件，进度可控 |
 | 数据库 | SQLite + sqlite-jdbc + Flyway + MyBatis-Plus | 本地存储，Flyway 管理迁移，MyBatis-Plus 提供通用 CRUD |
 | GUI | JavaFX 21 | 原生桌面窗口，无 WebView |
 | 构建 | Maven | 打包 fat jar + bat/sh 启动脚本 |

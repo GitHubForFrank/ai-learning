@@ -35,9 +35,8 @@ public interface GitOperationService {
     TaskHandle push(PushRequest req, ProgressCallback cb);
 
     /**
-     * CLI 推送回退：当 JGit 6.9.0 在某些环境下抛 ClassCastException 等内部异常时，
-     * 用系统 {@code git push} CLI 兜底。CLI 用用户已配的 git config / credentials / SSH keys，
-     * 通常比 JGit 更稳定。
+     * 同步推送（CLI 直推）。
+     * <p>使用系统 {@code git push} CLI 执行，复用用户已配置的 git config / credentials / SSH keys。</p>
      *
      * <p>同步方法，调用方应自行在后台线程执行。</p>
      *
@@ -81,7 +80,7 @@ public interface GitOperationService {
 
     /**
      * 切换分支（PRD 4.6.1）。
-     * <p>校验目标分支非空后，通过 JGit 执行 checkout。</p>
+     * <p>校验目标分支非空后，通过 CLI 执行 checkout。</p>
      *
      * @param req 切换请求
      */

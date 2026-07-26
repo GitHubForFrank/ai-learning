@@ -23,7 +23,7 @@
 | **0X** | Core | 全局核心规则。继承 shared，追加项目桌面配置和技术选型禁止清单 |
 | **1X** | Domain | 业务规则 + 实体字典。BR-01~BR-42，完全项目专属 |
 | **2X** | API | 服务契约（UI 层 ↔ 领域层内部 Java 接口，非 HTTP）。完全项目专属 |
-| **3X** | Backend | 后端实现。继承 shared 的 DDD 分层，追加 JGit/CLI 适配器、命令红线拦截器、异步任务、Guice 绑定 |
+| **3X** | Backend | 后端实现。继承 shared 的 DDD 分层，追加 CLI 适配器、命令红线拦截器、异步任务、Guice 绑定 |
 | **4X** | Database | 数据库规约。继承 shared 的迁移规范，追加 SQLite 表结构（7 张表 + V1~V7） |
 | **5X** | Frontend | UI 实现。继承 shared 的 JavaFX UI 层规范，追加主窗口架构与对话框清单 |
 | **6X** | QA | 质量保障。继承 shared 的测试策略/门禁/日志，追加应用内状态面板与桌面性能 SLO |
@@ -40,7 +40,7 @@
 | 00 | [00-core.md](./00-core.md) | 桌面配置 + 技术选型禁止清单 |
 | 01 | [01-domain.md](./01-domain.md) | BR-01~BR-42 业务规则 + 7 实体字典 |
 | 02 | [02-api.md](./02-api.md) | 11 服务接口契约 + 错误码注册表（非 HTTP） |
-| 03 | [03-backend.md](./03-backend.md) | 桌面 DDD、JGit/CLI 适配器、命令红线拦截器、异步任务、Guice |
+| 03 | [03-backend.md](./03-backend.md) | 桌面 DDD、CLI 适配器、命令红线拦截器、异步任务、Guice |
 | 04 | [04-database.md](./04-database.md) | SQLite 选型 + 7 张表结构 + V1~V7 迁移历史 |
 | 05 | [05-frontend.md](./05-frontend.md) | JavaFX 21 技术栈 + 主窗口 + 对话框清单 |
 | 06 | [06-quality.md](./06-quality.md) | 应用内状态面板 + 桌面性能 SLO |
@@ -103,6 +103,6 @@
 | 仓库元信息 | RepositoryMeta / `repository_meta` 表 | 仓库当前分支/HEAD/远程 URL 等缓存信息 |
 | 应用设置 | AppSettings / `app_settings` 表 | key-value 持久化设置，含红线配置/UI/Git/外部工具等 |
 | 拦截器 | CommandInterceptor | 写操作前置拦截，调 CommandRedLineService.check 处理 PASS/BLOCK/CONFIRM |
-| 适配器 | GitOperationExecutor | Git 操作执行器接口，JGit 主 + CLI 兜底，由 GitExecutorRouter 路由 |
+| 适配器 | GitOperationExecutor | Git 操作执行器接口，由 CliGitExecutor 通过本地 git CLI 实现 |
 | 迁移脚本 | `V{NN}__{description}.sql` | 版本化 DDL 变更脚本，Flyway 启动时按 V 号顺序自动执行 |
 | Spec 间引用 | `参见 [{file} §{section}]` | spec 文件之间的交叉引用格式 |

@@ -1,5 +1,7 @@
 package com.gitgui.core.constant;
 
+import lombok.Getter;
+
 /**
  * 命令红线规则代码枚举
  * <p>对应 13 个 {@code RedLineRule} 实现类，作为 {@code audit_log.rule_code} 字段值。</p>
@@ -8,6 +10,7 @@ package com.gitgui.core.constant;
  * @author FrankKang
  * @since 2026-05-27
  */
+@Getter
 public enum RedLineCode {
 
     /** 裸 --force push（BLOCK，BR-26） */
@@ -37,19 +40,10 @@ public enum RedLineCode {
     /** 红线开关切换（CONFIRM，BR-30） */
     RED_LINE_TOGGLE("切换命令红线总开关");
 
-    /** 中文风险描述，用于 UI 提示与审计日志 */
     private final String description;
 
     RedLineCode(String description) {
         this.description = description;
     }
 
-    /**
-     * 获取风险描述。
-     *
-     * @return 中文风险描述
-     */
-    public String getDescription() {
-        return description;
-    }
 }

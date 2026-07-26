@@ -6,6 +6,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
+import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
@@ -18,8 +19,8 @@ import java.util.function.Consumer;
  * 侧边栏仓库列表项渲染 Cell
  * <p>渲染 {@link RepoListItem}，包含：</p>
  * <ul>
- *   <li>左侧：仓库名 + 副标题（分支/路径）</li>
- *   <li>右侧：⭐ 收藏切换按钮</li>
+ *   <li>左侧：⭐ 收藏切换按钮</li>
+ *   <li>右侧：仓库名 + 副标题（分支/路径）</li>
  *   <li>未提交修改指示：副标题前缀「●」</li>
  * </ul>
  *
@@ -36,24 +37,46 @@ public class RepoListCell extends ListCell<RepoListItem> {
     private final Label subtitleLabel;
     private final Button favoriteButton;
 
+    /** HBox 兜底宽度：cell 初始 width=0 时也能正常渲染（layout 完成后会被真实宽度覆盖） */
+    private static final double MIN_ROOT_WIDTH = 100;
+
     public RepoListCell(Consumer<RepoListItem> onToggleFavorite) {
         this.onToggleFavorite = onToggleFavorite;
 
         nameLabel = new Label();
         nameLabel.getStyleClass().add("repo-cell-name");
+        nameLabel.setEllipsisString("...");
+        // minWidth=0 让 Label 在 HBox 空间不足时可以缩小，避免挤压星标按钮
+        nameLabel.setMinWidth(0);
+        nameLabel.setMaxWidth(Double.MAX_VALUE);
+        // 让 nameLabel 在 HBox 中正确拉伸
+        nameLabel.setMaxHeight(18);
+        nameLabel.setStyle("-fx-label-content-display: LEFT;");
 
         subtitleLabel = new Label();
         subtitleLabel.getStyleClass().add("repo-cell-subtitle");
+        subtitleLabel.setEllipsisString("...");
+        subtitleLabel.setMinWidth(0);
+        subtitleLabel.setMaxWidth(Double.MAX_VALUE);
+        subtitleLabel.setMaxHeight(18);
+        // 路径超长时左侧省略（...\workspace_gitee\zmz-vibe-working），保证尾部目录名可见
+        subtitleLabel.setTextOverrun(OverrunStyle.LEADING_ELLIPSIS);
+        subtitleLabel.setStyle("-fx-label-content-display: LEFT;");
 
         VBox textBox = new VBox(2, nameLabel, subtitleLabel);
         textBox.getStyleClass().add("repo-cell-text");
+        // minWidth=0 让 textBox 在 HBox 中可压缩，确保 favoriteButton 永远有空间
+        textBox.setMinWidth(0);
         HBox.setHgrow(textBox, Priority.ALWAYS);
 
         favoriteButton = new Button();
         favoriteButton.getStyleClass().add("repo-cell-favorite-button");
+        // 固定 28px：星标点击区域稳定，不被路径文字挤压
         favoriteButton.setMinWidth(28);
         favoriteButton.setPrefWidth(28);
         favoriteButton.setMaxWidth(28);
+        // 字体 16px + padding 0：星标字符更大更醒目，28px 宽度全部留给字符
+        favoriteButton.setStyle("-fx-font-size: 16px; -fx-padding: 0;");
         favoriteButton.setFocusTraversable(false);
         // 直接在 button 上监听 MOUSE_CLICKED 并消费事件，避免依赖 Button.onAction 的
         // MOUSE_RELEASED -> fire() 链路。某些 cell 复用/重绘场景下，Button.onAction 不会触发，
@@ -68,10 +91,16 @@ public class RepoListCell extends ListCell<RepoListItem> {
             }
         });
 
-        root = new HBox(6, textBox, favoriteButton);
+        // 星标居左：星标按钮作为前缀放在 HBox 第一个位置，textBox 在右侧填满剩余空间
+        root = new HBox(6, favoriteButton, textBox);
         root.setAlignment(Pos.CENTER_LEFT);
         root.setPadding(new Insets(4, 6, 4, 6));
         root.getStyleClass().add("repo-cell");
+        // 关键修复：把 root 宽度严格绑定到 cell 宽度（不使用 Double.MAX_VALUE）。
+        // 使用 Bindings.max 给一个最小兜底宽度，避免 cell.width=0 时 HBox 无宽度。
+        // Layout 完成后，cell 实际宽度会通过绑定立即覆盖兜底值，星标按钮始终在可视区域内。
+        root.prefWidthProperty().bind(javafx.beans.binding.Bindings.max(this.widthProperty(), MIN_ROOT_WIDTH));
+        root.maxWidthProperty().bind(javafx.beans.binding.Bindings.max(this.widthProperty(), MIN_ROOT_WIDTH));
     }
 
     @Override
@@ -101,6 +130,9 @@ public class RepoListCell extends ListCell<RepoListItem> {
         }
         // Tooltip 显示完整路径便于识别
         setTooltip(new Tooltip(item.getRepoMeta().getRepoPath()));
+
+        // cell 复用时：root 宽度由 binding 自动同步到 cell.width，无需手动设置
+        // （绑定已通过 root.prefWidthProperty().bind(...) 在构造时建立）
 
         setGraphic(root);
     }

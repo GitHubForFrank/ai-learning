@@ -20,7 +20,6 @@
         <maven.compiler.release>21</maven.compiler.release>
         <!-- 依赖版本集中管理 -->
         <javafx.version>21.0.2</javafx.version>
-        <jgit.version>6.9.0.202403050737-r</jgit.version>
         <guice.version>7.0.0</guice.version>
         <sqlite-jdbc.version>3.45.1.0</sqlite-jdbc.version>
         <flyway.version>10.10.0</flyway.version>
@@ -54,13 +53,6 @@
             <artifactId>javafx-graphics</artifactId>
             <version>${javafx.version}</version>
             <classifier>win</classifier>
-        </dependency>
-
-        <!-- JGit：Git 操作主适配器，纯 Java 实现 -->
-        <dependency>
-            <groupId>org.eclipse.jgit</groupId>
-            <artifactId>org.eclipse.jgit</artifactId>
-            <version>${jgit.version}</version>
         </dependency>
 
         <!-- Google Guice：轻量级 IoC 容器，替代 Spring -->

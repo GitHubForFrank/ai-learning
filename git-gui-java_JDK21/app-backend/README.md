@@ -11,7 +11,7 @@
 | 语言 | Java 21 |
 | GUI 框架 | JavaFX 21（FXML + CSS + Controller） |
 | IoC 容器 | Google Guice（Module 绑定） |
-| Git 操作 | JGit（主适配器）+ 本地 Git CLI（兜底） |
+| Git 操作 | 系统 Git CLI（ProcessBuilder） |
 | 数据库 | SQLite（通过 sqlite-jdbc 访问，MyBatis-Plus ORM） |
 | 构建 | Maven（打包 fat jar + zip 分发包 + bat/sh 启动脚本） |
 | 测试 | JUnit5 + Mockito（单元）/ TestFX + Monocle（UI，headless） |
@@ -44,8 +44,7 @@ com.gitgui/
     service/                       # 服务接口契约（UI 注入此包）
     redline/                       # RedLineContext、RedLineResult、RedLineRule 接口
   infrastructure/
-    jgit/                          # JGitRepository、JGitOperationExecutor（主适配器）
-    cli/                           # CliGitExecutor（兜底）、GitProcessBuilder
+    cli/                           # CliGitExecutor（Git CLI 适配器）、GitProcessBuilder、GitOutputParser
     persistence/
       entity/                      # SQLite Entity（MyBatis-Plus 领域模型直接映射）
       mapper/                      # MyBatis-Plus Mapper 接口（extends BaseMapper）
@@ -95,7 +94,7 @@ mvn javafx:run
 | `git-gui.%d{yyyy-MM-dd}.%i.log.gz` | 归档日志（按日期 + 序号压缩） | 由 RollingFileAppender 自动产生 |
 
 - **开发期**：同时输出到控制台（STDOUT appender）；**运行期**：通过 `javaw`（Windows）/ `java`（Mac/Linux）启动后仅写入文件。
-- **日志级别**：`com.gitgui` 包为 `DEBUG`，基础设施层（`infrastructure.*`）为 `INFO`，第三方库（JGit / Guice / SQLite）为 `WARN`，Flyway 为 `INFO`。
+- **日志级别**：`com.gitgui` 包为 `DEBUG`，基础设施层（`infrastructure.*`）为 `INFO`，第三方库（Guice / SQLite）为 `WARN`，Flyway 为 `INFO`。
 - **编码**：所有日志文件统一 UTF-8（遵循 BR-42 编码约束）。
 - **排查入口**：若 `git-gui.bat` / `git-gui.sh` 启动后窗口未弹出，优先查看 `~/.git-gui/logs/git-gui-error.log` 定位根因。
 

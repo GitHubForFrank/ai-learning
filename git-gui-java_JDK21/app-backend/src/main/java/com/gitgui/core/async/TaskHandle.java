@@ -3,6 +3,8 @@ package com.gitgui.core.async;
 import com.gitgui.core.constant.TaskStatus;
 
 import java.util.function.Consumer;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 异步任务句柄
@@ -14,11 +16,12 @@ import java.util.function.Consumer;
  */
 public class TaskHandle {
 
-    /** 任务 ID（对应 task_record.id） */
+
+    @Getter
     private final String taskId;
-    /** 取消函数 */
     private final Runnable cancelAction;
-    /** 任务状态（volatile 保证多线程可见性） */
+    @Setter
+    @Getter
     private volatile TaskStatus status = TaskStatus.PENDING;
     /** 成功回调 */
     private Consumer<Object> successHandler;
@@ -36,33 +39,6 @@ public class TaskHandle {
     public TaskHandle(String taskId, Runnable cancelAction) {
         this.taskId = taskId;
         this.cancelAction = cancelAction;
-    }
-
-    /**
-     * 获取任务 ID。
-     *
-     * @return 任务 ID
-     */
-    public String getTaskId() {
-        return taskId;
-    }
-
-    /**
-     * 获取任务状态。
-     *
-     * @return 任务状态
-     */
-    public TaskStatus getStatus() {
-        return status;
-    }
-
-    /**
-     * 设置任务状态。
-     *
-     * @param status 新状态
-     */
-    public void setStatus(TaskStatus status) {
-        this.status = status;
     }
 
     /**

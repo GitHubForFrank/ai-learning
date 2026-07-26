@@ -86,7 +86,7 @@ void shouldBlockForcePushOnProtectedBranch() {
 
 ### Mock 策略
 
-- 使用 `@Mock` 模拟依赖（Repository / JGit 适配器）
+- 使用 `@Mock` 模拟依赖（Repository / CLI 适配器）
 - 使用 `@InjectMocks` 注入被测对象
 - 使用 `when(...).thenReturn(...)` 配置模拟行为
 - 使用 `verify(...)` 验证交互
@@ -141,8 +141,8 @@ Maven 编译 + 测试
 
 | 级别 | 使用场景 | 示例 |
 | ----- | --------- | ----- |
-| `log.debug` | 开发环境调试信息 | Git 命令完整参数、JGit 内部状态 |
-| `log.info` | 关键节点 | 仓库打开、操作开始/完成、CLI 兜底降级 |
+| `log.debug` | 开发环境调试信息 | Git 命令完整参数 |
+| `log.info` | 关键节点 | 仓库打开、操作开始/完成 |
 | `log.warn` | 预期内异常 | 红线二次确认被取消、任务被取消 |
 | `log.error` | 严重错误 | Git 操作失败、未预期异常 |
 

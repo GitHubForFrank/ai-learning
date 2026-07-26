@@ -1,5 +1,6 @@
 package com.gitgui.ui.dialog;
 
+import com.gitgui.core.async.ProgressCallback;
 import com.gitgui.core.exception.RedLineBlockedException;
 import com.gitgui.domain.constant.TaskType;
 import com.gitgui.domain.model.DiffResult;
@@ -25,11 +26,9 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -151,7 +150,8 @@ public class CommitDialog extends Dialog<Void> {
     private int fileCountTotal = 0;
 
     // ====== 底部按钮 ======
-    private final MenuButton commitMenuBtn = new MenuButton(I18nUtil.get("commit.action.commitAndPushMenu"));
+    private final Button commitBtn = new Button(I18nUtil.get("commit.action.commit"));
+    private final Button commitAndPushBtn = new Button(I18nUtil.get("commit.action.commitAndPush"));
     /** Cancel 按钮（commit 进行中禁用，避免中途取消） */
     private Button cancelButtonRef;
     /** Help 按钮（commit 进行中禁用） */
@@ -160,7 +160,7 @@ public class CommitDialog extends Dialog<Void> {
     private boolean committing = false;
 
     // ====== TortoiseGit: 提交动作类型 ======
-    private enum CommitAction { COMMIT, RE_COMMIT, COMMIT_AND_PUSH, COMMIT_AND_PUSH_TAGS }
+    private enum CommitAction { COMMIT, COMMIT_AND_PUSH }
 
     /**
      * 构造提交对话框。
@@ -177,6 +177,10 @@ public class CommitDialog extends Dialog<Void> {
         this.repoPath = repoPath;
         setTitle(repoPath + " - " + I18nUtil.get("commit.title"));
         setHeaderText(null);
+        // 使用 APPLICATION_MODAL：commit/push 进行中阻塞主窗口的所有点击，
+        // 防止用户误点仓库触发同步 git CLI 调用（openRepository → refreshMeta → 3 个
+        // git CLI），在 git 资源占用的情况下会卡住 JavaFX 线程导致「未响应」。
+        // 注：ProgressDialog 用 owner=null 跳过模态作用域，能正常接收事件。
         initModality(Modality.APPLICATION_MODAL);
 
         DialogPane pane = getDialogPane();
@@ -192,15 +196,16 @@ public class CommitDialog extends Dialog<Void> {
 
         // 关键修复：由于去掉了 ButtonTypes，Dialog 自带的关闭机制（点 X / 按 Esc）会失效。
         // 必须手动绑定 Stage 的 onCloseRequest，否则用户点窗口 X 或 Cancel 按钮都无法关闭。
-        setOnShowing(e -> {
+        // 注意：必须在 window 真正存在后才能 setOnCloseRequest，所以用 setOnShown 而非 setOnShowing。
+        setOnShown(e -> {
             javafx.stage.Window win = getDialogPane().getScene().getWindow();
             if (win != null) {
                 win.setOnCloseRequest(ev -> {
-                    // commit 进行中时不允许点 X 关闭
                     if (committing) {
+                        // commit 进行中不允许 X 关闭
                         ev.consume();
                     } else {
-                        setResult(null);
+                        closeDialogSafely();
                     }
                 });
             }
@@ -255,27 +260,35 @@ public class CommitDialog extends Dialog<Void> {
      * <p>避免 JavaFX 21 ButtonBar 不是 Pane 导致 instanceof 判断失败的问题。</p>
      */
     private HBox buildBottomActionBar() {
-        // 构建 Commit & Push ▼ 菜单：3 项对齐 TortoiseGit（Commit / ReCommit / Commit & Push），
-        // 不放分隔符，主按钮仍用蓝色保持 commit 操作的视觉权重。
-        commitMenuBtn.getItems().clear();
-        commitMenuBtn.getItems().addAll(
-                makeActionMenuItem(CommitAction.COMMIT, I18nUtil.get("commit.action.commit")),
-                makeActionMenuItem(CommitAction.RE_COMMIT, I18nUtil.get("commit.action.reCommit")),
-                makeActionMenuItem(CommitAction.COMMIT_AND_PUSH, I18nUtil.get("commit.action.commitAndPush"))
-        );
-        commitMenuBtn.setStyle("-fx-base: #1976d2; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px;");
-        commitMenuBtn.setPrefWidth(180);
+        // 两个独立按钮：仅提交 / 提交并推送（不再使用下拉菜单）
+        String primaryStyle = "-fx-base: #1976d2; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px;";
+
+        commitBtn.setStyle(primaryStyle);
+        commitBtn.setPrefWidth(120);
+        commitBtn.setDefaultButton(true);
+        commitBtn.setOnAction(e -> doCommit(CommitAction.COMMIT));
+
+        commitAndPushBtn.setStyle(primaryStyle);
+        commitAndPushBtn.setPrefWidth(140);
+        commitAndPushBtn.setOnAction(e -> doCommit(CommitAction.COMMIT_AND_PUSH));
 
         // Cancel 按钮
         Button cancelButton = new Button(I18nUtil.get("button.cancel"));
         cancelButton.setCancelButton(true);
-        // 多层关闭保障：setResult + close + window.hide 三道防线
-        cancelButton.setOnAction(e -> {
-            if (committing) return;
-            setResult(null);
-            close();
-        });
+        cancelButton.setDefaultButton(false);
         cancelButton.setPrefWidth(90);
+        // 多层关闭保障：setResult + close + window.hide 三道防线
+        // 统一在 Platform.runLater 中调用，避免 ActionEvent dispatch 链中直接 close
+        // 导致 JavaFX event system 时序冲突（部分平台下 Dialog.close 在事件回调
+        // 内被吞，再调用后无法触发 root hide）。
+        cancelButton.setOnAction(e -> {
+            if (committing) {
+                // 进行中不允许取消（防止 push/clone 不到一半被中断）
+                e.consume();
+                return;
+            }
+            closeDialogSafely();
+        });
         this.cancelButtonRef = cancelButton;
 
         // Help 按钮
@@ -285,7 +298,7 @@ public class CommitDialog extends Dialog<Void> {
         this.helpButtonRef = helpButton;
 
         Region spacer = new Region();
-        HBox bar = new HBox(10, spacer, commitMenuBtn, cancelButton, helpButton);
+        HBox bar = new HBox(10, spacer, commitBtn, commitAndPushBtn, cancelButton, helpButton);
         bar.setAlignment(Pos.CENTER_RIGHT);
         HBox.setHgrow(spacer, Priority.ALWAYS);
         // 顶部加一条分割线，跟上面的内容区分
@@ -509,30 +522,13 @@ public class CommitDialog extends Dialog<Void> {
 
             @Override
             public String readHeadFile(String repoPath, String path) {
-                // 读 HEAD 中该文件的内容
-                try (org.eclipse.jgit.api.Git git = new org.eclipse.jgit.api.Git(
-                        new org.eclipse.jgit.storage.file.FileRepositoryBuilder()
-                                .setGitDir(new java.io.File(repoPath, ".git"))
-                                .readEnvironment().findGitDir().build())) {
-                    org.eclipse.jgit.lib.Repository repo = git.getRepository();
-                    org.eclipse.jgit.lib.ObjectId headTree = repo.resolve("HEAD^{tree}");
-                    if (headTree == null) {
-                        return "";
-                    }
-                    try (org.eclipse.jgit.treewalk.TreeWalk tw = new org.eclipse.jgit.treewalk.TreeWalk(repo)) {
-                        tw.addTree(headTree);
-                        tw.setRecursive(true);
-                        while (tw.next()) {
-                            if (path.equals(tw.getPathString())) {
-                                org.eclipse.jgit.lib.ObjectLoader loader = repo.open(tw.getObjectId(0));
-                                return new String(loader.getBytes(), java.nio.charset.StandardCharsets.UTF_8);
-                            }
-                        }
-                    }
+                try {
+                    com.gitgui.infrastructure.cli.CliGitExecutor executor =
+                            com.gitgui.GitGuiApp.getInjector().getInstance(com.gitgui.infrastructure.cli.CliGitExecutor.class);
+                    return executor.readFileFromHead(repoPath, path);
                 } catch (Exception e) {
                     return "(读取失败：" + e.getMessage() + ")";
                 }
-                return "";
             }
         });
     }
@@ -642,11 +638,43 @@ public class CommitDialog extends Dialog<Void> {
         return r;
     }
 
-    private MenuItem makeActionMenuItem(CommitAction action, String label) {
-        MenuItem item = new MenuItem(label);
-        item.setOnAction(e -> doCommit(action));
-        return item;
+    /**
+     * 安全地关闭当前对话框。
+     * <p>由于 {@link Dialog#close()} 在 ActionEvent / WindowEvent 回调中直接调用时，
+     * 部分场景下会被 JavaFX 事件分发线程"吃掉"（不真正 hide），所以统一：
+     * <ol>
+     *   <li>先 {@code setResult(null)}，让 showAndWait() 正常返回</li>
+     *   <li>再 {@code Platform.runLater(close)} 把 close 派发到事件循环外</li>
+     *   <li>若 window 存在，作为兜底再调一次 hide()</li>
+     * </ol>
+     * </p>
+     */
+    private void closeDialogSafely() {
+        try {
+            setResult(null);
+        } catch (Exception ignored) {
+            // 已经在 closing 过程中，重复 setResult 无关紧要
+        }
+        // 用 Platform.runLater 把关闭操作挪出当前事件回调（防止 JavaFX 内部事件 handler 时序问题）
+        Platform.runLater(() -> {
+            try {
+                close();
+            } catch (Exception ex) {
+                log.warn("Dialog.close() 失败，fallback 到 window.hide()：{}", ex.getMessage());
+            }
+            // 兜底：直接拿 window 调 hide（Dialog.hide 内部就是这么做的，但显式调用更可靠）
+            try {
+                javafx.stage.Window win = getDialogPane().getScene() == null
+                        ? null : getDialogPane().getScene().getWindow();
+                if (win != null && win.isShowing()) {
+                    win.hide();
+                }
+            } catch (Exception ignored) {
+                // 已经关闭，再调用 hide() 抛 IllegalStateException 是正常的
+            }
+        });
     }
+
 
     // ================================================================
     //  数据加载
@@ -1113,10 +1141,10 @@ public class CommitDialog extends Dialog<Void> {
     }
 
     private String readGitConfig(String key) {
-        try (Git git = new Git(new org.eclipse.jgit.storage.file.FileRepositoryBuilder()
-                .setGitDir(new File(repoPath, ".git"))
-                .readEnvironment().findGitDir().build())) {
-            return git.getRepository().getConfig().getString("user", null, key);
+        try {
+            com.gitgui.infrastructure.cli.CliGitExecutor executor =
+                    com.gitgui.GitGuiApp.getInjector().getInstance(com.gitgui.infrastructure.cli.CliGitExecutor.class);
+            return executor.getConfig(repoPath, "user." + key);
         } catch (Exception e) {
             return null;
         }
@@ -1176,15 +1204,8 @@ public class CommitDialog extends Dialog<Void> {
             return;
         }
 
-        // ReCommit：使用上次 message
-        if (action == CommitAction.RE_COMMIT) {
-            message = "";
-            // Amend 模式下 message 为空 → 走 git commit --amend 默认沿用上次信息
-            amend = true;
-        }
-
-        boolean pushAfter = action == CommitAction.COMMIT_AND_PUSH || action == CommitAction.COMMIT_AND_PUSH_TAGS;
-        boolean pushTags = action == CommitAction.COMMIT_AND_PUSH_TAGS;
+        boolean pushAfter = action == CommitAction.COMMIT_AND_PUSH;
+        boolean pushTags = false;
 
         // Commit & Push 模式下，提前选好 Remote（先选，不阻塞 UI）
         // 优先 origin，没有 origin 就用第一个；都没有就弹友好错误让用户去配置
@@ -1224,7 +1245,7 @@ public class CommitDialog extends Dialog<Void> {
                 .authorDate(authorDate)
                 .pushAfterCommit(pushAfter)
                 .pushWithTags(pushTags)
-                .reuseLastMessage(action == CommitAction.RE_COMMIT)
+                .reuseLastMessage(false)
                 .createNewBranch(createNewBranch)
                 .newBranchName(newBranchName)
                 .build();
@@ -1248,6 +1269,7 @@ public class CommitDialog extends Dialog<Void> {
                     alert.setHeaderText(I18nUtil.get("redline.blocked.hitRule") + rule);
                     alert.setContentText(msg);
                     alert.showAndWait();
+                    close();
                 });
                 return;
             } catch (Exception e) {
@@ -1257,6 +1279,7 @@ public class CommitDialog extends Dialog<Void> {
                     setCommittingState(false);
                     new Alert(Alert.AlertType.ERROR,
                             I18nUtil.get("commit.failed") + msg).showAndWait();
+                    close();
                 });
                 return;
             }
@@ -1264,85 +1287,117 @@ public class CommitDialog extends Dialog<Void> {
             // commit 成功
             final String cid = commitId;
             if (!req.isPushAfterCommit()) {
-                // 不推送：直接显示提交成功
+                // 不推送：显示提交成功提示，用户点掉 alert 后自动关闭 commit 对话框
                 Platform.runLater(() -> {
                     setCommittingState(false);
                     new Alert(Alert.AlertType.INFORMATION,
                             I18nUtil.get("commit.success") + cid.substring(0, Math.min(8, cid.length()))).showAndWait();
-                    close();
+                    // 用户点击「提交成功」alert 的「确定」后，自动关闭 CommitDialog：
+                    // 三道防线（setResult + close + Platform.runLater.hide），避免 close 的异步链路导致 stage 残留
+                    try { setResult(null); } catch (Exception ignored) {}
+                    try { close(); } catch (Exception ex) {
+                        log.warn("commit-only close 失败:{}", ex.getMessage());
+                    }
+                    Platform.runLater(() -> {
+                        Stage stage = (getDialogPane().getScene() == null) ? null
+                                : (Stage) getDialogPane().getScene().getWindow();
+                        if (stage != null && stage.isShowing()) {
+                            stage.hide();
+                        }
+                    });
                 });
                 return;
             }
 
-            // commit&push 模式：push 是异步的，注册 TaskHandle 回调处理结果
-            // （关键修复：之前没注册回调，push 异常被静默吞掉，错误信息丢失）
+            // commit&push 模式：把 close + ProgressDialog 创建挪回 JavaFX UI 线程
+            final String committedCid = cid;
+            final String remote = pickedRemote;
             com.gitgui.domain.model.request.PushRequest pushReq =
                     com.gitgui.domain.model.request.PushRequest.builder()
                             .repoPath(repoPath)
-                            .remote(pickedRemote)
+                            .remote(remote)
                             .force(false)
                             .forceWithLease(false)
                             .pushAllBranches(false)
                             .pushAllTags(req.isPushWithTags())
                             .includeTags(req.isPushWithTags())
                             .build();
+
+            Platform.runLater(() -> openPushProgressDialog(pushReq, remote, committedCid));
+        }, "CommitWorker").start();
+    }
+
+    /**
+     * 在 JavaFX UI 线程中执行：关闭 CommitDialog 并打开 ProgressDialog 接管 push 输出。
+     *
+     * @param pushReq         已构建好的 PushRequest
+     * @param pickedRemote    用户选择的目标 Remote
+     * @param committedCid    commit 产生的 commit id（用于显示）
+     */
+    private void openPushProgressDialog(com.gitgui.domain.model.request.PushRequest pushReq,
+                                          String pickedRemote, String committedCid) {
+        // 步骤 1：恢复 UI（按钮 + 标题），允许重新提交
+        setCommittingState(false);
+
+        // 步骤 2：先关闭 CommitDialog（保证 ProgressDialog 能跳出 APPLICATION_MODAL 阻塞），
+        // 使用 setResult + close + Platform.runLater.hide 三道防线。
+        Stage stage = (getDialogPane().getScene() == null) ? null
+                : (Stage) getDialogPane().getScene().getWindow();
+        try { setResult(null); } catch (Exception ignored) {}
+        try { if (stage != null && stage.isShowing()) close(); }
+        catch (Exception ex) { log.warn("close dialog 失败:{}", ex.getMessage()); }
+        if (stage != null) {
+            Platform.runLater(() -> {
+                if (stage.isShowing()) stage.hide();
+            });
+        }
+
+        // 获取当前分支名作为 progress 标题（push 未指定分支 ⇒ 跟随 currentBranch）
+        String branchTmp;
+        try {
+            com.gitgui.infrastructure.cli.CliGitExecutor exec =
+                    com.gitgui.GitGuiApp.getInjector().getInstance(com.gitgui.infrastructure.cli.CliGitExecutor.class);
+            branchTmp = exec.getCurrentBranch(repoPath);
+        } catch (Exception ex) {
+            log.warn("获取当前分支失败：{}", ex.getMessage());
+            branchTmp = null;
+        }
+        final String currentBranch = branchTmp != null ? branchTmp : "current";
+
+        // 步骤 3：延迟一帧创建 ProgressDialog（owner=null 跳过 CommitDialog 的 APPLICATION_MODAL 作用域）
+        Platform.runLater(() -> {
+            ProgressDialog progress = new ProgressDialog(
+                    /* owner */ null,
+                    I18nUtil.get("push.title") + "  →  " + pickedRemote + "/" + currentBranch,
+                    I18nUtil.get("commit.pushHeaderPrefix")
+                            + " " + committedCid.substring(0, Math.min(8, committedCid.length()))
+            );
+            ProgressCallback sharedCb = progress.asCallback();
             try {
-                com.gitgui.core.async.TaskHandle pushHandle = gitOperationService.push(pushReq, null);
+                com.gitgui.core.async.TaskHandle pushHandle = gitOperationService.push(pushReq, sharedCb);
                 if (pushHandle == null) {
-                    // 防御性：service 返回 null 当作成功处理
-                    Platform.runLater(() -> {
-                        setCommittingState(false);
-                        new Alert(Alert.AlertType.INFORMATION,
-                                I18nUtil.get("commit.success") + cid.substring(0, Math.min(8, cid.length()))).showAndWait();
-                        close();
-                    });
+                    progress.close();
                     return;
                 }
-                pushHandle.onSuccess(r -> Platform.runLater(() -> {
-                    setCommittingState(false);
-                    new Alert(Alert.AlertType.INFORMATION,
-                            I18nUtil.get("commit.success") + cid.substring(0, Math.min(8, cid.length()))
-                                    + "\n" + I18nUtil.get("commit.pushSuccess")).showAndWait();
-                    close();
-                }));
-                pushHandle.onFailure(e -> {
-                    // 打完整堆栈（这样从日志能看出 JGit 内部到底抛了啥）
-                    log.error("Commit & Push 推送失败，提交已成功不回滚。commitId={}, remote={}",
-                            cid, pickedRemote, e);
-                    // 如果异常看起来是 JGit 内部 bug（CCE / 内部异常），自动回退到 CLI 推送
-                    if (isJGitInternalBug(e)) {
-                        log.warn("JGit 推送抛内部异常，自动回退到 git CLI 推送。commitId={}", cid);
-                        tryFallbackToCliPush(cid, pickedRemote, req);
-                    } else {
-                        final String pushMsg = formatExceptionMessage(e);
-                        Platform.runLater(() -> {
-                            setCommittingState(false);
-                            new Alert(Alert.AlertType.WARNING,
-                                    I18nUtil.get("commit.success") + cid.substring(0, Math.min(8, cid.length()))
-                                            + "\n" + I18nUtil.get("commit.pushFailed") + pushMsg).showAndWait();
-                            close();
-                        });
-                    }
-                });
+                progress.attach(pushHandle);
+                // push 完成后进度条自动到 100%，用户手动关闭进度窗口
+                progress.showAndWaitForTask();
+            } catch (RedLineBlockedException rbe) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle(I18nUtil.get("redline.blocked.title"));
+                alert.setHeaderText(I18nUtil.get("redline.blocked.hitRule") + rbe.getRuleCode());
+                alert.setContentText(rbe.getMessage());
+                alert.showAndWait();
+                Platform.runLater(progress::close);
             } catch (Exception pushEx) {
-                // 同步校验失败（如 BR-09 选 Remote 失败）：直接弹错
-                log.warn("Push 同步阶段失败：{}", pushEx.getMessage());
-                // 如果异常是 JGit 内部 bug，自动回退到 CLI
-                if (isJGitInternalBug(pushEx)) {
-                    log.warn("Push 同步阶段抛 JGit 内部异常，自动回退到 git CLI 推送。commitId={}", cid);
-                    tryFallbackToCliPush(cid, pickedRemote, req);
-                } else {
-                    final String pushMsg = formatExceptionMessage(pushEx);
-                    Platform.runLater(() -> {
-                        setCommittingState(false);
-                        new Alert(Alert.AlertType.WARNING,
-                                I18nUtil.get("commit.success") + cid.substring(0, Math.min(8, cid.length()))
-                                        + "\n" + I18nUtil.get("commit.pushFailed") + pushMsg).showAndWait();
-                        close();
-                    });
-                }
+                log.warn("Push 异常", pushEx);
+                final String pushMsg = formatExceptionMessage(pushEx);
+                new Alert(Alert.AlertType.WARNING,
+                        I18nUtil.get("commit.success") + committedCid.substring(0, Math.min(8, committedCid.length()))
+                                + "\n" + I18nUtil.get("commit.pushFailed") + pushMsg).showAndWait();
+                Platform.runLater(progress::close);
             }
-        }, "CommitWorker").start();
+        });
     }
 
     /**
@@ -1355,11 +1410,10 @@ public class CommitDialog extends Dialog<Void> {
     private void setCommittingState(boolean committing) {
         this.committing = committing;
         if (committing) {
-            commitMenuBtn.setText(I18nUtil.get("commit.committing"));
-            commitMenuBtn.setDisable(true);
-            for (MenuItem item : commitMenuBtn.getItems()) {
-                item.setDisable(true);
-            }
+            commitBtn.setText(I18nUtil.get("commit.committing"));
+            commitBtn.setDisable(true);
+            commitAndPushBtn.setText(I18nUtil.get("commit.committing"));
+            commitAndPushBtn.setDisable(true);
             if (cancelButtonRef != null) {
                 cancelButtonRef.setDisable(true);
             }
@@ -1373,11 +1427,10 @@ public class CommitDialog extends Dialog<Void> {
                         + " - " + I18nUtil.get("commit.committing"));
             }
         } else {
-            commitMenuBtn.setText(I18nUtil.get("commit.action.commitAndPushMenu"));
-            commitMenuBtn.setDisable(false);
-            for (MenuItem item : commitMenuBtn.getItems()) {
-                item.setDisable(false);
-            }
+            commitBtn.setText(I18nUtil.get("commit.action.commit"));
+            commitBtn.setDisable(false);
+            commitAndPushBtn.setText(I18nUtil.get("commit.action.commitAndPush"));
+            commitAndPushBtn.setDisable(false);
             if (cancelButtonRef != null) {
                 cancelButtonRef.setDisable(false);
             }
@@ -1419,70 +1472,16 @@ public class CommitDialog extends Dialog<Void> {
     }
 
     /**
-     * 判断异常是否是 JGit 内部 bug（用于自动回退到 CLI 推送）。
-     * <ul>
-     *   <li>{@link ClassCastException} — JGit 6.9 已知问题</li>
-     *   <li>JGit 内部包（{@code org.eclipse.jgit.internal.*}）的异常</li>
-     *   <li>其他裸 ClassCastException（message 为 null）</li>
-     * </ul>
-     * 这种情况网络/认证都不是问题，是 JGit 本身 bug，CLI 兜底成功率很高。
+     * 在 CommitDialog 关闭后告知用户 commit 结果（通常 commit+push 后弹）。
      */
-    private boolean isJGitInternalBug(Throwable e) {
-        if (e == null) return false;
-        Throwable cur = e;
-        int depth = 0;
-        while (cur != null && depth < 5) {
-            if (cur instanceof ClassCastException) {
-                return true;
-            }
-            String cls = cur.getClass().getName();
-            // JGit 内部包（如 org.eclipse.jgit.internal.transport.http.*）抛的任何异常
-            if (cls.startsWith("org.eclipse.jgit.internal.")) {
-                return true;
-            }
-            if (cur.getCause() == null || cur.getCause() == cur) break;
-            cur = cur.getCause();
-            depth++;
-        }
-        return false;
-    }
-
-    /**
-     * CLI 推送回退：JGit 失败后用系统 {@code git push} 命令重试。
-     * <p>必须在新线程中执行（CLI 推送是阻塞的），用 Platform.runLater 更新 UI。</p>
-     */
-    private void tryFallbackToCliPush(String commitId, String remote, CommitRequest req) {
-        new Thread(() -> {
-            try {
-                com.gitgui.domain.model.request.PushRequest cliReq =
-                        com.gitgui.domain.model.request.PushRequest.builder()
-                                .repoPath(repoPath)
-                                .remote(remote)
-                                .force(false)
-                                .build();
-                String output = gitOperationService.pushViaCli(cliReq);
-                log.info("CLI 推送回退成功：commitId={}, remote={}, output={}", commitId, remote, output);
-                Platform.runLater(() -> {
-                    setCommittingState(false);
-                    new Alert(Alert.AlertType.INFORMATION,
-                            I18nUtil.get("commit.success") + commitId.substring(0, Math.min(8, commitId.length()))
-                                    + "\n" + I18nUtil.get("commit.pushSuccess")
-                                    + "（JGit 失败后用 git CLI 兜底成功）").showAndWait();
-                    close();
-                });
-            } catch (Exception cliEx) {
-                log.error("CLI 推送回退也失败", cliEx);
-                final String cliMsg = formatExceptionMessage(cliEx);
-                Platform.runLater(() -> {
-                    setCommittingState(false);
-                    new Alert(Alert.AlertType.WARNING,
-                            I18nUtil.get("commit.success") + commitId.substring(0, Math.min(8, commitId.length()))
-                                    + "\n" + I18nUtil.get("commit.pushFailed") + cliMsg
-                                    + "\n\n（JGit 和 git CLI 都已尝试，均失败，请检查 Remote 配置或网络。）").showAndWait();
-                    close();
-                });
-            }
-        }, "PushCliFallback").start();
+    private void showCommitDoneAlert(String cid, boolean success) {
+        String msg = I18nUtil.get("commit.success")
+                + (cid == null ? "" : cid.substring(0, Math.min(8, cid.length())));
+        Alert alert = new Alert(success ? Alert.AlertType.INFORMATION : Alert.AlertType.WARNING);
+        alert.setTitle(I18nUtil.get("commit.title"));
+        alert.setHeaderText(null);
+        alert.setContentText(msg);
+        alert.showAndWait();
     }
 
     /**
@@ -1575,15 +1574,14 @@ public class CommitDialog extends Dialog<Void> {
         if (e == null) {
             return "未知错误";
         }
-        // ClassCastException 特殊处理：JGit 内部 CCE 经常 message 为 null，输出完整类名 + cause 链
+        // ClassCastException 特殊处理（Java 内部异常）
         if (e instanceof ClassCastException) {
             String detail = msg;
             if (detail == null || detail.isBlank()) {
                 detail = describeExceptionChain(e);
             }
             return "类型转换异常（ClassCastException）：" + detail
-                    + "\n可能原因：JGit 6.9 内部 bug / 仓库 .git 目录异常 / 远端配置不兼容。"
-                    + "\n建议：在终端用 `git push` 测试，或重试一次。";
+                    + "\n建议：重启应用后重试一次。";
         }
         // 网络类
         if (e instanceof java.net.UnknownHostException) {
@@ -1608,24 +1606,6 @@ public class CommitDialog extends Dialog<Void> {
         }
         if (e instanceof java.util.concurrent.CancellationException) {
             return "操作被取消";
-        }
-        // JGit
-        if (e instanceof org.eclipse.jgit.errors.TransportException) {
-            return "Git 传输失败：" + (msg == null ? "请检查网络或认证信息" : msg);
-        }
-        if (e instanceof org.eclipse.jgit.api.errors.TransportException) {
-            Throwable cause = e.getCause();
-            String detail = cause == null ? "" : ("（" + formatExceptionMessage(cause) + "）");
-            return "Git 传输失败：" + (msg == null ? "请检查网络或认证信息" : msg) + detail;
-        }
-        if (e instanceof org.eclipse.jgit.errors.MissingObjectException) {
-            return "Git 对象缺失：" + (msg == null ? "文件或对象已被删除" : msg);
-        }
-        if (e instanceof org.eclipse.jgit.errors.AmbiguousObjectException) {
-            return "Git 对象引用不明确：" + (msg == null ? "请使用完整 SHA" : msg);
-        }
-        if (e instanceof org.eclipse.jgit.errors.IncorrectObjectTypeException) {
-            return "Git 对象类型错误：" + (msg == null ? "" : msg);
         }
         // GitGuiException（业务异常）
         if (e instanceof com.gitgui.core.exception.GitGuiException) {

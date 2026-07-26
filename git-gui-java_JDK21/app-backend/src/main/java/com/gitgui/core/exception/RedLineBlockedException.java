@@ -1,5 +1,7 @@
 package com.gitgui.core.exception;
 
+import lombok.Getter;
+
 /**
  * 命令红线阻断异常
  * <p>当 {@code CommandInterceptor} 检测到 {@code RedLineResult.Action.BLOCK} 时抛出。</p>
@@ -8,9 +10,9 @@ package com.gitgui.core.exception;
  * @author FrankKang
  * @since 2026-05-27
  */
+@Getter
 public class RedLineBlockedException extends GitGuiException {
 
-    /** 命中的红线规则代码 */
     private final String ruleCode;
 
     /**
@@ -24,12 +26,4 @@ public class RedLineBlockedException extends GitGuiException {
         this.ruleCode = ruleCode;
     }
 
-    /**
-     * 获取命中的红线规则代码。
-     *
-     * @return 规则代码字符串
-     */
-    public String getRuleCode() {
-        return ruleCode;
-    }
 }

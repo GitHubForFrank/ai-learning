@@ -1,6 +1,6 @@
 # AI 规约按需加载策略
 
-> **来源声明**：本策略为通用方法论参考，示例内容来自 LLM Proxy 项目。git-gui 项目的实际技术栈为 JavaFX 21 + Google Guice + JGit + SQLite，实际配置请以 `.trae/rules/` 为准。
+> **来源声明**：本策略为通用方法论参考，示例内容来自 LLM Proxy 项目。git-gui 项目的实际技术栈为 JavaFX 21 + Google Guice + Git CLI + SQLite，实际配置请以 `.trae/rules/` 为准。
 
 > 解决每次任务全量加载所有 spec 和 common rule 导致的 token 浪费问题。
 > 通过"规则入口改造 + 场景触发器"实现按需加载，而非每次都全量加载。

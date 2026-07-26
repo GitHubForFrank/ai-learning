@@ -1,5 +1,7 @@
 package com.gitgui.ui.main;
 
+import com.gitgui.core.async.ProgressCallback;
+import com.gitgui.core.async.TaskHandle;
 import com.gitgui.core.config.AppConfig;
 import com.gitgui.core.exception.GitGuiException;
 import com.gitgui.domain.constant.TaskType;
@@ -19,6 +21,8 @@ import com.gitgui.domain.service.StatusService;
 import com.gitgui.ui.AsyncUiLoader;
 import com.gitgui.ui.dialog.CloneDialog;
 import com.gitgui.ui.dialog.CommitDialog;
+import com.gitgui.ui.dialog.ExternalToolsDialog;
+import com.gitgui.ui.dialog.ProgressDialog;
 import com.gitgui.ui.dialog.PullDialog;
 import com.gitgui.ui.dialog.PushDialog;
 import com.gitgui.ui.dialog.RemoteConfigDialog;
@@ -86,7 +90,9 @@ public class MainController implements Initializable {
     @FXML private MenuBar menuBar;
     @FXML private TitledPane favoritesPane;
     @FXML private ListView<RepoListItem> favoritesList;
-    @FXML private TitledPane repositoriesPane;
+    @FXML private Label repositoriesTitleLabel;
+    /** 仓库列表的折叠/展开切换按钮（▲=展开，▼=折叠） */
+    @FXML private Button repositoriesToggleButton;
     @FXML private ListView<RepoListItem> repositoriesList;
     @FXML private Button addRootButton;
     @FXML private Button rescanAllButton;
@@ -99,15 +105,21 @@ public class MainController implements Initializable {
     @FXML private TableColumn<FileStatus, Number> fileColRemoved;
     @FXML private TableView<LogEntry> logTable;
     @FXML private TableColumn<LogEntry, String> logColHash;
-    @FXML private TableColumn<LogEntry, String> logColRefs;
     @FXML private TableColumn<LogEntry, String> logColAuthor;
     @FXML private TableColumn<LogEntry, String> logColDate;
     @FXML private TableColumn<LogEntry, String> logColMessage;
-    @FXML private TextArea blameArea;
-    @FXML private ListView<String> reflogList;
     @FXML private Label repoLabel;
     @FXML private Label branchLabel;
     @FXML private Label taskStatusLabel;
+    /** 主题单选组 + 三个主题项（与外层「设置」菜单绑定，ToggleGroup 保证互斥） */
+    @FXML private ToggleGroup themeToggleGroup;
+    @FXML private RadioMenuItem themeLightItem;
+    @FXML private RadioMenuItem themeDarkItem;
+    @FXML private RadioMenuItem themeSystemItem;
+    /** 语言单选组 + 两个语言项 */
+    @FXML private ToggleGroup languageToggleGroup;
+    @FXML private RadioMenuItem languageZhItem;
+    @FXML private RadioMenuItem languageEnItem;
 
     /** 当前打开的仓库路径 */
     private String currentRepoPath;
@@ -116,6 +128,9 @@ public class MainController implements Initializable {
     private final ObservableList<RepoListItem> favorites = FXCollections.observableArrayList();
     /** 扫描到的仓库列表（侧边栏底部） */
     private final ObservableList<RepoListItem> repositories = FXCollections.observableArrayList();
+
+    /** 仓库区段折叠状态：true = 展开（默认），false = 折叠 */
+    private boolean repositoriesPaneExpanded = true;
 
     /** 收藏仓库路径 → 收藏对象（含 alias） 映射，用于快速判定 isFavorite 与 alias */
     private final Map<String, Favorite> favoriteIndex = new HashMap<>();
@@ -175,6 +190,33 @@ public class MainController implements Initializable {
         // 应用启动时自动恢复列表：重新扫描全部已启用根目录
         repoScanRootService.rescanAll();
         refreshRepositoriesList();
+
+        // 同步主题/语言 RadioMenuItem 选中状态（与持久化设置一致）
+        syncThemeSelection();
+        syncLanguageSelection();
+    }
+
+    /**
+     * 根据 settingsService 中的 ui.theme 值，选中对应的主题 RadioMenuItem。
+     * <p>RadioMenuItem 已通过 FXML 绑定到 {@link #themeToggleGroup}，选中一项会自动取消选中其它项。</p>
+     */
+    private void syncThemeSelection() {
+        String theme = settingsService.get("ui.theme");
+        RadioMenuItem target = switch (theme == null ? "" : theme) {
+            case "LIGHT" -> themeLightItem;
+            case "SYSTEM" -> themeSystemItem;
+            default -> themeDarkItem;
+        };
+        target.setSelected(true);
+    }
+
+    /**
+     * 根据 settingsService 中的 ui.language 值，选中对应的语言 RadioMenuItem。
+     */
+    private void syncLanguageSelection() {
+        String language = settingsService.get("ui.language");
+        RadioMenuItem target = "en".equals(language) ? languageEnItem : languageZhItem;
+        target.setSelected(true);
     }
 
     /**
@@ -277,14 +319,21 @@ public class MainController implements Initializable {
 
     /**
      * 初始化提交日志 TableView 的列 cellValueFactory。
-     * <p>对应 PRD 4.5 主窗口日志 Tab：Hash / Refs / Author / Date / Message 五列，</p>
-     * <p>其中 Refs 把 {@code refs} 列表（分支 / tag）以逗号拼接显示。</p>
+     * <p>对应 PRD 4.5 主窗口日志 Tab：Hash / Author / Date / Message 四列。</p>
+     * <p>布局策略：Hash/Author/Date 三列为固定宽度（贴近内容，禁用拖拽改变宽度），
+     * Message 列弹性占满剩余空间 + 超长 ellipsis。</p>
      */
     private void setupLogTableColumns() {
+        // 使用 CONSTRAINED_RESIZE_POLICY：让 Message 列自动填满剩余空间，消除右侧空白区域
         logTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         logTable.setPlaceholder(new Label(I18nUtil.get("log.loading")));
 
-        // Hash：短哈希（7 字符）+ 全哈希 tooltip
+        // ====== Hash 列：固定 86px = 7 字符（Consolas 13px）+ 左右内边距 22px ======
+        logColHash.setMinWidth(86);
+        logColHash.setPrefWidth(86);
+        logColHash.setMaxWidth(86);
+        logColHash.setResizable(false);
+        logColHash.setStyle("-fx-alignment: CENTER-LEFT;");
         logColHash.setCellValueFactory(cd -> {
             LogEntry e = cd.getValue();
             String shortId = e == null || e.getShortId() == null ? "" : e.getShortId();
@@ -308,36 +357,38 @@ public class MainController implements Initializable {
             }
         });
 
-        // Refs：分支/标签（refs 列表以逗号拼接）
-        logColRefs.setCellValueFactory(cd -> {
-            LogEntry e = cd.getValue();
-            if (e == null || e.getRefs() == null || e.getRefs().isEmpty()) {
-                return new javafx.beans.property.SimpleStringProperty("");
-            }
-            return new javafx.beans.property.SimpleStringProperty(String.join(", ", e.getRefs()));
-        });
-        logColRefs.setCellFactory(col -> new TableCell<>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item);
-                    setStyle("-fx-text-fill: #1976d2;");
-                }
-            }
-        });
-
-        // Author
+        // ====== Author 列：固定宽度 140，超长 ellipsis ======
+        logColAuthor.setMinWidth(140);
+        logColAuthor.setPrefWidth(140);
+        logColAuthor.setMaxWidth(140);
         logColAuthor.setCellValueFactory(cd -> {
             LogEntry e = cd.getValue();
             String author = e == null || e.getAuthor() == null ? "" : e.getAuthor();
             return new javafx.beans.property.SimpleStringProperty(author);
         });
+        logColAuthor.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setTooltip(null);
+                } else {
+                    setText(item);
+                    LogEntry e = getTableRow() == null ? null : (LogEntry) getTableRow().getItem();
+                    if (e != null && e.getAuthorEmail() != null) {
+                        setTooltip(new Tooltip(item + " <" + e.getAuthorEmail() + ">"));
+                    }
+                }
+            }
+        });
 
-        // Date（yyyy-MM-dd HH:mm）
-        java.time.format.DateTimeFormatter DATE_FMT = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        // ====== Date 列：固定宽度 160，完整格式 yyyy-MM-dd HH:mm:ss ======
+        java.time.format.DateTimeFormatter DATE_FMT = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        logColDate.setMinWidth(160);
+        logColDate.setPrefWidth(160);
+        logColDate.setMaxWidth(160);
+        logColDate.setStyle("-fx-alignment: CENTER-LEFT;");
         logColDate.setCellValueFactory(cd -> {
             LogEntry e = cd.getValue();
             if (e == null || e.getCommitTime() == null) {
@@ -345,14 +396,51 @@ public class MainController implements Initializable {
             }
             return new javafx.beans.property.SimpleStringProperty(e.getCommitTime().format(DATE_FMT));
         });
+        // 显示完整时间（tooltip 给能看到秒数的入口）
+        logColDate.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setTooltip(null);
+                } else {
+                    setText(item);
+                    LogEntry e = getTableRow() == null ? null : (LogEntry) getTableRow().getItem();
+                    if (e != null && e.getCommitTime() != null) {
+                        setTooltip(new Tooltip(e.getCommitTime()
+                                .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+                    }
+                }
+            }
+        });
 
-        // Message：仅首行
+        // ====== Message 列：弹性空间 + 多行 ellipsis ======
+        logColMessage.setMinWidth(150);
+        logColMessage.setPrefWidth(400);
+        logColMessage.setMaxWidth(Double.MAX_VALUE);  // 弹性宽度，填满剩余空间
         logColMessage.setCellValueFactory(cd -> {
             LogEntry e = cd.getValue();
             String msg = e == null || e.getMessage() == null ? "" : e.getMessage();
             int nl = msg.indexOf('\n');
             String firstLine = nl >= 0 ? msg.substring(0, nl) : msg;
             return new javafx.beans.property.SimpleStringProperty(firstLine);
+        });
+        logColMessage.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setTooltip(null);
+                } else {
+                    setText(item);
+                    LogEntry e = getTableRow() == null ? null : (LogEntry) getTableRow().getItem();
+                    if (e != null && e.getMessage() != null && e.getMessage().contains("\n")) {
+                        setTooltip(new Tooltip(e.getMessage()));
+                    }
+                }
+            }
         });
     }
 
@@ -430,7 +518,7 @@ public class MainController implements Initializable {
     public void onOpenRepository() {
         DirectoryChooser chooser = new DirectoryChooser();
         chooser.setTitle(I18nUtil.get("menu.file.open"));
-        File selected = chooser.showDialog(getStage());
+        File selected = chooser.showDialog(getMainStage());
         if (selected == null) {
             return;
         }
@@ -445,7 +533,7 @@ public class MainController implements Initializable {
     public void onAddScanRoot() {
         DirectoryChooser chooser = new DirectoryChooser();
         chooser.setTitle(I18nUtil.get("sidebar.repositories.scanRoot"));
-        File selected = chooser.showDialog(getStage());
+        File selected = chooser.showDialog(getMainStage());
         if (selected == null) {
             return;
         }
@@ -463,6 +551,19 @@ public class MainController implements Initializable {
             refreshRepositoriesList();
             taskStatusLabel.setText(I18nUtil.get("main.status.ready"));
         });
+    }
+
+    /**
+     * 切换仓库区段的展开/折叠状态（侧边栏底部自定义折叠按钮）。
+     * <p>折叠时隐藏 ListView 并取消其占用空间（{@code setManaged(false)}）；展开时恢复显示。</p>
+     */
+    @FXML
+    public void onToggleRepositoriesPane() {
+        repositoriesPaneExpanded = !repositoriesPaneExpanded;
+        repositoriesList.setVisible(repositoriesPaneExpanded);
+        repositoriesList.setManaged(repositoriesPaneExpanded);
+        // 折叠→▶，展开→▼
+        repositoriesToggleButton.setText(repositoriesPaneExpanded ? "▼" : "▶");
     }
 
     /**
@@ -575,9 +676,21 @@ public class MainController implements Initializable {
                 items.add(new RepoListItem(m, null, fav != null, fav == null ? "" : fav.getAlias()));
             }
         }
+        // 保留当前选中项：setAll 会同时清空 selection 和 focus，必须再补回去
+        String prevRepoPath = currentRepoPath;
+        String prevSelectedPath = selectedRepoPath();
         repositories.setAll(items);
         // 仓库列表变化 → 刷新侧边栏标题上的数量
         updateSidebarTitles();
+
+        // 还原选中：先试当前打开的 repoPath，再 fallback 到刷新前的列表选中项
+        if (prevRepoPath != null) {
+            selectRepoByPath(repositoriesList, prevRepoPath);
+        }
+        if (repositoriesList.getSelectionModel().getSelectedItem() == null
+                && prevSelectedPath != null) {
+            selectRepoByPath(repositoriesList, prevSelectedPath);
+        }
 
         // 3. 刷新收藏区
         refreshFavoritesList();
@@ -604,9 +717,15 @@ public class MainController implements Initializable {
                     });
             items.add(new RepoListItem(meta, null, true, fav.getAlias()));
         }
+        // 保留收藏列表中的当前选中项
+        String prevFavPath = selectedFavoritePath();
         favorites.setAll(items);
         // 收藏列表变化 → 刷新侧边栏标题上的数量
         updateSidebarTitles();
+        // 还原选中 + 焦点（refresh 可能来自扫描完成/收藏切换的回调）
+        if (prevFavPath != null) {
+            selectFavoriteByPath(prevFavPath);
+        }
     }
 
     /**
@@ -798,6 +917,48 @@ public class MainController implements Initializable {
     }
 
     /**
+     * 获取仓库列表当前选中项的仓库路径，无选中时返回 null。
+     */
+    private String selectedRepoPath() {
+        RepoListItem item = repositoriesList.getSelectionModel().getSelectedItem();
+        return item == null ? null : item.getRepoPath();
+    }
+
+    /**
+     * 获取收藏列表当前选中项的仓库路径，无选中时返回 null。
+     */
+    private String selectedFavoritePath() {
+        RepoListItem item = favoritesList.getSelectionModel().getSelectedItem();
+        return item == null ? null : item.getRepoPath();
+    }
+
+    /**
+     * 按仓库路径选中 + 聚焦仓库列表中的项。
+     * <p>修复扫描/异步回调导致的 selection + focus 丢失：{@code setAll()} 同时清空
+     * selectionModel 和 focusModel，本方法在 setAll 之后调用以恢复用户原始焦点。</p>
+     */
+    private void selectRepoByPath(ListView<RepoListItem> listView, String repoPath) {
+        if (repoPath == null) return;
+        for (int i = 0; i < listView.getItems().size(); i++) {
+            RepoListItem item = listView.getItems().get(i);
+            if (item != null && repoPath.equals(item.getRepoPath())) {
+                listView.getSelectionModel().select(i);
+                listView.getFocusModel().focus(i);
+                // scroll 一下保证可见（如果之前已被滚动到屏幕外）
+                listView.scrollTo(i);
+                return;
+            }
+        }
+    }
+
+    /**
+     * 按仓库路径选中 + 聚焦收藏列表中的项。
+     */
+    private void selectFavoriteByPath(String repoPath) {
+        selectRepoByPath(favoritesList, repoPath);
+    }
+
+    /**
      * 重建共享 ContextMenu 的菜单项（每次右键触发前调用，避免旧状态）。
      * <p>修复 issue #1：连续右键时菜单不会叠加；修复 issue #2：补充「切换分支」选项。</p>
      * <p>所有 MenuItem 的 action 在触发后立即显式 {@code sharedContextMenu.hide()}，确保即时关闭。</p>
@@ -808,16 +969,6 @@ public class MainController implements Initializable {
         contextMenuTargetItem = item;
         sharedContextMenu.getItems().clear();
         String path = item.getRepoPath();
-
-        // 打开仓库
-        MenuItem openItem = new MenuItem(I18nUtil.get("sidebar.repo.contextMenu.open"));
-        openItem.setOnAction(e -> {
-            sharedContextMenu.hide();
-            openRepository(path);
-        });
-        sharedContextMenu.getItems().add(openItem);
-
-        sharedContextMenu.getItems().add(new SeparatorMenuItem());
 
         // 提交 / 拉取 / 推送 / 获取
         MenuItem commitItem = new MenuItem(I18nUtil.get("sidebar.repo.contextMenu.commit"));
@@ -883,15 +1034,6 @@ public class MainController implements Initializable {
 
         sharedContextMenu.getItems().add(new SeparatorMenuItem());
 
-        // 仓库设置
-        MenuItem settingsItem = new MenuItem(I18nUtil.get("sidebar.repo.contextMenu.settings"));
-        settingsItem.setOnAction(e -> {
-            sharedContextMenu.hide();
-            setCurrentRepo(path);
-            onSettings();
-        });
-        sharedContextMenu.getItems().add(settingsItem);
-
         // 修改远程 URL
         MenuItem remoteItem = new MenuItem(I18nUtil.get("sidebar.repo.contextMenu.remoteConfig"));
         remoteItem.setOnAction(e -> {
@@ -917,23 +1059,13 @@ public class MainController implements Initializable {
         });
         sharedContextMenu.getItems().add(copyPathItem);
 
-        // 刷新元信息
+        // 刷新此仓库元信息（与工具栏「重新扫描全部」区分：仅刷新单个仓库的分支/HEAD/是否干净，不重新发现仓库）
         MenuItem refreshItem = new MenuItem(I18nUtil.get("sidebar.repo.contextMenu.refresh"));
         refreshItem.setOnAction(e -> {
             sharedContextMenu.hide();
             refreshSingleRepo(path);
         });
         sharedContextMenu.getItems().add(refreshItem);
-
-        sharedContextMenu.getItems().add(new SeparatorMenuItem());
-
-        // 移除（仅从列表移除，不删文件）
-        MenuItem removeItem = new MenuItem(I18nUtil.get("sidebar.repo.contextMenu.remove"));
-        removeItem.setOnAction(e -> {
-            sharedContextMenu.hide();
-            removeRepo(item);
-        });
-        sharedContextMenu.getItems().add(removeItem);
     }
 
     /**
@@ -1159,7 +1291,7 @@ public class MainController implements Initializable {
     public void onInit() {
         DirectoryChooser chooser = new DirectoryChooser();
         chooser.setTitle(I18nUtil.get("menu.file.init"));
-        File selected = chooser.showDialog(getStage());
+        File selected = chooser.showDialog(getMainStage());
         if (selected == null) {
             return;
         }
@@ -1213,11 +1345,26 @@ public class MainController implements Initializable {
 
     /**
      * 获取（菜单：操作 → 获取）。
+     * <p>直接调用 fetch 服务 + ProgressDialog 实时展示 git fetch 输出。</p>
      */
     @FXML
     public void onFetch() {
         if (requireRepo()) {
-            gitOperationService.fetch(currentRepoPath, "origin", "", true, null);
+            Stage owner = getMainStage();
+            ProgressDialog progress = new ProgressDialog(
+                    owner,
+                    "获取 Fetch  →  origin",
+                    I18nUtil.get("progress.headerOperating")
+            );
+            ProgressCallback sharedCb = progress.asCallback();
+            try {
+                TaskHandle handle = gitOperationService.fetch(currentRepoPath, "origin", "", true, sharedCb);
+                progress.attach(handle);
+                progress.showAndWaitForTask();
+            } catch (Exception e) {
+                log.error("获取失败", e);
+                new Alert(Alert.AlertType.ERROR, "获取失败：" + e.getMessage()).showAndWait();
+            }
             refreshStatus();
         }
     }
@@ -1322,15 +1469,25 @@ public class MainController implements Initializable {
         String favTitle = I18nUtil.get("sidebar.favorites") + " (" + favorites.size() + ")";
         String repoTitle = I18nUtil.get("sidebar.repositories") + " (" + repositories.size() + ")";
         favoritesPane.setText(favTitle);
-        repositoriesPane.setText(repoTitle);
+        repositoriesTitleLabel.setText(repoTitle);
     }
 
     /**
-     * 打开设置对话框。
+     * 打开执行红线设置对话框（仅命令红线配置；界面/外部工具已迁移到外层菜单独立入口）。
      */
     @FXML
     public void onSettings() {
-        SettingsDialog dialog = new SettingsDialog(settingsService, themeManager);
+        SettingsDialog dialog = new SettingsDialog(settingsService);
+        dialog.showAndWait();
+    }
+
+    /**
+     * 打开扩展工具配置对话框（Diff 工具 / 合并工具 / 外部编辑器）。
+     * <p>原属 SettingsDialog 的「外部工具」Tab，现迁移为独立入口，挂靠在「设置」顶级菜单下。</p>
+     */
+    @FXML
+    public void onExternalTools() {
+        ExternalToolsDialog dialog = new ExternalToolsDialog(settingsService);
         dialog.showAndWait();
     }
 
@@ -1408,10 +1565,8 @@ public class MainController implements Initializable {
         delay.play();
     }
 
-    /**
-     * 获取当前 Stage。
-     */
-    private Stage getStage() {
-        return (Stage) menuBar.getScene().getWindow();
+    private Stage getMainStage() {
+        return menuBar.getScene() == null ? null
+                : (Stage) menuBar.getScene().getWindow();
     }
 }

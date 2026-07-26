@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
  * <pre>{@code
  * // 读任务（如加载分支列表、刷新文件状态）
  * AsyncUiLoader.submitRead(repoPath, TaskType.STATUS, () -> {
- *     List<String> branches = jgit.listBranches(repoPath);
+ *     List<String> branches = gitExecutor.listBranches(repoPath);
  *     Platform.runLater(() -> branchCombo.getItems().setAll(branches));
  * });
  *

@@ -301,7 +301,7 @@ public interface OperationLogService {
 | `RED_LINE_BLOCKED` | 命中阻断类红线 | BR-26~BR-28、BR-32 |
 | `RED_LINE_CONFIRM_CANCELED` | 二次确认被用户取消 | BR-29、BR-30 |
 | `WORKTREE_DIRTY` | 工作区不干净且操作不允许 | BR-12 |
-| `GIT_EXECUTION_FAILED` | JGit/CLI 执行失败 | BE-02~BE-09 |
+| `GIT_EXECUTION_FAILED` | Git CLI 执行失败 | BE-02~BE-09 |
 | `TASK_CANCELED` | 异步任务被取消 | BR-33 |
 | `TASK_QUEUE_FULL` | 同仓库写任务排队超限 | BR-34 |
 | `MERGE_TOOL_NOT_CONFIGURED` | 未配置外部 Merge 工具 | — |
@@ -313,6 +313,6 @@ public interface OperationLogService {
 ## 禁用清单
 
 - ❌ UI 层直接访问 `infrastructure/` 层（必须经服务接口）
-- ❌ 服务接口暴露 JGit / CLI 内部类型（必须返回领域 Model）
+- ❌ 服务接口暴露 CLI 内部类型（必须返回领域 Model）
 - ❌ 在服务接口中返回 HTTP 概念（无 ResponseEntity、无 HTTP 状态码）
 - ❌ 错误信息暴露技术细节（栈 / SQL / 内网路径）给用户

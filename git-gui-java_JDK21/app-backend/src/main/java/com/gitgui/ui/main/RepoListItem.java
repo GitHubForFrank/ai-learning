@@ -3,6 +3,7 @@ package com.gitgui.ui.main;
 import com.gitgui.domain.model.RepositoryMeta;
 
 import java.util.Objects;
+import lombok.Getter;
 
 /**
  * 侧边栏仓库列表项模型
@@ -18,6 +19,7 @@ import java.util.Objects;
  * @author FrankKang
  * @since 2026-07-24
  */
+@Getter
 public class RepoListItem {
 
     /** 仓库元信息 */
@@ -79,22 +81,6 @@ public class RepoListItem {
             return branch + " · " + repoMeta.getRepoPath();
         }
         return repoMeta.getRepoPath();
-    }
-
-    public RepositoryMeta getRepoMeta() {
-        return repoMeta;
-    }
-
-    public String getScanRootPath() {
-        return scanRootPath;
-    }
-
-    public boolean isFavorite() {
-        return favorite;
-    }
-
-    public String getAlias() {
-        return alias;
     }
 
     /**

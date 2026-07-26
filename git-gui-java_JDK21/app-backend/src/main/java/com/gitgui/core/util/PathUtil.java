@@ -31,11 +31,9 @@ public final class PathUtil {
      * </ol>
      *
      * @param rawPath 原始路径字符串
-     * @return 规范化后的绝对路径
      * @throws InvalidPathException 路径非法
-     * @throws java.nio.file.NoSuchFileException 目录不存在
      */
-    public static Path validateGitRepoPath(String rawPath) {
+    public static void validateGitRepoPath(String rawPath) {
         if (rawPath == null || rawPath.isBlank()) {
             throw new InvalidPathException("", "仓库路径不能为空");
         }
@@ -53,7 +51,6 @@ public final class PathUtil {
         if (!Files.exists(gitDir)) {
             throw new InvalidPathException(rawPath, "目录不是 Git 仓库（缺少 .git）");
         }
-        return normalized;
     }
 
     /**

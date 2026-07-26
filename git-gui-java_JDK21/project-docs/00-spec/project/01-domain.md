@@ -69,7 +69,7 @@
 
 | BR | 规则描述 | 影响模块 |
 | ---- | --------- | -------- |
-| **BR-14** | Stash Save/Pop/Apply/Drop/Branch 通过 JGit StashCommands 执行；Stash List 实时从 Git 读取，不入库 | BE-05 |
+| **BR-14** | Stash Save/Pop/Apply/Drop/Branch 通过 git CLI 执行；Stash List 实时从 Git 读取，不入库 | BE-05 |
 | **BR-15** | Revert 文件（`git restore`）/Undo Add（`git restore --staged`）在文件级上下文菜单执行，对未修改/未暂存文件禁用菜单项 | BE-05, BE-08 |
 | **BR-16** | Clean up 执行前必须 Dry run 预览且二次确认（命中 BR-29 二次确认红线） | BE-05, BE-11 |
 | **BR-17** | Git GC 与 Clean up 拆分为独立动作；GC 执行需二次确认（耗时且不可逆，触发仓库压缩） | BE-05 |
@@ -113,7 +113,7 @@
 
 | BR | 规则描述 | 影响模块 |
 | ---- | --------- | -------- |
-| **BR-33** | 长耗时操作（Clone/Pull/Push/Fetch/Rebase/Merge/MultiRepoScan/GC）必须走统一异步任务体系，进度实时反馈且可取消；JGit 通过 `ProgressMonitor.cancel`，CLI 通过终止进程 | BE-12 |
+| **BR-33** | 长耗时操作（Clone/Pull/Push/Fetch/Rebase/Merge/MultiRepoScan/GC）必须走统一异步任务体系，进度实时反馈且可取消；CLI 任务通过终止进程实现取消 | BE-12 |
 | **BR-34** | 同一仓库同一时间只允许一个写操作任务，重复提交排队；读操作（status/log/scan）可并发；任务队列由 `TaskManager` 统一调度 | BE-12 |
 | **BR-35** | 任务失败不自动重试写操作，由用户手动重试；任务结果（成功/失败/取消 + 错误信息）记录到 `operation_log` | BE-12 |
 | **BR-36** | 后台任务可最小化到状态栏，不阻塞主窗口其他操作；任务完成通过事件总线通知 UI 刷新 | BE-12 |
@@ -131,8 +131,8 @@
 | BR | 规则描述 | 影响模块 |
 | ---- | --------- | -------- |
 | **BR-40** | 单实例运行通过锁文件检测（用户目录下 `.git-gui.lock`），二次启动时聚焦已有窗口而非启动新进程 | BE-13 |
-| **BR-41** | 启动时检测本地 Git 可执行文件，未安装时提示并降级为纯 JGit 模式（LFS/Hook/Submodule/复杂 Rebase 等场景受限） | BE-13 |
-| **BR-42** | 所有 Git 命令行调用强制 `UTF-8` 编码并设置 `core.quotepath=false`，避免 Windows 中文路径乱码；JGit 路径不受此影响 | BE-13 |
+| **BR-41** | 启动时检测本地 Git 可执行文件，未安装时提示并禁用 Git 相关功能（LFS/Hook/Submodule/复杂 Rebase 等场景不可用） | BE-13 |
+| **BR-42** | 所有 Git 命令行调用强制 `UTF-8` 编码并设置 `core.quotepath=false`，避免 Windows 中文路径乱码 | BE-13 |
 
 ### 按模块快速查找
 
@@ -194,7 +194,7 @@
 | `id` | string (UUID) | 主键 |
 | `repoPath` | string | 目标仓库路径 |
 | `operation` | enum | 操作类型（COMMIT/PULL/PUSH/FETCH/MERGE/REBASE/CHECKOUT/STASH/RESET/REVERT/CLEAN/GC/CLONE/INIT/SCAN 等） |
-| `command` | string | 实际执行的 git 命令或 JGit API 描述 |
+| `command` | string | 实际执行的 git 命令描述 |
 | `args` | string (JSON) | 参数 JSON |
 | `success` | boolean | 是否成功 |
 | `durationMs` | long | 耗时（毫秒） |

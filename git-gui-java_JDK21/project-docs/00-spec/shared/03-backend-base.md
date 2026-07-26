@@ -1,7 +1,7 @@
 # 后端实现模式 — 基座
 
 > 本文件为共享基座。DDD 分层、包结构、Model/Repository/Service 的通用规范。
-> 项目专属的 JGit/CLI 适配器、命令红线拦截器、异步任务体系、Guice 绑定等见项目 `project-docs/00-spec/project/03-backend.md`。
+> 项目专属的 CLI 适配器、命令红线拦截器、异步任务体系、Guice 绑定等见项目 `project-docs/00-spec/project/03-backend.md`。
 
 ---
 
@@ -26,12 +26,11 @@
 └───────────────────┬──────────────────────────────┘
                     ↓ Guice 绑定（接口 → 实现）
 ┌──────────────────────────────────────────────────┐
-│  基础设施层  infrastructure/jgit/                │  JGit 适配器（主）
-│              infrastructure/cli/                 │  Git CLI 兜底适配器
+│  基础设施层  infrastructure/cli/                 │  Git CLI 适配器
 │              infrastructure/persistence/         │  SQLite 仓储实现 + Flyway
 │              infrastructure/credential/          │  系统 credential helper
 └───────────────────┬──────────────────────────────┘
-                    ↓ JGit API / 进程 / SQL
+                    ↓ 进程 / SQL
                   {Git 仓库} / {SQLite}
 ```
 
@@ -63,8 +62,7 @@
     service/                       # 服务接口契约（UI 注入此包）
     redline/                       # RedLineContext、RedLineResult、RedLineRule 接口
   infrastructure/
-    jgit/                          # JGit 适配器（主）
-    cli/                           # CLI 兜底适配器、GitProcessBuilder
+    cli/                           # Git CLI 适配器、GitProcessBuilder
     persistence/
       entity/                      # SQLite Entity
       mapper/                      # MyBatis-Plus Mapper 接口（extends BaseMapper）
@@ -82,7 +80,7 @@
 
 - 命名：`XxxModel`
 - 纯 POJO，使用 Lombok `@Data @Builder @NoArgsConstructor @AllArgsConstructor`
-- 无 Guice / SQLite / JGit 注解
+- 无 Guice / SQLite 注解
 - 字段对应服务契约中的返回结构
 - 可选字段使用装箱类型（`Integer`、`Boolean`）
 
@@ -118,12 +116,10 @@
 ## 适配器规范 — Git 操作
 
 - 接口 `GitOperationExecutor` 定义所有 Git 操作方法
-- `JGitOperationExecutor`（主）：纯 Java、进度可控、无进程开销
-- `CliGitExecutor`（兜底）：JGit 不支持或支持不足的场景回退（LFS / Hook / 复杂 Rebase / Worktree / Submodule / filter-repo）
-- `GitExecutorRouter`：按操作类型路由，命中 CLI 兜底时 `log.info` 记录降级
+- `CliGitExecutor`：通过本地 git CLI 执行所有 Git 操作（含 LFS / Hook / 复杂 Rebase / Worktree / Submodule / filter-repo）
 - CLI 调用强制 `UTF-8` 编码并设置 `core.quotepath=false`
 
-> 具体适配器实现见 [03-backend.md §JGit + CLI 兜底适配器模式]。
+> 具体适配器实现见 [03-backend.md §Git CLI 适配器模式]。
 
 ---
 
@@ -133,6 +129,5 @@
 | --- | ----- | ----- |
 | JavaFX 线程模型 | Git 操作不能阻塞 JavaFX Application Thread | 所有 Git 操作走异步任务体系，通过 `Platform.runLater` 回 UI |
 | SQLite 并发 | SQLite 单写多读，桌面应用单进程 | 启用 WAL 模式；写操作串行（参见异步任务队列） |
-| JGit 与 CLI 一致性 | 兜底 CLI 的输出与 JGit 行为需对齐 | 统一 UTF-8 + quotepath，结果归一化为领域 Model |
 
 > IoC 容器选型由各项目自行决定（本项目使用 Google Guice）。

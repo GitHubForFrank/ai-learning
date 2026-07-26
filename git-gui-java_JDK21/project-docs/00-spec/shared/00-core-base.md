@@ -13,7 +13,7 @@
 ```plaintext
 ① 规约先行：BR-* / 服务契约 / 数据字典先定稿（修改 spec/）
 ② 建表迁移：DDL 脚本写入 app-backend/src/main/resources/db/migration/，V 号递增
-③ 后端实现：领域层 → 应用层 → 基础设施层（JGit/CLI/SQLite），严格按 DDD 分层
+③ 后端实现：领域层 → 应用层 → 基础设施层（CLI/SQLite），严格按 DDD 分层
 ④ UI 实现：FXML → Controller → ViewModel → 调用服务接口（对齐服务契约）
 ```
 
@@ -186,7 +186,7 @@ spec 文件之间相互引用时，统一使用以下格式：
 **允许**：
 
 - ✅ 应用对**用户在 UI 中选定的工作目标仓库**执行 Clone/Commit/Pull/Push/Rebase 等全部 Git 操作
-- ✅ 应用通过 JGit（主）与本地 Git 命令行（兜底）操作目标仓库
+- ✅ 应用通过本地 Git 命令行（CLI）操作目标仓库
 - ✅ 操作目标仓库的命令轨迹记录到 `operation_log` 与 `audit_log`
 
 **严禁**：

@@ -34,8 +34,8 @@ public class TaskManager {
     /** 写任务队列最大长度（同仓库写任务排队超限抛 TASK_QUEUE_FULL，BR-34） */
     private static final int WRITE_QUEUE_MAX = 50;
 
-    /** 写任务队列：repoPath → 单线程串行执行器 */
-    private final Map<String, ExecutorService> writeExecutors = new ConcurrentHashMap<>();
+    /** 写任务队列：repoPath → 单线程串行执行器（{@link ThreadPoolExecutor} 类型以便 getQueue 队列检查） */
+    private final Map<String, ThreadPoolExecutor> writeExecutors = new ConcurrentHashMap<>();
 
     /** 读任务并发池（读操作可并发，BR-34） */
     private final ExecutorService readExecutor;
@@ -94,8 +94,8 @@ public class TaskManager {
         handle.onProgress(callback == null ? ProgressCallback.NOOP : callback);
         handles.put(taskId, handle);
 
-        ExecutorService executor = writeExecutors.computeIfAbsent(repoPath, k -> createWriteExecutor());
-        if (((ThreadPoolExecutor) executor).getQueue().size() >= WRITE_QUEUE_MAX) {
+        ThreadPoolExecutor executor = writeExecutors.computeIfAbsent(repoPath, k -> createWriteExecutor());
+        if (executor.getQueue().size() >= WRITE_QUEUE_MAX) {
             throw new GitGuiException(ErrorCode.TASK_QUEUE_FULL);
         }
         executor.submit(() -> executeTask(handle, record, task, callback));
@@ -179,13 +179,21 @@ public class TaskManager {
 
     /**
      * 创建仓库级写任务执行器（单线程串行，保证同仓库写串行，BR-34）。
+     * <p>显式返回 {@link ThreadPoolExecutor}，避免 {@link Executors#newSingleThreadExecutor()}
+     * 内部包装的 {@code AutoShutdownDelegatedExecutorService} 不能 cast 为 ThreadPoolExecutor
+     * 导致的 ClassCastException。</p>
      */
-    private ExecutorService createWriteExecutor() {
-        return Executors.newSingleThreadExecutor(r -> {
-            Thread t = new Thread(r, "git-gui-write-task");
-            t.setDaemon(true);
-            return t;
-        });
+    private ThreadPoolExecutor createWriteExecutor() {
+        return new ThreadPoolExecutor(
+                1, 1,                              // corePoolSize / maxPoolSize 都为 1（单线程）
+                0L, TimeUnit.MILLISECONDS,         // 闲置线程立即结束
+                new LinkedBlockingQueue<>(WRITE_QUEUE_MAX * 2),  // 有界队列，溢出时 CallerRunsPolicy
+                r -> {
+                    Thread t = new Thread(r, "git-gui-write-task");
+                    t.setDaemon(true);
+                    return t;
+                },
+                new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
     /**

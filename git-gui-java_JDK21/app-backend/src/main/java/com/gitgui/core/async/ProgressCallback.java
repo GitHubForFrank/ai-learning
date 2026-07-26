@@ -3,7 +3,7 @@ package com.gitgui.core.async;
 /**
  * 进度回调接口
  * <p>异步任务执行过程中通过本接口实时反馈进度百分比与命令输出。</p>
- * <p>适配 JGit {@code ProgressMonitor} 与 CLI 输出解析，遵循 BR-33 进度实时反馈。</p>
+ * <p>适配 CLI 输出解析，遵循 BR-33 进度实时反馈。</p>
  *
  * @author FrankKang
  * @since 2026-05-27
@@ -27,7 +27,7 @@ public interface ProgressCallback {
 
     /**
      * 检查任务是否被取消。
-     * <p>JGit 通过 {@code ProgressMonitor.isCancelled} 调用本方法，CLI 通过轮询。</p>
+     * <p>CLI 任务通过轮询本方法判断是否取消。</p>
      *
      * @return true 表示用户已请求取消
      */

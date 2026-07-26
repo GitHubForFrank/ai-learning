@@ -26,7 +26,7 @@
     00-core.md             # 桌面配置 + 技术选型禁止清单
     01-domain.md           # BR-01~BR-42 业务规则 + 7 实体字典
     02-api.md              # 11 服务接口契约 + 错误码注册表（非 HTTP）
-    03-backend.md          # 桌面 DDD、JGit/CLI 适配器、命令红线拦截器、异步任务、Guice
+    03-backend.md          # 桌面 DDD、CLI 适配器、命令红线拦截器、异步任务、Guice
     04-database.md         # SQLite + 7 张表 + V1~V7 迁移历史
     05-frontend.md         # JavaFX 21 技术栈 + 主窗口 + 对话框清单
     06-quality.md          # 应用内状态面板 + 桌面性能 SLO

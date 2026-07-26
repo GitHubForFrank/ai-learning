@@ -1,6 +1,7 @@
 package com.gitgui.ui.theme;
 
 import javafx.scene.Scene;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,8 +18,7 @@ public class ThemeManager {
 
     /** 当前主题场景引用 */
     private Scene scene;
-
-    /** 当前主题 */
+    @Getter
     private String currentTheme = "DARK";
 
     /**
@@ -58,15 +58,6 @@ public class ThemeManager {
         } catch (Exception e) {
             log.warn("加载主题样式表失败：{}", css, e);
         }
-    }
-
-    /**
-     * 获取当前主题。
-     *
-     * @return 主题名
-     */
-    public String getCurrentTheme() {
-        return currentTheme;
     }
 
     /**

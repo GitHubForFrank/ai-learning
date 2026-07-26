@@ -20,7 +20,7 @@
 
 ## 前置条件
 
-- Mock `GitOperationExecutor`（JGit 适配器）
+- Mock `GitOperationExecutor`（CLI 适配器）
 - Mock `CommandInterceptor`（验证推送红线被调用）
 - 构造 `CommitRequest`（含 stagedFiles、message、amend 标志）
 - 不启动 JavaFX

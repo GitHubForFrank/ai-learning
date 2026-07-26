@@ -1,5 +1,7 @@
 package com.gitgui.core.exception;
 
+import lombok.Getter;
+
 /**
  * 应用错误码枚举
  * <p>对应 02-api.md 错误码注册表，{@code GitGuiException} 携带的错误代码。</p>
@@ -8,6 +10,7 @@ package com.gitgui.core.exception;
  * @author FrankKang
  * @since 2026-05-27
  */
+@Getter
 public enum ErrorCode {
 
     /** 参数校验失败（BR-03/BR-06/BR-07/BR-21） */
@@ -20,7 +23,7 @@ public enum ErrorCode {
     RED_LINE_CONFIRM_CANCELED("用户取消二次确认"),
     /** 工作区不干净且操作不允许（BR-12） */
     WORKTREE_DIRTY("工作区不干净，请先提交或暂存修改"),
-    /** JGit/CLI 执行失败（BE-02~BE-09） */
+    /** Git CLI 执行失败（BE-02~BE-09） */
     GIT_EXECUTION_FAILED("Git 操作执行失败"),
     /** 异步任务被取消（BR-33） */
     TASK_CANCELED("任务已取消"),
@@ -37,19 +40,10 @@ public enum ErrorCode {
     /** 本地 Git 未安装（BR-41） */
     GIT_NOT_FOUND("未检测到本地 Git 可执行文件");
 
-    /** 中文友好提示 */
     private final String message;
 
     ErrorCode(String message) {
         this.message = message;
     }
 
-    /**
-     * 获取错误默认中文提示。
-     *
-     * @return 中文提示文本
-     */
-    public String getMessage() {
-        return message;
-    }
 }

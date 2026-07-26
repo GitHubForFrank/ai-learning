@@ -8,7 +8,6 @@
 ## 版本升级策略
 
 - **JDK / JavaFX**：跟随官方 LTS 版本，定期评估
-- **JGit**：必须验证与当前 JDK 版本的兼容性
 - **Guice / Flyway / sqlite-jdbc**：小版本（patch）自动升级，大版本（major）需手动评估
 - **禁止**：在代码中硬编码依赖版本（统一在 `pom.xml` 中管理）
 

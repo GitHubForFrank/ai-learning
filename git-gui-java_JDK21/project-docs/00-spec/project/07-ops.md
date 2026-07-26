@@ -15,7 +15,7 @@
 | ----- | ------ |
 | Java | JDK 21（LTS） |
 | JavaFX | GUI 框架（21） |
-| JGit | Git 操作主适配器（纯 Java） |
+| Git CLI | 通过本地 git 可执行文件执行所有 Git 操作 |
 | Google Guice | 轻量 IoC 容器，Module 绑定 |
 | sqlite-jdbc | SQLite JDBC 驱动 |
 | Flyway Core | 数据库迁移管理 |
@@ -57,7 +57,7 @@
 | 资源 | 建议值 | 说明 |
 | ----- | ------- | ----- |
 | CPU | 2 核 | Git 操作 + UI 渲染 |
-| 内存 | 256~512MB | JavaFX + JGit + SQLite |
+| 内存 | 256~512MB | JavaFX + Git CLI + SQLite |
 | 磁盘 | 按仓库规模 | 用户数据 + 日志 + 数据库 |
 
 ---

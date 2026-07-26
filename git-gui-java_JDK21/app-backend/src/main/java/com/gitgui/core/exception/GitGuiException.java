@@ -1,5 +1,7 @@
 package com.gitgui.core.exception;
 
+import lombok.Getter;
+
 /**
  * 应用统一异常
  * <p>所有服务层异常统一抛出本异常，携带 {@link ErrorCode} 与中文 message。</p>
@@ -8,9 +10,9 @@ package com.gitgui.core.exception;
  * @author FrankKang
  * @since 2026-05-27
  */
+@Getter
 public class GitGuiException extends RuntimeException {
 
-    /** 错误码 */
     private final ErrorCode errorCode;
 
     /**
@@ -57,12 +59,4 @@ public class GitGuiException extends RuntimeException {
         this.errorCode = errorCode;
     }
 
-    /**
-     * 获取错误码。
-     *
-     * @return 错误码
-     */
-    public ErrorCode getErrorCode() {
-        return errorCode;
-    }
 }

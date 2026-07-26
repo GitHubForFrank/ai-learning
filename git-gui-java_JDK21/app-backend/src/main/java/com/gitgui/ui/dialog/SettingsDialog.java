@@ -6,12 +6,10 @@ import com.gitgui.domain.model.SensitiveFileRule;
 import com.gitgui.domain.service.SettingsService;
 import com.gitgui.ui.AsyncUiLoader;
 import com.gitgui.ui.i18n.I18nUtil;
-import com.gitgui.ui.theme.ThemeManager;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import org.slf4j.Logger;
@@ -24,13 +22,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 设置对话框
- * <p>对应 PRD 4.17，包含三个 Tab：</p>
- * <ul>
- *   <li>命令红线：总开关、保护分支清单、远程白名单、敏感文件规则、超大文件阈值</li>
- *   <li>界面：主题、语言</li>
- *   <li>外部工具：Diff 工具、合并工具、外部编辑器</li>
- * </ul>
+ * 执行红线设置对话框
+ * <p>对应 PRD 4.17 命令红线配置：总开关、保护分支清单、远程白名单、敏感文件规则、超大文件阈值。</p>
+ * <p>界面（主题/语言）与外部工具配置已迁移到外层「设置」菜单的独立入口，
+ * 本对话框仅保留命令红线相关配置。</p>
  * <p>遵循 BR-27、BR-28、BR-29、BR-30、BR-32、BR-37、BR-38、BR-39。</p>
  *
  * @author FrankKang
@@ -41,7 +36,6 @@ public class SettingsDialog extends Dialog<Void> {
     private static final Logger log = LoggerFactory.getLogger(SettingsDialog.class);
 
     private final SettingsService settingsService;
-    private final ThemeManager themeManager;
 
     /** 红线总开关 */
     private final CheckBox redlineEnabledCheck = new CheckBox(I18nUtil.get("settings.redline.enabled"));
@@ -53,28 +47,16 @@ public class SettingsDialog extends Dialog<Void> {
     private final TextArea sensitiveFileRulesArea = new TextArea();
     /** 超大文件阈值 */
     private final TextField largeFileThresholdField = new TextField();
-    /** 主题下拉 */
-    private final ComboBox<String> themeCombo = new ComboBox<>();
-    /** 语言下拉 */
-    private final ComboBox<String> languageCombo = new ComboBox<>();
-    /** Diff 工具 */
-    private final TextField diffToolField = new TextField();
-    /** 合并工具 */
-    private final TextField mergeToolField = new TextField();
-    /** 外部编辑器 */
-    private final TextField editorField = new TextField();
     /** 已加载的敏感文件规则（保存时保留其 description，避免覆盖丢失） */
     private List<SensitiveFileRule> loadedSensitiveRules = Collections.emptyList();
 
     /**
-     * 构造设置对话框。
+     * 构造执行红线设置对话框。
      *
      * @param settingsService 设置服务
-     * @param themeManager 主题管理器
      */
-    public SettingsDialog(SettingsService settingsService, ThemeManager themeManager) {
+    public SettingsDialog(SettingsService settingsService) {
         this.settingsService = settingsService;
-        this.themeManager = themeManager;
         setTitle(I18nUtil.get("settings.title"));
         setHeaderText(null);
         initModality(Modality.APPLICATION_MODAL);
@@ -98,38 +80,12 @@ public class SettingsDialog extends Dialog<Void> {
     }
 
     /**
-     * 构建对话框内容。
-     *
-     * @return TabPane
-     */
-    private TabPane buildContent() {
-        TabPane tabPane = new TabPane();
-        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-        tabPane.setPrefWidth(640);
-        tabPane.setPrefHeight(520);
-
-        // 红线 Tab
-        Tab redlineTab = new Tab(I18nUtil.get("settings.redline"));
-        redlineTab.setContent(buildRedlineTab());
-
-        // 界面 Tab
-        Tab uiTab = new Tab(I18nUtil.get("settings.ui"));
-        uiTab.setContent(buildUiTab());
-
-        // 外部工具 Tab
-        Tab externalTab = new Tab(I18nUtil.get("settings.external"));
-        externalTab.setContent(buildExternalTab());
-
-        tabPane.getTabs().addAll(redlineTab, uiTab, externalTab);
-        return tabPane;
-    }
-
-    /**
-     * 构建红线 Tab。
+     * 构建对话框内容（命令红线配置表单）。
+     * <p>移除原 TabPane 容器，直接展示红线表单（界面/外部工具 Tab 已迁出）。</p>
      *
      * @return VBox
      */
-    private VBox buildRedlineTab() {
+    private VBox buildContent() {
         VBox vbox = new VBox(10);
         vbox.setPadding(new Insets(12));
 
@@ -165,62 +121,8 @@ public class SettingsDialog extends Dialog<Void> {
     }
 
     /**
-     * 构建界面 Tab。
-     *
-     * @return VBox
-     */
-    private VBox buildUiTab() {
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(12));
-
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-
-        themeCombo.getItems().addAll("LIGHT", "DARK", "SYSTEM");
-        languageCombo.getItems().addAll("zh", "en");
-
-        grid.add(new Label(I18nUtil.get("settings.ui.theme")), 0, 0);
-        grid.add(themeCombo, 1, 0);
-        grid.add(new Label(I18nUtil.get("settings.ui.language")), 0, 1);
-        grid.add(languageCombo, 1, 1);
-
-        vbox.getChildren().add(grid);
-        return vbox;
-    }
-
-    /**
-     * 构建外部工具 Tab。
-     *
-     * @return VBox
-     */
-    private VBox buildExternalTab() {
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(12));
-
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-
-        diffToolField.setPrefWidth(380);
-        mergeToolField.setPrefWidth(380);
-        editorField.setPrefWidth(380);
-
-        grid.add(new Label(I18nUtil.get("settings.external.diffTool")), 0, 0);
-        grid.add(diffToolField, 1, 0);
-        grid.add(new Label(I18nUtil.get("settings.external.mergeTool")), 0, 1);
-        grid.add(mergeToolField, 1, 1);
-        grid.add(new Label(I18nUtil.get("settings.external.editor")), 0, 2);
-        grid.add(editorField, 1, 2);
-
-        vbox.getChildren().add(grid);
-        return vbox;
-    }
-
-    /**
-     * 加载当前设置到 UI。
-     * <p>通过 {@link AsyncUiLoader} 提交读任务（BR-33），完成后在 UI 线程回填表单。
-     * 设置为全局配置，无仓库上下文，repoPath 传空串。</p>
+     * 加载当前红线设置到 UI。
+     * <p>通过 {@link AsyncUiLoader} 提交读任务（BR-33），完成后在 UI 线程回填表单。</p>
      */
     private void loadSettings() {
         AsyncUiLoader.submitRead(null, TaskType.STATUS, () -> {
@@ -232,12 +134,6 @@ public class SettingsDialog extends Dialog<Void> {
                 // 缓存已加载规则，保存时按 pattern 保留 description，避免覆盖丢失
                 loadedSensitiveRules = sensitiveRules == null ? Collections.emptyList() : sensitiveRules;
                 int largeFileThreshold = settingsService.getLargeFileThresholdMb();
-                String theme = settingsService.get("ui.theme");
-                String language = settingsService.get("ui.language");
-                // 配置键名与 V1 SQL/SettingsServiceImpl 保持一致（下划线风格）
-                String diffTool = settingsService.get("external.diff_tool");
-                String mergeTool = settingsService.get("external.merge_tool");
-                String editor = settingsService.get("external.editor");
 
                 Platform.runLater(() -> {
                     redlineEnabledCheck.setSelected(enabled);
@@ -249,11 +145,6 @@ public class SettingsDialog extends Dialog<Void> {
                     }
                     sensitiveFileRulesArea.setText(sb.toString().trim());
                     largeFileThresholdField.setText(String.valueOf(largeFileThreshold));
-                    themeCombo.setValue(theme == null || theme.isEmpty() ? "DARK" : theme);
-                    languageCombo.setValue(language == null || language.isEmpty() ? "zh" : language);
-                    diffToolField.setText(diffTool == null ? "" : diffTool);
-                    mergeToolField.setText(mergeTool == null ? "" : mergeTool);
-                    editorField.setText(editor == null ? "" : editor);
                 });
             } catch (Exception e) {
                 log.error("加载设置失败", e);
@@ -307,23 +198,6 @@ public class SettingsDialog extends Dialog<Void> {
                 threshold = 100;
             }
             settingsService.set("red_line.large_file_threshold_mb", String.valueOf(threshold));
-
-            // 界面
-            String theme = themeCombo.getValue();
-            if (theme != null) {
-                settingsService.set("ui.theme", theme);
-                themeManager.applyTheme(theme);
-            }
-            String language = languageCombo.getValue();
-            if (language != null) {
-                settingsService.set("ui.language", language);
-                I18nUtil.switchLanguage(language);
-            }
-
-            // 外部工具（键名与 V1 SQL 一致：下划线风格）
-            settingsService.set("external.diff_tool", diffToolField.getText().trim());
-            settingsService.set("external.merge_tool", mergeToolField.getText().trim());
-            settingsService.set("external.editor", editorField.getText().trim());
 
             new Alert(Alert.AlertType.INFORMATION, I18nUtil.get("settings.saved")).showAndWait();
             close();

@@ -56,11 +56,9 @@
     <!-- 应用包日志级别 -->
     <logger name="com.gitgui" level="DEBUG"/>
     <logger name="com.gitgui.infrastructure" level="INFO"/>
-    <logger name="com.gitgui.infrastructure.jgit" level="INFO"/>
     <logger name="com.gitgui.infrastructure.cli" level="INFO"/>
 
     <!-- 第三方库日志级别 -->
-    <logger name="org.eclipse.jgit" level="WARN"/>
     <logger name="com.google.inject" level="WARN"/>
     <logger name="org.flywaydb" level="INFO"/>
     <logger name="org.sqlite" level="WARN"/>

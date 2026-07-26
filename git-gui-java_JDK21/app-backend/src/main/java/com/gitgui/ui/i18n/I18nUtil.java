@@ -1,5 +1,6 @@
 package com.gitgui.ui.i18n;
 
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +22,7 @@ public final class I18nUtil {
     /** 资源包基础名 */
     private static final String BASE_NAME = "i18n.messages";
 
-    /** 当前资源包（volatile 保证多线程可见性） */
+    @Getter
     private static volatile ResourceBundle bundle = ResourceBundle.getBundle(BASE_NAME, Locale.SIMPLIFIED_CHINESE);
 
     private I18nUtil() {
@@ -56,12 +57,4 @@ public final class I18nUtil {
         log.info("语言切换：{}", language);
     }
 
-    /**
-     * 获取当前 ResourceBundle。
-     *
-     * @return ResourceBundle
-     */
-    public static ResourceBundle getBundle() {
-        return bundle;
-    }
 }

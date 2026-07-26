@@ -40,7 +40,7 @@ public class CheckoutRequest {
     /**
      * 完整 ref 名（含 {@code refs/heads/} / {@code refs/remotes/<remote>/} / {@code refs/tags/} 前缀）。
      * <p>优先级最高：当 UI 层从 refs 浏览对话框选中某个 ref 时，携带完整路径传给 Service 层，</p>
-     * <p>避免剥离前缀后无法被 JGit 解析（典型场景：远程分支 {@code refs/remotes/origin/feature/x}）。</p>
+     * <p>避免剥离前缀后无法被 git CLI 解析（典型场景：远程分支 {@code refs/remotes/origin/feature/x}）。</p>
      */
     private String refName;
 

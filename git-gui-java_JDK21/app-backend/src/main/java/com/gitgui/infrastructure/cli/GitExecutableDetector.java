@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 
 /**
  * Git 可执行文件检测器
- * <p>遵循 BR-41：启动时检测本地 Git 可执行文件，未安装时降级为纯 JGit 模式。</p>
+ * <p>遵循 BR-41：启动时检测本地 Git 可执行文件，未安装时返回 null，Git 相关功能将不可用。</p>
  *
  * @author FrankKang
  * @since 2026-05-27
@@ -65,7 +65,7 @@ public class GitExecutableDetector {
                 return p;
             }
         }
-        log.warn("未检测到本地 Git 可执行文件，降级为纯 JGit 模式（BR-41）");
+        log.warn("未检测到本地 Git 可执行文件，Git 相关功能将不可用（BR-41）");
         return null;
     }
 

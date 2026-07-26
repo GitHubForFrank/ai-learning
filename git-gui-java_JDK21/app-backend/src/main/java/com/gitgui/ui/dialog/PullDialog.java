@@ -2,6 +2,7 @@ package com.gitgui.ui.dialog;
 
 import com.gitgui.core.async.ProgressCallback;
 import com.gitgui.core.async.TaskHandle;
+import com.gitgui.core.exception.RedLineBlockedException;
 import com.gitgui.domain.constant.TaskType;
 import com.gitgui.domain.model.RemoteConfig;
 import com.gitgui.domain.model.request.PullRequest;
@@ -16,6 +17,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
+import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -177,11 +179,11 @@ public class PullDialog extends Dialog<Void> {
     private void loadBranches(String remote) {
         AsyncUiLoader.submitRead(repoPath, TaskType.STATUS, () -> {
             try {
-                com.gitgui.infrastructure.jgit.JGitOperationExecutor jgit =
-                        com.gitgui.GitGuiApp.getInjector().getInstance(com.gitgui.infrastructure.jgit.JGitOperationExecutor.class);
+                com.gitgui.infrastructure.cli.CliGitExecutor gitExecutor =
+                        com.gitgui.GitGuiApp.getInjector().getInstance(com.gitgui.infrastructure.cli.CliGitExecutor.class);
                 // 先 fetch 一次（避免远程分支列表过时），这里简化：直接列本地 + 远程分支
-                List<String> branches = jgit.listBranches(repoPath);
-                String current = jgit.getCurrentBranch(repoPath);
+                List<String> branches = gitExecutor.listBranches(repoPath);
+                String current = gitExecutor.getCurrentBranch(repoPath);
                 Platform.runLater(() -> {
                     branchCombo.getItems().clear();
                     for (String b : branches) {
@@ -231,50 +233,36 @@ public class PullDialog extends Dialog<Void> {
                 .dryRun(dryRunCheck.isSelected())
                 .build();
 
-        progressBar.setVisible(true);
-        progressLabel.setVisible(true);
-        progressBar.setProgress(0);
-        progressLabel.setText(I18nUtil.get("button.pull") + "...");
+        // 先拿到 stage 引用，再关闭（与 Commit push 模式一致）
+        Stage owner = (getDialogPane().getScene() == null) ? null
+                : (Stage) getDialogPane().getScene().getWindow();
+        close();
 
-        ProgressCallback cb = new ProgressCallback() {
-            @Override
-            public void onProgress(int percent, String message) {
-                Platform.runLater(() -> {
-                    progressBar.setProgress(percent / 100.0);
-                    progressLabel.setText(message);
-                });
+        // 延迟一帧打开 ProgressDialog，确保 PullDialog 完全关闭后再渲染进度窗口
+        Platform.runLater(() -> {
+            ProgressDialog progress = new ProgressDialog(
+                    owner,
+                    I18nUtil.get("pull.title") + "  ←  " + remote + "/" + branch,
+                    I18nUtil.get("progress.headerOperating")
+            );
+            ProgressCallback sharedCb = progress.asCallback();
+            try {
+                TaskHandle handle = gitOperationService.pull(req, sharedCb);
+                progress.attach(handle);
+                // 拉取完成后进度条到 100%，console 显示结果，用户手动关闭
+                progress.showAndWaitForTask();
+            } catch (RedLineBlockedException e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle(I18nUtil.get("redline.blocked.title"));
+                alert.setHeaderText(I18nUtil.get("redline.blocked.hitRule") + e.getRuleCode());
+                alert.setContentText(e.getMessage());
+                alert.showAndWait();
+                Platform.runLater(progress::close);
+            } catch (Exception e) {
+                log.error("拉取异常", e);
+                new Alert(Alert.AlertType.ERROR, I18nUtil.get("pull.error") + e.getMessage()).showAndWait();
+                Platform.runLater(progress::close);
             }
-
-            @Override
-            public void onOutput(String line) {
-                Platform.runLater(() -> progressLabel.setText(line));
-            }
-
-            @Override
-            public boolean isCancelled() {
-                return false;
-            }
-        };
-
-        try {
-            TaskHandle handle = gitOperationService.pull(req, cb);
-            handle.onSuccess(result -> Platform.runLater(() -> {
-                progressBar.setProgress(1.0);
-                progressLabel.setText(I18nUtil.get("pull.success"));
-                new Alert(Alert.AlertType.INFORMATION, I18nUtil.get("pull.success")).showAndWait();
-                close();
-            }));
-            handle.onFailure(error -> Platform.runLater(() -> {
-                progressBar.setProgress(0);
-                progressLabel.setText(I18nUtil.get("pull.failed") + error.getMessage());
-                new Alert(Alert.AlertType.ERROR, I18nUtil.get("pull.failed") + error.getMessage()).showAndWait();
-                log.error("拉取失败", error);
-            }));
-        } catch (Exception e) {
-            log.error("拉取异常", e);
-            progressBar.setVisible(false);
-            progressLabel.setVisible(false);
-            new Alert(Alert.AlertType.ERROR, I18nUtil.get("pull.error") + e.getMessage()).showAndWait();
-        }
+        });
     }
 }

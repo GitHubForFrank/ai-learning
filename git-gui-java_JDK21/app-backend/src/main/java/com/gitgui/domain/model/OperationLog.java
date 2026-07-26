@@ -31,7 +31,7 @@ public class OperationLog {
     /** 操作类型（COMMIT/PULL/PUSH/...） */
     private OperationType operation;
 
-    /** 实际执行的 git 命令或 JGit API 描述 */
+    /** 实际执行的 git 命令描述 */
     private String command;
 
     /** 参数 JSON */

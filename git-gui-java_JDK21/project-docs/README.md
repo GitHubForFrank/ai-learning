@@ -11,7 +11,7 @@
 | 语言 / 运行时 | Java 21 |
 | UI 框架 | JavaFX 21（FXML + Controller + ViewModel，MVVM） |
 | IoC 容器 | Google Guice（非 Spring） |
-| Git 能力 | JGit（主）+ Git CLI（兜底，UTF-8 + core.quotepath=false） |
+| Git 能力 | 本地 Git CLI（UTF-8 + core.quotepath=false） |
 | 本地存储 | SQLite + sqlite-jdbc + Flyway 自动迁移 |
 | 构建 | Maven（单 `app-backend/` 模块，含 Flyway 迁移脚本） |
 | 打包 | jar + bat/sh 启动脚本（可选 jpackage 原生安装包） |
@@ -39,7 +39,7 @@ project-docs/
 参见 [02-design/01-项目介绍.md](./02-design/01-项目介绍.md) 的「快速启动」章节。
 
 - 数据目录：`~/.git-gui/`（数据库 `git-gui.db`、日志、锁文件）
-- 启动前需本机安装 Git；未安装时应用降级为纯 JGit 模式（参见 BR-41）
+- 启动前需本机安装 Git；未安装时 Git 相关功能不可用（参见 BR-41）
 
 ---
 

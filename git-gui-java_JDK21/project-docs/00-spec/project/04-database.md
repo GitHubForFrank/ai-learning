@@ -115,7 +115,7 @@
 | `id` | TEXT | PK | 主键 |
 | `repo_path` | TEXT | NOT NULL | 目标仓库路径 |
 | `operation` | TEXT | NOT NULL | 操作类型枚举 |
-| `command` | TEXT | DEFAULT '' | 实际执行的 git 命令或 JGit API 描述 |
+| `command` | TEXT | DEFAULT '' | 实际执行的 git 命令描述 |
 | `args` | TEXT | DEFAULT '' | 参数 JSON |
 | `success` | INTEGER | NOT NULL DEFAULT 1 | 是否成功 |
 | `duration_ms` | INTEGER | DEFAULT 0 | 耗时（毫秒） |
