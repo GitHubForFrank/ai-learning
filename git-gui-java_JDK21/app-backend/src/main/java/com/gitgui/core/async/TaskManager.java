@@ -3,12 +3,9 @@ package com.gitgui.core.async;
 import com.gitgui.core.constant.TaskStatus;
 import com.gitgui.core.exception.ErrorCode;
 import com.gitgui.core.exception.GitGuiException;
+import com.gitgui.domain.constant.TaskType;
 import com.gitgui.domain.model.TaskRecord;
 import com.gitgui.domain.repository.TaskRecordRepository;
-import com.gitgui.domain.constant.TaskType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -18,6 +15,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 异步任务管理器（单例）
@@ -31,19 +30,29 @@ public class TaskManager {
 
     private static final Logger log = LoggerFactory.getLogger(TaskManager.class);
 
-    /** 写任务队列最大长度（同仓库写任务排队超限抛 TASK_QUEUE_FULL，BR-34） */
+    /**
+     * 写任务队列最大长度（同仓库写任务排队超限抛 TASK_QUEUE_FULL，BR-34）
+     */
     private static final int WRITE_QUEUE_MAX = 50;
 
-    /** 写任务队列：repoPath → 单线程串行执行器（{@link ThreadPoolExecutor} 类型以便 getQueue 队列检查） */
+    /**
+     * 写任务队列：repoPath → 单线程串行执行器（{@link ThreadPoolExecutor} 类型以便 getQueue 队列检查）
+     */
     private final Map<String, ThreadPoolExecutor> writeExecutors = new ConcurrentHashMap<>();
 
-    /** 读任务并发池（读操作可并发，BR-34） */
+    /**
+     * 读任务并发池（读操作可并发，BR-34）
+     */
     private final ExecutorService readExecutor;
 
-    /** 任务句柄注册表：taskId → TaskHandle */
+    /**
+     * 任务句柄注册表：taskId → TaskHandle
+     */
     private final Map<String, TaskHandle> handles = new ConcurrentHashMap<>();
 
-    /** 任务记录仓储（持久化任务状态，BR-35） */
+    /**
+     * 任务记录仓储（持久化任务状态，BR-35）
+     */
     private final TaskRecordRepository taskRecordRepository;
 
     /**
@@ -54,14 +63,11 @@ public class TaskManager {
     public TaskManager(TaskRecordRepository taskRecordRepository) {
         this.taskRecordRepository = taskRecordRepository;
         // 读任务并发池：核心 4 线程，最大 16 线程，队列 200
-        this.readExecutor = new ThreadPoolExecutor(
-                4, 16, 60L, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>(200),
-                r -> {
-                    Thread t = new Thread(r, "git-gui-read-task");
-                    t.setDaemon(true);
-                    return t;
-                });
+        this.readExecutor = new ThreadPoolExecutor(4, 16, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(200), r -> {
+            Thread t = new Thread(r, "git-gui-read-task");
+            t.setDaemon(true);
+            return t;
+        });
     }
 
     /**
@@ -74,15 +80,17 @@ public class TaskManager {
      * @return 任务句柄
      */
     public TaskHandle submitWrite(String repoPath, TaskType taskType, Runnable task, ProgressCallback callback) {
-        String taskId = UUID.randomUUID().toString().replace("-", "");
+        String taskId = UUID.randomUUID()
+                            .toString()
+                            .replace("-", "");
         TaskRecord record = TaskRecord.builder()
-                .id(taskId)
-                .taskType(taskType)
-                .repoPath(repoPath)
-                .status(TaskStatus.PENDING)
-                .progress(0)
-                .cancellable(true)
-                .build();
+                                      .id(taskId)
+                                      .taskType(taskType)
+                                      .repoPath(repoPath)
+                                      .status(TaskStatus.PENDING)
+                                      .progress(0)
+                                      .cancellable(true)
+                                      .build();
         taskRecordRepository.save(record);
 
         TaskHandle handle = new TaskHandle(taskId, () -> {
@@ -95,7 +103,8 @@ public class TaskManager {
         handles.put(taskId, handle);
 
         ThreadPoolExecutor executor = writeExecutors.computeIfAbsent(repoPath, k -> createWriteExecutor());
-        if (executor.getQueue().size() >= WRITE_QUEUE_MAX) {
+        if (executor.getQueue()
+                    .size() >= WRITE_QUEUE_MAX) {
             throw new GitGuiException(ErrorCode.TASK_QUEUE_FULL);
         }
         executor.submit(() -> executeTask(handle, record, task, callback));
@@ -112,15 +121,17 @@ public class TaskManager {
      * @return 任务句柄
      */
     public TaskHandle submitRead(String repoPath, TaskType taskType, Runnable task, ProgressCallback callback) {
-        String taskId = UUID.randomUUID().toString().replace("-", "");
+        String taskId = UUID.randomUUID()
+                            .toString()
+                            .replace("-", "");
         TaskRecord record = TaskRecord.builder()
-                .id(taskId)
-                .taskType(taskType)
-                .repoPath(repoPath)
-                .status(TaskStatus.PENDING)
-                .progress(0)
-                .cancellable(true)
-                .build();
+                                      .id(taskId)
+                                      .taskType(taskType)
+                                      .repoPath(repoPath)
+                                      .status(TaskStatus.PENDING)
+                                      .progress(0)
+                                      .cancellable(true)
+                                      .build();
         taskRecordRepository.save(record);
 
         TaskHandle handle = new TaskHandle(taskId, () -> log.info("读任务取消：{}", taskId));
@@ -172,7 +183,8 @@ public class TaskManager {
      * 关闭所有执行器，释放资源。
      */
     public void shutdown() {
-        writeExecutors.values().forEach(ExecutorService::shutdownNow);
+        writeExecutors.values()
+                      .forEach(ExecutorService::shutdownNow);
         readExecutor.shutdownNow();
         log.info("TaskManager 已关闭");
     }
@@ -184,16 +196,14 @@ public class TaskManager {
      * 导致的 ClassCastException。</p>
      */
     private ThreadPoolExecutor createWriteExecutor() {
-        return new ThreadPoolExecutor(
-                1, 1,                              // corePoolSize / maxPoolSize 都为 1（单线程）
-                0L, TimeUnit.MILLISECONDS,         // 闲置线程立即结束
-                new LinkedBlockingQueue<>(WRITE_QUEUE_MAX * 2),  // 有界队列，溢出时 CallerRunsPolicy
-                r -> {
-                    Thread t = new Thread(r, "git-gui-write-task");
-                    t.setDaemon(true);
-                    return t;
-                },
-                new ThreadPoolExecutor.CallerRunsPolicy());
+        return new ThreadPoolExecutor(1, 1,                              // corePoolSize / maxPoolSize 都为 1（单线程）
+                                      0L, TimeUnit.MILLISECONDS,         // 闲置线程立即结束
+                                      new LinkedBlockingQueue<>(WRITE_QUEUE_MAX * 2),  // 有界队列，溢出时 CallerRunsPolicy
+                                      r -> {
+                                          Thread t = new Thread(r, "git-gui-write-task");
+                                          t.setDaemon(true);
+                                          return t;
+                                      }, new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
     /**

@@ -1,20 +1,19 @@
 package com.gitgui.core.redline.rule;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.gitgui.core.constant.OperationType;
 import com.gitgui.core.constant.RedLineCode;
 import com.gitgui.domain.redline.RedLineContext;
 import com.gitgui.domain.redline.RedLineResult;
 import com.gitgui.domain.service.SettingsService;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * 向保护分支 force push 规则单元测试（BR-26/BR-27）
@@ -26,10 +25,14 @@ import static org.mockito.Mockito.when;
  */
 class ProtectedBranchRuleTest {
 
-    /** 被测规则依赖的设置服务 mock */
+    /**
+     * 被测规则依赖的设置服务 mock
+     */
     private SettingsService settingsService;
 
-    /** 被测规则实例 */
+    /**
+     * 被测规则实例
+     */
     private ProtectedBranchRule rule;
 
     @BeforeEach
@@ -37,8 +40,7 @@ class ProtectedBranchRuleTest {
         settingsService = mock(SettingsService.class);
         when(settingsService.isRedLineEnabled()).thenReturn(true);
         // 默认保护分支清单：main/master/develop + release/* 通配符
-        when(settingsService.getProtectedBranches())
-                .thenReturn(List.of("main", "master", "develop", "release/*"));
+        when(settingsService.getProtectedBranches()).thenReturn(List.of("main", "master", "develop", "release/*"));
         rule = new ProtectedBranchRule(settingsService);
     }
 
@@ -49,11 +51,11 @@ class ProtectedBranchRuleTest {
     @DisplayName("force push 到 main 分支应返回 BLOCK")
     void shouldBlockForcePushToMain() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.PUSH)
-                .branch("main")
-                .force(true)
-                .forceWithLease(false)
-                .build();
+                                           .operation(OperationType.PUSH)
+                                           .branch("main")
+                                           .force(true)
+                                           .forceWithLease(false)
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -69,11 +71,11 @@ class ProtectedBranchRuleTest {
     @DisplayName("force push 到非保护分支应返回 PASS")
     void shouldPassForcePushToNonProtectedBranch() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.PUSH)
-                .branch("feature/new-api")
-                .force(true)
-                .forceWithLease(false)
-                .build();
+                                           .operation(OperationType.PUSH)
+                                           .branch("feature/new-api")
+                                           .force(true)
+                                           .forceWithLease(false)
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -87,11 +89,11 @@ class ProtectedBranchRuleTest {
     @DisplayName("force push 到 release/v1.0（匹配 release/*）应返回 BLOCK")
     void shouldBlockForcePushToReleaseWildcard() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.PUSH)
-                .branch("release/v1.0")
-                .force(true)
-                .forceWithLease(false)
-                .build();
+                                           .operation(OperationType.PUSH)
+                                           .branch("release/v1.0")
+                                           .force(true)
+                                           .forceWithLease(false)
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -107,11 +109,11 @@ class ProtectedBranchRuleTest {
     @DisplayName("普通推送（非 force）到保护分支应返回 PASS")
     void shouldPassNormalPushToProtectedBranch() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.PUSH)
-                .branch("main")
-                .force(false)
-                .forceWithLease(false)
-                .build();
+                                           .operation(OperationType.PUSH)
+                                           .branch("main")
+                                           .force(false)
+                                           .forceWithLease(false)
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -126,11 +128,11 @@ class ProtectedBranchRuleTest {
     @DisplayName("force-with-lease 到 main 分支应返回 BLOCK")
     void shouldBlockForceWithLeaseToProtectedBranch() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.PUSH)
-                .branch("main")
-                .force(false)
-                .forceWithLease(true)
-                .build();
+                                           .operation(OperationType.PUSH)
+                                           .branch("main")
+                                           .force(false)
+                                           .forceWithLease(true)
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -145,11 +147,11 @@ class ProtectedBranchRuleTest {
     @DisplayName("refs/heads/main 前缀应被去除并正确匹配")
     void shouldMatchAfterStrippingRefsHeadsPrefix() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.PUSH)
-                .branch("refs/heads/develop")
-                .force(true)
-                .forceWithLease(false)
-                .build();
+                                           .operation(OperationType.PUSH)
+                                           .branch("refs/heads/develop")
+                                           .force(true)
+                                           .forceWithLease(false)
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -163,11 +165,11 @@ class ProtectedBranchRuleTest {
     @DisplayName("branch 为 null 时应返回 PASS")
     void shouldPassWhenBranchIsNull() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.PUSH)
-                .branch(null)
-                .force(true)
-                .forceWithLease(false)
-                .build();
+                                           .operation(OperationType.PUSH)
+                                           .branch(null)
+                                           .force(true)
+                                           .forceWithLease(false)
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -183,11 +185,11 @@ class ProtectedBranchRuleTest {
         when(settingsService.isRedLineEnabled()).thenReturn(false);
 
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.PUSH)
-                .branch("main")
-                .force(true)
-                .forceWithLease(false)
-                .build();
+                                           .operation(OperationType.PUSH)
+                                           .branch("main")
+                                           .force(true)
+                                           .forceWithLease(false)
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 

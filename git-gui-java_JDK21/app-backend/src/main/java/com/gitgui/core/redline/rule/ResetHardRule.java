@@ -16,6 +16,9 @@ import com.google.inject.Inject;
  */
 public class ResetHardRule extends AbstractRedLineRule {
 
+    /**
+     * @param settingsService 设置服务
+     */
     @Inject
     public ResetHardRule(SettingsService settingsService) {
         super(settingsService);
@@ -25,8 +28,7 @@ public class ResetHardRule extends AbstractRedLineRule {
     protected RedLineResult doCheck(RedLineContext ctx) {
         // 命中条件：reset --hard 模式
         if ("HARD".equalsIgnoreCase(ctx.getResetMode())) {
-            return RedLineResult.confirm(RedLineCode.RED_RESET_HARD,
-                    "reset --hard 将丢失本地未提交修改，请确认是否继续");
+            return RedLineResult.confirm(RedLineCode.RED_RESET_HARD, "reset --hard 将丢失本地未提交修改，请确认是否继续");
         }
         return RedLineResult.pass();
     }

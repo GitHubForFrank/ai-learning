@@ -1,10 +1,9 @@
 package com.gitgui.infrastructure.credential;
 
 import com.gitgui.infrastructure.cli.GitProcessBuilder;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 /**
  * 系统 credential helper 适配
@@ -25,7 +24,8 @@ public class SystemCredentialHelper {
      * @return helper 名称
      */
     public String detectHelper() {
-        String osName = System.getProperty("os.name", "").toLowerCase();
+        String osName = System.getProperty("os.name", "")
+                              .toLowerCase();
         if (osName.contains("win")) {
             return "manager-core";
         } else if (osName.contains("mac")) {

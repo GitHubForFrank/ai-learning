@@ -23,6 +23,57 @@ import lombok.Data;
 public class CheckoutRequest {
 
     /**
+     * 仓库路径
+     */
+    private String repoPath;
+    /**
+     * 目标类型：BRANCH / TAG / COMMIT
+     */
+    private TargetType targetType;
+    /**
+     * 完整 ref 名（含 {@code refs/heads/} / {@code refs/remotes/<remote>/} / {@code refs/tags/} 前缀）。
+     * <p>优先级最高：当 UI 层从 refs 浏览对话框选中某个 ref 时，携带完整路径传给 Service 层，</p>
+     * <p>避免剥离前缀后无法被 git CLI 解析（典型场景：远程分支 {@code refs/remotes/origin/feature/x}）。</p>
+     */
+    private String refName;
+    /**
+     * 目标分支名（如 main / develop / feature/login），targetType=BRANCH 时必填
+     */
+    private String branch;
+    /**
+     * 目标 tag 名（如 v1.0.0），targetType=TAG 时必填
+     */
+    private String tag;
+    /**
+     * 目标 commit 哈希（完整或短哈希），targetType=COMMIT 时必填
+     */
+    private String commitId;
+    /**
+     * 创建新分支名（create=true 时必填，等价于 git checkout -b）
+     */
+    private String newBranch;
+    /**
+     * 是否创建新分支（与 newBranch 配对使用）
+     */
+    private boolean create;
+    /**
+     * 是否强制切换（丢弃工作区修改，等价于 git checkout -f）
+     */
+    private boolean force;
+    /**
+     * 是否建立跟踪分支（远程 → 本地，等价于 git checkout --track origin/x）
+     */
+    private boolean track;
+    /**
+     * 是否覆盖已存在的同名分支（git checkout -B）
+     */
+    private boolean overrideExisting;
+    /**
+     * 切换后是否自动 merge（与 force 互斥时一般用于「拉取式切换」）
+     */
+    private boolean merge;
+
+    /**
      * 目标类型（分支 / 标签 / commit）
      */
     public enum TargetType {
@@ -30,44 +81,4 @@ public class CheckoutRequest {
         TAG,
         COMMIT
     }
-
-    /** 仓库路径 */
-    private String repoPath;
-
-    /** 目标类型：BRANCH / TAG / COMMIT */
-    private TargetType targetType;
-
-    /**
-     * 完整 ref 名（含 {@code refs/heads/} / {@code refs/remotes/<remote>/} / {@code refs/tags/} 前缀）。
-     * <p>优先级最高：当 UI 层从 refs 浏览对话框选中某个 ref 时，携带完整路径传给 Service 层，</p>
-     * <p>避免剥离前缀后无法被 git CLI 解析（典型场景：远程分支 {@code refs/remotes/origin/feature/x}）。</p>
-     */
-    private String refName;
-
-    /** 目标分支名（如 main / develop / feature/login），targetType=BRANCH 时必填 */
-    private String branch;
-
-    /** 目标 tag 名（如 v1.0.0），targetType=TAG 时必填 */
-    private String tag;
-
-    /** 目标 commit 哈希（完整或短哈希），targetType=COMMIT 时必填 */
-    private String commitId;
-
-    /** 创建新分支名（create=true 时必填，等价于 git checkout -b） */
-    private String newBranch;
-
-    /** 是否创建新分支（与 newBranch 配对使用） */
-    private boolean create;
-
-    /** 是否强制切换（丢弃工作区修改，等价于 git checkout -f） */
-    private boolean force;
-
-    /** 是否建立跟踪分支（远程 → 本地，等价于 git checkout --track origin/x） */
-    private boolean track;
-
-    /** 是否覆盖已存在的同名分支（git checkout -B） */
-    private boolean overrideExisting;
-
-    /** 切换后是否自动 merge（与 force 互斥时一般用于「拉取式切换」） */
-    private boolean merge;
 }

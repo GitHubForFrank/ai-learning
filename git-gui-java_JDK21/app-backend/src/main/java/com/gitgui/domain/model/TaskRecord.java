@@ -20,37 +20,59 @@ import lombok.Data;
 @TableName("task_record")
 public class TaskRecord {
 
-    /** 主键 UUID */
+    /**
+     * 主键 UUID
+     */
     @TableId
     private String id;
 
-    /** 任务类型 */
+    /**
+     * 任务类型
+     */
     private TaskType taskType;
 
-    /** 仓库路径（多仓库检索可为空） */
+    /**
+     * 仓库路径（多仓库检索可为空）
+     */
     private String repoPath;
 
-    /** 状态（PENDING/RUNNING/SUCCESS/FAILED/CANCELLED） */
+    /**
+     * 状态（PENDING/RUNNING/SUCCESS/FAILED/CANCELLED）
+     */
     private TaskStatus status;
 
-    /** 进度 0-100 */
+    /**
+     * 进度 0-100
+     */
     private int progress;
 
-    /** 进度描述 */
+    /**
+     * 进度描述
+     */
     private String message;
 
-    /** 命令输出/错误堆栈 */
+    /**
+     * 命令输出/错误堆栈
+     */
     private String output;
 
-    /** 是否可取消 */
+    /**
+     * 是否可取消
+     */
     private boolean cancellable;
 
-    /** 开始时间（epoch 毫秒） */
+    /**
+     * 开始时间（epoch 毫秒）
+     */
     private Long startedAt;
 
-    /** 结束时间（epoch 毫秒） */
+    /**
+     * 结束时间（epoch 毫秒）
+     */
     private Long finishedAt;
 
-    /** 创建时间（epoch 毫秒） */
+    /**
+     * 创建时间（epoch 毫秒）
+     */
     private Long createdAt;
 }

@@ -14,9 +14,13 @@ import lombok.Data;
 @Builder
 public class SensitiveFileRule {
 
-    /** 正则表达式模式 */
+    /**
+     * 正则表达式模式
+     */
     private String pattern;
 
-    /** 中文描述 */
+    /**
+     * 中文描述
+     */
     private String description;
 }

@@ -8,24 +8,35 @@ import com.gitgui.domain.service.GitOperationService;
 import com.gitgui.domain.service.StatusService;
 import com.gitgui.ui.AsyncUiLoader;
 import com.gitgui.ui.i18n.I18nUtil;
-import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import javafx.stage.Modality;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TitledPane;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 切换/Checkout 对话框（TortoiseGit 风格）
@@ -82,16 +93,22 @@ public class SwitchDialog extends Dialog<Void> {
     private final CheckBox mergeCheck = new CheckBox(I18nUtil.get("switch.option.merge"));
     private final CheckBox trackCheck = new CheckBox(I18nUtil.get("switch.option.track"));
     private final CheckBox overrideCheck = new CheckBox(I18nUtil.get("switch.option.override"));
-
-    /** 当前分支名（用于显示默认 placeholder） */
-    private String currentBranch = "";
-
-    /** branch combo 数据源（含本地 + 远程，分组显示） */
+    /**
+     * branch combo 数据源（含本地 + 远程，分组显示）
+     */
     private final ObservableList<String> branches = FXCollections.observableArrayList();
-    /** tag combo 数据源 */
+    /**
+     * tag combo 数据源
+     */
     private final ObservableList<String> tags = FXCollections.observableArrayList();
-    /** commit combo 数据源 */
+    /**
+     * commit combo 数据源
+     */
     private final ObservableList<CommitItem> commits = FXCollections.observableArrayList();
+    /**
+     * 当前分支名（用于显示默认 placeholder）
+     */
+    private String currentBranch = "";
 
     public SwitchDialog(GitOperationService gitOperationService, StatusService statusService, String repoPath) {
         this.gitOperationService = gitOperationService;
@@ -108,7 +125,8 @@ public class SwitchDialog extends Dialog<Void> {
         ButtonType okType = new ButtonType(I18nUtil.get("button.ok"), ButtonBar.ButtonData.OK_DONE);
         ButtonType cancelType = new ButtonType(I18nUtil.get("button.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
         ButtonType helpType = new ButtonType(I18nUtil.get("button.help"), ButtonBar.ButtonData.HELP);
-        pane.getButtonTypes().addAll(okType, cancelType, helpType);
+        pane.getButtonTypes()
+            .addAll(okType, cancelType, helpType);
 
         Button okButton = (Button) pane.lookupButton(okType);
         if (okButton != null) {
@@ -136,6 +154,55 @@ public class SwitchDialog extends Dialog<Void> {
     }
 
     /**
+     * 规范化分支名：剥离 refs/heads/ 与 refs/remotes/<remote>/ 前缀。
+     */
+    private static String normalizeBranch(String raw) {
+        if (raw == null) {
+            return "";
+        }
+        if (raw.startsWith("refs/heads/")) {
+            return raw.substring("refs/heads/".length());
+        }
+        if (raw.startsWith("refs/remotes/")) {
+            String rest = raw.substring("refs/remotes/".length());
+            int slash = rest.indexOf('/');
+            return slash > 0 ? rest.substring(slash + 1) : rest;
+        }
+        return raw;
+    }
+
+    /**
+     * 规范化 tag：剥离 refs/tags/ 前缀。
+     */
+    private static String normalizeTag(String raw) {
+        if (raw == null) {
+            return "";
+        }
+        if (raw.startsWith("refs/tags/")) {
+            return raw.substring("refs/tags/".length());
+        }
+        return raw;
+    }
+
+    /**
+     * 判断是否为远程分支（含 / 字符，如 origin/main）。
+     */
+    private static boolean isRemoteBranch(String name) {
+        return name.contains("/");
+    }
+
+    /**
+     * 取 message 第一行。
+     */
+    private static String firstLine(String message) {
+        if (message == null) {
+            return "";
+        }
+        int nl = message.indexOf('\n');
+        return nl >= 0 ? message.substring(0, nl) : message;
+    }
+
+    /**
      * 构建对话框内容。
      */
     private VBox buildContent() {
@@ -156,7 +223,8 @@ public class SwitchDialog extends Dialog<Void> {
         optionPane.setCollapsible(false);
         optionPane.setContent(buildOptionBox());
 
-        root.getChildren().addAll(switchToPane, optionPane);
+        root.getChildren()
+            .addAll(switchToPane, optionPane);
         return root;
     }
 
@@ -175,7 +243,8 @@ public class SwitchDialog extends Dialog<Void> {
         col2.setPercentWidth(70);
         ColumnConstraints col3 = new ColumnConstraints();
         col3.setPercentWidth(10);
-        grid.getColumnConstraints().addAll(col1, col2, col3);
+        grid.getColumnConstraints()
+            .addAll(col1, col2, col3);
 
         // Row 0: Branch
         branchRadio.setToggleGroup(switchToGroup);
@@ -208,10 +277,13 @@ public class SwitchDialog extends Dialog<Void> {
         commitCombo.setItems(commits);
         commitCombo.setMaxWidth(Double.MAX_VALUE);
         commitCombo.setConverter(new javafx.util.StringConverter<>() {
-            @Override public String toString(CommitItem c) {
+            @Override
+            public String toString(CommitItem c) {
                 return c == null ? "" : c.toDisplayString();
             }
-            @Override public CommitItem fromString(String s) {
+
+            @Override
+            public CommitItem fromString(String s) {
                 // 用户手动输入 → 构造临时 CommitItem（仅含 commitId 字段）
                 return s == null || s.isBlank() ? null : new CommitItem(s, "", "", "");
             }
@@ -226,7 +298,8 @@ public class SwitchDialog extends Dialog<Void> {
         branchRadio.setSelected(true);
 
         // 单选变化 → 启用对应 ComboBox，其他置灰
-        switchToGroup.selectedToggleProperty().addListener((obs, o, n) -> updateComboEnableState());
+        switchToGroup.selectedToggleProperty()
+                     .addListener((obs, o, n) -> updateComboEnableState());
         updateComboEnableState();
 
         return grid;
@@ -236,9 +309,8 @@ public class SwitchDialog extends Dialog<Void> {
      * 根据当前单选启用对应 ComboBox，其他置灰。
      */
     private void updateComboEnableState() {
-        String sel = switchToGroup.getSelectedToggle() == null
-                ? "BRANCH"
-                : (String) switchToGroup.getSelectedToggle().getUserData();
+        String sel = switchToGroup.getSelectedToggle() == null ? "BRANCH" : (String) switchToGroup.getSelectedToggle()
+                                                                                                  .getUserData();
         branchCombo.setDisable(!"BRANCH".equals(sel));
         branchBrowse.setDisable(!"BRANCH".equals(sel));
         tagCombo.setDisable(!"TAG".equals(sel));
@@ -281,51 +353,57 @@ public class SwitchDialog extends Dialog<Void> {
         //  - 勾选 override → 启用 newBranchField；禁用 create、track
         //  - 勾选 track → 仅在 BRANCH 模式下可用；disable force
         //  - commit / tag 模式下 disable create / track / override
-        createCheck.selectedProperty().addListener((obs, o, n) -> {
-            if (n) {
-                newBranchField.setDisable(false);
-                overrideCheck.setSelected(false);
-                trackCheck.setSelected(false);
-                Platform.runLater(newBranchField::requestFocus);
-                // 默认填充 Branch_<当前分支名> 提示
-                if (newBranchField.getText() == null || newBranchField.getText().isEmpty()) {
-                    newBranchField.setText(I18nUtil.get("switch.option.newBranchPrefix") + currentBranch);
-                }
-            } else {
-                newBranchField.setDisable(true);
-            }
-        });
-        overrideCheck.selectedProperty().addListener((obs, o, n) -> {
-            if (n) {
-                newBranchField.setDisable(false);
-                createCheck.setSelected(false);
-                trackCheck.setSelected(false);
-                Platform.runLater(newBranchField::requestFocus);
-                if (newBranchField.getText() == null || newBranchField.getText().isEmpty()) {
-                    newBranchField.setText(I18nUtil.get("switch.option.newBranchPrefix") + currentBranch);
-                }
-            }
-        });
-        trackCheck.selectedProperty().addListener((obs, o, n) -> {
-            if (n) {
-                forceCheck.setSelected(false);
-                createCheck.setSelected(false);
-                overrideCheck.setSelected(false);
-            }
-        });
+        createCheck.selectedProperty()
+                   .addListener((obs, o, n) -> {
+                       if (n) {
+                           newBranchField.setDisable(false);
+                           overrideCheck.setSelected(false);
+                           trackCheck.setSelected(false);
+                           Platform.runLater(newBranchField::requestFocus);
+                           // 默认填充 Branch_<当前分支名> 提示
+                           if (newBranchField.getText() == null || newBranchField.getText()
+                                                                                 .isEmpty()) {
+                               newBranchField.setText(I18nUtil.get("switch.option.newBranchPrefix") + currentBranch);
+                           }
+                       } else {
+                           newBranchField.setDisable(true);
+                       }
+                   });
+        overrideCheck.selectedProperty()
+                     .addListener((obs, o, n) -> {
+                         if (n) {
+                             newBranchField.setDisable(false);
+                             createCheck.setSelected(false);
+                             trackCheck.setSelected(false);
+                             Platform.runLater(newBranchField::requestFocus);
+                             if (newBranchField.getText() == null || newBranchField.getText()
+                                                                                   .isEmpty()) {
+                                 newBranchField.setText(I18nUtil.get("switch.option.newBranchPrefix") + currentBranch);
+                             }
+                         }
+                     });
+        trackCheck.selectedProperty()
+                  .addListener((obs, o, n) -> {
+                      if (n) {
+                          forceCheck.setSelected(false);
+                          createCheck.setSelected(false);
+                          overrideCheck.setSelected(false);
+                      }
+                  });
         // Radio 切换时联动
-        switchToGroup.selectedToggleProperty().addListener((obs, o, n) -> {
-            String sel = (String) (n == null ? null : n.getUserData());
-            boolean branchOnly = "BRANCH".equals(sel);
-            createCheck.setDisable(!branchOnly);
-            overrideCheck.setDisable(!branchOnly);
-            trackCheck.setDisable(!branchOnly);
-            if (!branchOnly) {
-                createCheck.setSelected(false);
-                overrideCheck.setSelected(false);
-                trackCheck.setSelected(false);
-            }
-        });
+        switchToGroup.selectedToggleProperty()
+                     .addListener((obs, o, n) -> {
+                         String sel = (String) (n == null ? null : n.getUserData());
+                         boolean branchOnly = "BRANCH".equals(sel);
+                         createCheck.setDisable(!branchOnly);
+                         overrideCheck.setDisable(!branchOnly);
+                         trackCheck.setDisable(!branchOnly);
+                         if (!branchOnly) {
+                             createCheck.setSelected(false);
+                             overrideCheck.setSelected(false);
+                             trackCheck.setSelected(false);
+                         }
+                     });
 
         return grid;
     }
@@ -344,19 +422,18 @@ public class SwitchDialog extends Dialog<Void> {
             if (result.isPresent() && result.get() != null) {
                 LogEntry entry = result.get();
                 String fullSha = entry.getCommitId() == null ? "" : entry.getCommitId();
-                String shortId = entry.getShortId() == null
-                        ? (fullSha.length() > 8 ? fullSha.substring(0, 8) : fullSha)
-                        : entry.getShortId();
+                String shortId = entry.getShortId() == null ? (fullSha.length() > 8 ? fullSha.substring(0, 8) : fullSha) : entry.getShortId();
 
                 // 1. 回填完整 commitId 到输入框（不截断）
-                commitCombo.getEditor().setText(fullSha);
+                commitCombo.getEditor()
+                           .setText(fullSha);
 
                 // 2. 同时构造 RefInfo 携带完整 commitId，让 Service 层能正确 checkout
                 RefInfo refInfo = RefInfo.builder()
-                        .refName(fullSha)
-                        .displayName(fullSha)
-                        .kind("COMMIT")
-                        .build();
+                                         .refName(fullSha)
+                                         .displayName(fullSha)
+                                         .kind("COMMIT")
+                                         .build();
                 commitCombo.setUserData(refInfo);
                 commitRadio.setSelected(true);
 
@@ -377,12 +454,14 @@ public class SwitchDialog extends Dialog<Void> {
             switch (targetType) {
                 case "BRANCH":
                     // 把 refInfo 暂存到 combo 的 userData，doCheckout 时取出构造完整 refName
-                    branchCombo.getSelectionModel().select(refInfo.getDisplayName());
+                    branchCombo.getSelectionModel()
+                               .select(refInfo.getDisplayName());
                     branchCombo.setUserData(refInfo);
                     branchRadio.setSelected(true);
                     break;
                 case "TAG":
-                    tagCombo.getSelectionModel().select(refInfo.getDisplayName());
+                    tagCombo.getSelectionModel()
+                            .select(refInfo.getDisplayName());
                     tagCombo.setUserData(refInfo);
                     tagRadio.setSelected(true);
                     break;
@@ -418,14 +497,16 @@ public class SwitchDialog extends Dialog<Void> {
                     norm.add(normalizeBranch(b));
                 }
                 norm.sort(Comparator.<String>comparingInt(b -> isRemoteBranch(b) ? 1 : 0)
-                        .thenComparing(b -> b.toLowerCase(java.util.Locale.ROOT)));
+                                    .thenComparing(b -> b.toLowerCase(java.util.Locale.ROOT)));
                 Platform.runLater(() -> {
                     currentBranch = current == null ? "" : current.replace("refs/heads/", "");
                     branches.setAll(norm);
                     if (!currentBranch.isEmpty()) {
-                        branchCombo.getSelectionModel().select(currentBranch);
+                        branchCombo.getSelectionModel()
+                                   .select(currentBranch);
                     } else if (!norm.isEmpty()) {
-                        branchCombo.getSelectionModel().select(0);
+                        branchCombo.getSelectionModel()
+                                   .select(0);
                     }
                 });
             } catch (Exception e) {
@@ -451,11 +532,12 @@ public class SwitchDialog extends Dialog<Void> {
         });
 
         // 任务 3：commit 延迟加载（首次不加载，等用户点击 Commit 单选时再触发）
-        commitRadio.selectedProperty().addListener((obs, wasSelected, nowSelected) -> {
-            if (nowSelected && commits.isEmpty()) {
-                loadCommits();
-            }
-        });
+        commitRadio.selectedProperty()
+                   .addListener((obs, wasSelected, nowSelected) -> {
+                       if (nowSelected && commits.isEmpty()) {
+                           loadCommits();
+                       }
+                   });
     }
 
     /**
@@ -468,12 +550,9 @@ public class SwitchDialog extends Dialog<Void> {
                 List<LogEntry> recent = statusService.listRecentCommits(repoPath, 200);
                 List<CommitItem> items = new ArrayList<>();
                 for (LogEntry le : recent) {
-                    items.add(new CommitItem(
-                            le.getShortId() == null ? "" : le.getShortId(),
-                            le.getAuthor() == null ? "" : le.getAuthor(),
-                            le.getMessage() == null ? "" : firstLine(le.getMessage()),
-                            le.getCommitId() == null ? "" : le.getCommitId()
-                    ));
+                    items.add(new CommitItem(le.getShortId() == null ? "" : le.getShortId(), le.getAuthor() == null ? "" : le.getAuthor(),
+                                             le.getMessage() == null ? "" : firstLine(le.getMessage()),
+                                             le.getCommitId() == null ? "" : le.getCommitId()));
                 }
                 Platform.runLater(() -> commits.setAll(items));
             } catch (Exception e) {
@@ -487,34 +566,42 @@ public class SwitchDialog extends Dialog<Void> {
      * 执行切换。
      */
     private void doCheckout() {
-        CheckoutRequest.CheckoutRequestBuilder builder = CheckoutRequest.builder().repoPath(repoPath);
+        CheckoutRequest.CheckoutRequestBuilder builder = CheckoutRequest.builder()
+                                                                        .repoPath(repoPath);
 
         // 1. 目标类型
         if (branchRadio.isSelected()) {
-            String branch = branchCombo.getEditor().getText();
+            String branch = branchCombo.getEditor()
+                                       .getText();
             if (branch == null || branch.isBlank()) {
                 showWarn(I18nUtil.get("switch.selectBranchRequired"));
                 return;
             }
             // 优先取 RefInfo 携带的完整 ref 名（来自 BrowseReferencesDialog）
             RefInfo refInfo = getSelectedRefInfo(branchCombo);
-            if (refInfo != null && refInfo.getRefName() != null && !refInfo.getRefName().isBlank()) {
+            if (refInfo != null && refInfo.getRefName() != null && !refInfo.getRefName()
+                                                                           .isBlank()) {
                 builder.refName(refInfo.getRefName());
             }
-            builder.targetType(CheckoutRequest.TargetType.BRANCH).branch(branch.trim());
+            builder.targetType(CheckoutRequest.TargetType.BRANCH)
+                   .branch(branch.trim());
         } else if (tagRadio.isSelected()) {
-            String tag = tagCombo.getEditor().getText();
+            String tag = tagCombo.getEditor()
+                                 .getText();
             if (tag == null || tag.isBlank()) {
                 showWarn(I18nUtil.get("switch.selectTagRequired"));
                 return;
             }
             RefInfo refInfo = getSelectedRefInfo(tagCombo);
-            if (refInfo != null && refInfo.getRefName() != null && !refInfo.getRefName().isBlank()) {
+            if (refInfo != null && refInfo.getRefName() != null && !refInfo.getRefName()
+                                                                           .isBlank()) {
                 builder.refName(refInfo.getRefName());
             }
-            builder.targetType(CheckoutRequest.TargetType.TAG).tag(tag.trim());
+            builder.targetType(CheckoutRequest.TargetType.TAG)
+                   .tag(tag.trim());
         } else if (commitRadio.isSelected()) {
-            String commitText = commitCombo.getEditor().getText();
+            String commitText = commitCombo.getEditor()
+                                           .getText();
             if (commitText == null || commitText.isBlank()) {
                 showWarn(I18nUtil.get("switch.selectCommitRequired"));
                 return;
@@ -522,16 +609,19 @@ public class SwitchDialog extends Dialog<Void> {
             // 优先取 RefInfo 携带的完整 commitId（来自 LogMessagesDialog）
             String commitId = commitText.trim();
             RefInfo refInfo = getSelectedRefInfo(commitCombo);
-            if (refInfo != null && refInfo.getRefName() != null && !refInfo.getRefName().isBlank()) {
+            if (refInfo != null && refInfo.getRefName() != null && !refInfo.getRefName()
+                                                                           .isBlank()) {
                 commitId = refInfo.getRefName();
             } else {
                 // 否则尝试从 ComboBox 已选项目取完整 commitId
-                CommitItem sel = commitCombo.getSelectionModel().getSelectedItem();
+                CommitItem sel = commitCombo.getSelectionModel()
+                                            .getSelectedItem();
                 if (sel != null && sel.shortId.equals(commitText.trim())) {
                     commitId = sel.commitId;
                 }
             }
-            builder.targetType(CheckoutRequest.TargetType.COMMIT).commitId(commitId);
+            builder.targetType(CheckoutRequest.TargetType.COMMIT)
+                   .commitId(commitId);
         } else {
             showWarn(I18nUtil.get("switch.selectTargetRequired"));
             return;
@@ -544,7 +634,8 @@ public class SwitchDialog extends Dialog<Void> {
                 showWarn(I18nUtil.get("switch.newBranchRequired"));
                 return;
             }
-            builder.create(true).newBranch(newBranch.trim());
+            builder.create(true)
+                   .newBranch(newBranch.trim());
         }
         if (overrideCheck.isSelected()) {
             String newBranch = newBranchField.getText();
@@ -552,20 +643,24 @@ public class SwitchDialog extends Dialog<Void> {
                 showWarn(I18nUtil.get("switch.newBranchRequired"));
                 return;
             }
-            builder.overrideExisting(true).newBranch(newBranch.trim());
+            builder.overrideExisting(true)
+                   .newBranch(newBranch.trim());
         }
         builder.force(forceCheck.isSelected())
-                .track(trackCheck.isSelected())
-                .merge(mergeCheck.isSelected());
+               .track(trackCheck.isSelected())
+               .merge(mergeCheck.isSelected());
 
-        // 3. 执行
-        try {
-            gitOperationService.checkout(builder.build());
-            close();
-        } catch (Exception e) {
-            log.error("Switch/Checkout 失败", e);
-            showError(I18nUtil.get("switch.failed") + "：" + e.getMessage());
-        }
+        // 3. 执行（P1-002: git checkout 转到后台线程，避免冻结 JavaFX UI）
+        CheckoutRequest checkoutReq = builder.build();
+        AsyncUiLoader.submitWrite(repoPath, TaskType.CHECKOUT, () -> {
+            try {
+                gitOperationService.checkout(checkoutReq);
+                Platform.runLater(this::close);
+            } catch (Exception e) {
+                log.error("Switch/Checkout 失败", e);
+                Platform.runLater(() -> showError(I18nUtil.get("switch.failed") + "：" + e.getMessage()));
+            }
+        });
     }
 
     /**
@@ -602,48 +697,10 @@ public class SwitchDialog extends Dialog<Void> {
     }
 
     /**
-     * 规范化分支名：剥离 refs/heads/ 与 refs/remotes/<remote>/ 前缀。
-     */
-    private static String normalizeBranch(String raw) {
-        if (raw == null) return "";
-        if (raw.startsWith("refs/heads/")) return raw.substring("refs/heads/".length());
-        if (raw.startsWith("refs/remotes/")) {
-            String rest = raw.substring("refs/remotes/".length());
-            int slash = rest.indexOf('/');
-            return slash > 0 ? rest.substring(slash + 1) : rest;
-        }
-        return raw;
-    }
-
-    /**
-     * 规范化 tag：剥离 refs/tags/ 前缀。
-     */
-    private static String normalizeTag(String raw) {
-        if (raw == null) return "";
-        if (raw.startsWith("refs/tags/")) return raw.substring("refs/tags/".length());
-        return raw;
-    }
-
-    /**
-     * 判断是否为远程分支（含 / 字符，如 origin/main）。
-     */
-    private static boolean isRemoteBranch(String name) {
-        return name.contains("/");
-    }
-
-    /**
-     * 取 message 第一行。
-     */
-    private static String firstLine(String message) {
-        if (message == null) return "";
-        int nl = message.indexOf('\n');
-        return nl >= 0 ? message.substring(0, nl) : message;
-    }
-
-    /**
      * Commit 下拉项（同时显示 shortId / 作者 / message 第一行）。
      */
     public static class CommitItem {
+
         final String shortId;
         final String author;
         final String message;
@@ -658,8 +715,14 @@ public class SwitchDialog extends Dialog<Void> {
 
         public String toDisplayString() {
             StringBuilder sb = new StringBuilder();
-            if (!shortId.isEmpty()) sb.append(shortId).append(' ');
-            if (!author.isEmpty()) sb.append(author).append(' ');
+            if (!shortId.isEmpty()) {
+                sb.append(shortId)
+                  .append(' ');
+            }
+            if (!author.isEmpty()) {
+                sb.append(author)
+                  .append(' ');
+            }
             sb.append(message);
             return sb.toString();
         }

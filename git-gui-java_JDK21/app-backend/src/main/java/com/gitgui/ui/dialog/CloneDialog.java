@@ -5,19 +5,25 @@ import com.gitgui.core.async.TaskHandle;
 import com.gitgui.domain.model.request.CloneRequest;
 import com.gitgui.domain.service.RepositoryService;
 import com.gitgui.ui.i18n.I18nUtil;
+import java.io.File;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
-import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
 
 /**
  * 克隆仓库对话框
@@ -33,31 +39,55 @@ public class CloneDialog extends Dialog<String> {
 
     private final RepositoryService repositoryService;
 
-    /** 远程 URL 输入框 */
+    /**
+     * 远程 URL 输入框
+     */
     private final TextField urlField = new TextField();
-    /** 本地目录输入框 */
+    /**
+     * 本地目录输入框
+     */
     private final TextField targetDirField = new TextField();
-    /** 分支输入框 */
+    /**
+     * 分支输入框
+     */
     private final TextField branchField = new TextField();
-    /** 浅克隆深度输入框 */
+    /**
+     * 浅克隆深度输入框
+     */
     private final TextField depthField = new TextField("0");
-    /** SSH 密钥输入框 */
+    /**
+     * SSH 密钥输入框
+     */
     private final TextField sshKeyField = new TextField();
-    /** 裸仓库选项 */
+    /**
+     * 裸仓库选项
+     */
     private final CheckBox bareCheck = new CheckBox(I18nUtil.get("clone.bare"));
-    /** 稀疏检出选项 */
+    /**
+     * 稀疏检出选项
+     */
     private final CheckBox sparseCheck = new CheckBox(I18nUtil.get("clone.sparse"));
-    /** 子目录选项 */
+    /**
+     * 子目录选项
+     */
     private final CheckBox subdirectoryCheck = new CheckBox(I18nUtil.get("clone.subdirectory"));
 
-    /** 进度条 */
+    /**
+     * 进度条
+     */
     private final ProgressBar progressBar = new ProgressBar(0);
-    /** 进度信息 */
+    /**
+     * 进度信息
+     */
     private final Label progressLabel = new Label();
-    /** 克隆成功后的仓库路径 */
+    /**
+     * 克隆成功后的仓库路径
+     */
     private String clonedPath;
 
-    /** 当前任务句柄 */
+    /**
+     * 当前任务句柄
+     */
     private TaskHandle currentHandle;
 
     /**
@@ -73,7 +103,8 @@ public class CloneDialog extends Dialog<String> {
 
         DialogPane pane = getDialogPane();
         pane.setContent(buildContent());
-        pane.getButtonTypes().addAll(ButtonType.CANCEL, new ButtonType(I18nUtil.get("button.clone"), ButtonBar.ButtonData.OK_DONE));
+        pane.getButtonTypes()
+            .addAll(ButtonType.CANCEL, new ButtonType(I18nUtil.get("button.clone"), ButtonBar.ButtonData.OK_DONE));
 
         // OK 按钮触发克隆
         Button okButton = (Button) pane.lookupButton(new ButtonType(I18nUtil.get("button.clone"), ButtonBar.ButtonData.OK_DONE));
@@ -139,7 +170,8 @@ public class CloneDialog extends Dialog<String> {
         progressBar.setVisible(false);
         progressLabel.setVisible(false);
 
-        vbox.getChildren().addAll(grid, progressBar, progressLabel);
+        vbox.getChildren()
+            .addAll(grid, progressBar, progressLabel);
         return vbox;
     }
 
@@ -161,8 +193,10 @@ public class CloneDialog extends Dialog<String> {
      * 注册进度/成功/失败回调，成功后记录克隆路径并自动关闭对话框，失败时显示错误信息。</p>
      */
     private void doClone() {
-        String url = urlField.getText().trim();
-        String target = targetDirField.getText().trim();
+        String url = urlField.getText()
+                             .trim();
+        String target = targetDirField.getText()
+                                      .trim();
         if (url.isEmpty() || target.isEmpty()) {
             progressLabel.setText(I18nUtil.get("clone.urlAndTargetRequired"));
             progressLabel.setVisible(true);
@@ -171,21 +205,28 @@ public class CloneDialog extends Dialog<String> {
 
         int depth;
         try {
-            depth = Integer.parseInt(depthField.getText().trim());
+            depth = Integer.parseInt(depthField.getText()
+                                               .trim());
         } catch (NumberFormatException e) {
             depth = 0;
         }
 
         CloneRequest req = CloneRequest.builder()
-                .remoteUrl(url)
-                .targetDir(target)
-                .branch(branchField.getText().trim().isEmpty() ? null : branchField.getText().trim())
-                .sshKey(sshKeyField.getText().trim().isEmpty() ? null : sshKeyField.getText().trim())
-                .depth(depth)
-                .bare(bareCheck.isSelected())
-                .sparseCheckout(sparseCheck.isSelected())
-                .subdirectory(subdirectoryCheck.isSelected())
-                .build();
+                                       .remoteUrl(url)
+                                       .targetDir(target)
+                                       .branch(branchField.getText()
+                                                          .trim()
+                                                          .isEmpty() ? null : branchField.getText()
+                                                                                         .trim())
+                                       .sshKey(sshKeyField.getText()
+                                                          .trim()
+                                                          .isEmpty() ? null : sshKeyField.getText()
+                                                                                         .trim())
+                                       .depth(depth)
+                                       .bare(bareCheck.isSelected())
+                                       .sparseCheckout(sparseCheck.isSelected())
+                                       .subdirectory(subdirectoryCheck.isSelected())
+                                       .build();
 
         progressBar.setVisible(true);
         progressLabel.setVisible(true);

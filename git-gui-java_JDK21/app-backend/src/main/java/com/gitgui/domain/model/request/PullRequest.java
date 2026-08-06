@@ -14,30 +14,48 @@ import lombok.Data;
 @Builder
 public class PullRequest {
 
-    /** 仓库路径 */
+    /**
+     * 仓库路径
+     */
     private String repoPath;
 
-    /** Remote 名称（BR-09 必选） */
+    /**
+     * Remote 名称（BR-09 必选）
+     */
     private String remote;
 
-    /** 远程分支（BR-09 必选） */
+    /**
+     * 远程分支（BR-09 必选）
+     */
     private String branch;
 
-    /** 是否 AutoStash */
+    /**
+     * 是否 AutoStash
+     */
     private boolean autoStash;
 
-    /** 是否变基而非合并 */
+    /**
+     * 是否变基而非合并
+     */
     private boolean rebaseInsteadOfMerge;
 
-    /** 是否拉取标签 */
+    /**
+     * 是否拉取标签
+     */
     private boolean fetchTags;
 
-    /** 是否拉取所有分支 */
+    /**
+     * 是否拉取所有分支
+     */
     private boolean allBranches;
 
-    /** 是否递归更新子模块 */
+    /**
+     * 是否递归更新子模块
+     */
     private boolean updateSubmodules;
 
-    /** 是否预演 */
+    /**
+     * 是否预演
+     */
     private boolean dryRun;
 }

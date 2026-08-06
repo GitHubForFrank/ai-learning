@@ -34,8 +34,8 @@ public interface FavoriteService {
     /**
      * 切换置顶状态（BR-04）。
      *
-     * @param id      主键
-     * @param pinned  是否置顶
+     * @param id     主键
+     * @param pinned 是否置顶
      */
     void togglePinned(String id, boolean pinned);
 

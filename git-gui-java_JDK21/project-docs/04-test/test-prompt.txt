@@ -1,6 +1,6 @@
 ============================================
 第一：
-分析 app/ 与 app-db/ 的代码逻辑，帮我完成 project-docs/04-test/test-unit 和 project-docs/04-test/test-ui 的测试用例的补充
+分析 app-backend/ 的代码逻辑，帮我完成 project-docs/04-test/test-unit 和 project-docs/04-test/test-ui 的测试用例的补充
 - 单元测试用例使用 JUnit5 + Mockito，不启动 JavaFX
 - UI 测试用例使用 TestFX（headless 模式）
 第二：

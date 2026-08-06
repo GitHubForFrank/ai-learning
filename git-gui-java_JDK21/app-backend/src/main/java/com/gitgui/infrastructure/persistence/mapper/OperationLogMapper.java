@@ -10,4 +10,5 @@ import com.gitgui.domain.model.OperationLog;
  * @since 2026-07-23
  */
 public interface OperationLogMapper extends BaseMapper<OperationLog> {
+
 }

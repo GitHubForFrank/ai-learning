@@ -5,12 +5,11 @@ import com.gitgui.core.util.IdUtil;
 import com.gitgui.domain.model.OperationLog;
 import com.gitgui.domain.repository.OperationLogRepository;
 import com.gitgui.domain.service.OperationLogService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.google.inject.Inject;
 import java.time.LocalDateTime;
 import java.util.List;
-import com.google.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 操作日志服务实现
@@ -31,20 +30,20 @@ public class OperationLogServiceImpl implements OperationLogService {
     }
 
     @Override
-    public void record(String repoPath, OperationType operation, String command,
-                       boolean success, long durationMs, String errorMessage, String taskId) {
+    public void record(String repoPath, OperationType operation, String command, boolean success, long durationMs, String errorMessage,
+            String taskId) {
         // BR-35：任务结果记录（追加写入不可删除）
         OperationLog logEntry = OperationLog.builder()
-                .id(IdUtil.newId())
-                .repoPath(repoPath)
-                .operation(operation)
-                .command(command)
-                .success(success)
-                .durationMs(durationMs)
-                .errorMessage(errorMessage == null ? "" : errorMessage)
-                .taskId(taskId == null ? "" : taskId)
-                .createdAt(LocalDateTime.now())
-                .build();
+                                            .id(IdUtil.newId())
+                                            .repoPath(repoPath)
+                                            .operation(operation)
+                                            .command(command)
+                                            .success(success)
+                                            .durationMs(durationMs)
+                                            .errorMessage(errorMessage == null ? "" : errorMessage)
+                                            .taskId(taskId == null ? "" : taskId)
+                                            .createdAt(LocalDateTime.now())
+                                            .build();
         operationLogRepository.save(logEntry);
     }
 

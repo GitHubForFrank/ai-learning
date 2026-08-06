@@ -1,10 +1,9 @@
 package com.gitgui.domain.model;
 
-import lombok.Builder;
-import lombok.Data;
-
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.Builder;
+import lombok.Data;
 
 /**
  * 提交日志条目领域模型
@@ -17,27 +16,43 @@ import java.util.List;
 @Builder
 public class LogEntry {
 
-    /** 提交哈希 */
+    /**
+     * 提交哈希
+     */
     private String commitId;
 
-    /** 简短哈希（展示用） */
+    /**
+     * 简短哈希（展示用）
+     */
     private String shortId;
 
-    /** 作者 */
+    /**
+     * 作者
+     */
     private String author;
 
-    /** 作者邮箱 */
+    /**
+     * 作者邮箱
+     */
     private String authorEmail;
 
-    /** 提交时间 */
+    /**
+     * 提交时间
+     */
     private LocalDateTime commitTime;
 
-    /** 提交信息 */
+    /**
+     * 提交信息
+     */
     private String message;
 
-    /** 分支/标签引用列表 */
+    /**
+     * 分支/标签引用列表
+     */
     private List<String> refs;
 
-    /** 父提交哈希列表 */
+    /**
+     * 父提交哈希列表
+     */
     private List<String> parents;
 }

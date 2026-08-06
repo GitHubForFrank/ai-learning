@@ -18,12 +18,24 @@ import com.gitgui.domain.model.request.PushRequest;
 public interface GitOperationService {
 
     /**
-     * 提交（BR-06/BR-07）。
+     * 同步提交（向后兼容，UI 推荐使用 {@link #commit(CommitRequest, ProgressCallback)} 异步版本以显示过程）。
      *
      * @param req 提交请求
      * @return 提交哈希
      */
     String commit(CommitRequest req);
+
+    /**
+     * 异步提交，写入异步任务队列（BR-34 同仓库写串行）。
+     * <p>通过 {@link ProgressCallback} 把 git commit / pre-commit hook 的输出实时推到调用方，
+     * 典型用法：UI 层把 callback 接入 {@code ProgressDialog.asCallback()}，实现「像 fetch 一样
+     * 输出提交过程」的体验。</p>
+     *
+     * @param req 提交请求
+     * @param cb  进度回调（可空）
+     * @return 任务句柄
+     */
+    TaskHandle commit(CommitRequest req, ProgressCallback cb);
 
     /**
      * 推送（异步，BR-09/BR-10）。

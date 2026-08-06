@@ -7,12 +7,11 @@ import com.gitgui.domain.model.TaskRecord;
 import com.gitgui.domain.repository.TaskRecordRepository;
 import com.gitgui.infrastructure.persistence.mapper.TaskRecordMapper;
 import com.gitgui.infrastructure.persistence.mybatis.MyBatisSqlSessionManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 异步任务记录仓储 MyBatis-Plus 实现
@@ -66,12 +65,9 @@ public class TaskRecordRepositoryImpl implements TaskRecordRepository {
     public List<TaskRecord> findActiveByRepoPath(String repoPath) {
         try (var session = sessionManager.openSession()) {
             TaskRecordMapper mapper = session.getMapper(TaskRecordMapper.class);
-            return mapper.selectList(
-                    new LambdaQueryWrapper<TaskRecord>()
-                            .eq(TaskRecord::getRepoPath, repoPath)
-                            .in(TaskRecord::getStatus, TaskStatus.PENDING, TaskStatus.RUNNING)
-                            .orderByDesc(TaskRecord::getCreatedAt)
-            );
+            return mapper.selectList(new LambdaQueryWrapper<TaskRecord>().eq(TaskRecord::getRepoPath, repoPath)
+                                                                         .in(TaskRecord::getStatus, TaskStatus.PENDING, TaskStatus.RUNNING)
+                                                                         .orderByDesc(TaskRecord::getCreatedAt));
         }
     }
 
@@ -79,11 +75,8 @@ public class TaskRecordRepositoryImpl implements TaskRecordRepository {
     public List<TaskRecord> findHistoryByRepoPath(String repoPath) {
         try (var session = sessionManager.openSession()) {
             TaskRecordMapper mapper = session.getMapper(TaskRecordMapper.class);
-            return mapper.selectList(
-                    new LambdaQueryWrapper<TaskRecord>()
-                            .eq(TaskRecord::getRepoPath, repoPath)
-                            .orderByDesc(TaskRecord::getCreatedAt)
-            );
+            return mapper.selectList(new LambdaQueryWrapper<TaskRecord>().eq(TaskRecord::getRepoPath, repoPath)
+                                                                         .orderByDesc(TaskRecord::getCreatedAt));
         }
     }
 
@@ -91,11 +84,8 @@ public class TaskRecordRepositoryImpl implements TaskRecordRepository {
     public List<TaskRecord> findByStatus(TaskStatus status) {
         try (var session = sessionManager.openSession()) {
             TaskRecordMapper mapper = session.getMapper(TaskRecordMapper.class);
-            return mapper.selectList(
-                    new LambdaQueryWrapper<TaskRecord>()
-                            .eq(TaskRecord::getStatus, status)
-                            .orderByDesc(TaskRecord::getCreatedAt)
-            );
+            return mapper.selectList(new LambdaQueryWrapper<TaskRecord>().eq(TaskRecord::getStatus, status)
+                                                                         .orderByDesc(TaskRecord::getCreatedAt));
         }
     }
 }

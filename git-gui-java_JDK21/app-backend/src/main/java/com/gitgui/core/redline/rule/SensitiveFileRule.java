@@ -20,6 +20,9 @@ import java.util.List;
  */
 public class SensitiveFileRule extends AbstractRedLineRule {
 
+    /**
+     * @param settingsService 设置服务
+     */
     @Inject
     public SensitiveFileRule(SettingsService settingsService) {
         super(settingsService);
@@ -28,7 +31,8 @@ public class SensitiveFileRule extends AbstractRedLineRule {
     @Override
     protected RedLineResult doCheck(RedLineContext ctx) {
         // 命中条件：Commit 或 Push 操作且暂存区含敏感文件
-        if (ctx.getStagedFiles() == null || ctx.getStagedFiles().isEmpty()) {
+        if (ctx.getStagedFiles() == null || ctx.getStagedFiles()
+                                               .isEmpty()) {
             return RedLineResult.pass();
         }
         var rules = settingsService.getSensitiveFileRules();
@@ -40,11 +44,10 @@ public class SensitiveFileRule extends AbstractRedLineRule {
             }
         }
         if (!hits.isEmpty()) {
-            return RedLineResult.block(RedLineCode.RED_SENSITIVE_FILE,
-                    "推送含敏感信息文件，请移除并加入 .gitignore：" + String.join("、", hits))
-                    .toBuilder()
-                    .detail(JsonUtil.toJson(hits))
-                    .build();
+            return RedLineResult.block(RedLineCode.RED_SENSITIVE_FILE, "推送含敏感信息文件，请移除并加入 .gitignore：" + String.join("、", hits))
+                                .toBuilder()
+                                .detail(JsonUtil.toJson(hits))
+                                .build();
         }
         return RedLineResult.pass();
     }

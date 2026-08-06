@@ -17,16 +17,15 @@ public interface OperationLogService {
     /**
      * 记录操作日志（BR-35）。
      *
-     * @param repoPath    仓库路径
-     * @param operation   操作类型
-     * @param command     命令
-     * @param success     是否成功
-     * @param durationMs  耗时
+     * @param repoPath     仓库路径
+     * @param operation    操作类型
+     * @param command      命令
+     * @param success      是否成功
+     * @param durationMs   耗时
      * @param errorMessage 错误信息
-     * @param taskId      关联任务 ID
+     * @param taskId       关联任务 ID
      */
-    void record(String repoPath, OperationType operation, String command,
-                boolean success, long durationMs, String errorMessage, String taskId);
+    void record(String repoPath, OperationType operation, String command, boolean success, long durationMs, String errorMessage, String taskId);
 
     /**
      * 查询操作日志。

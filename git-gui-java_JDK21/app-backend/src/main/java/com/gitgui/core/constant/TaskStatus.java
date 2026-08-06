@@ -10,14 +10,24 @@ package com.gitgui.core.constant;
  */
 public enum TaskStatus {
 
-    /** 待执行：已提交到队列，等待 TaskManager 调度 */
+    /**
+     * 待执行：已提交到队列，等待 TaskManager 调度
+     */
     PENDING,
-    /** 执行中：TaskManager 已取出并开始执行 */
+    /**
+     * 执行中：TaskManager 已取出并开始执行
+     */
     RUNNING,
-    /** 成功：任务正常完成 */
+    /**
+     * 成功：任务正常完成
+     */
     SUCCESS,
-    /** 失败：任务执行异常（不自动重试写操作，BR-35） */
+    /**
+     * 失败：任务执行异常（不自动重试写操作，BR-35）
+     */
     FAILED,
-    /** 已取消：用户主动取消（BR-33 可取消） */
+    /**
+     * 已取消：用户主动取消（BR-33 可取消）
+     */
     CANCELLED
 }

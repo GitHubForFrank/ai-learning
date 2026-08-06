@@ -22,13 +22,21 @@ import lombok.Getter;
 @Getter
 public class RepoListItem {
 
-    /** 仓库元信息 */
+    /**
+     * 仓库元信息
+     */
     private final RepositoryMeta repoMeta;
-    /** 所属扫描根目录路径，可空 */
+    /**
+     * 所属扫描根目录路径，可空
+     */
     private final String scanRootPath;
-    /** 是否已收藏 */
+    /**
+     * 是否已收藏
+     */
     private final boolean favorite;
-    /** 用户自定义别名（来自 favorite 表，可空） */
+    /**
+     * 用户自定义别名（来自 favorite 表，可空）
+     */
     private final String alias;
 
     public RepoListItem(RepositoryMeta repoMeta, String scanRootPath, boolean favorite, String alias) {
@@ -92,8 +100,12 @@ public class RepoListItem {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof RepoListItem)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof RepoListItem)) {
+            return false;
+        }
         RepoListItem that = (RepoListItem) o;
         return Objects.equals(repoMeta.getRepoPath(), that.repoMeta.getRepoPath());
     }

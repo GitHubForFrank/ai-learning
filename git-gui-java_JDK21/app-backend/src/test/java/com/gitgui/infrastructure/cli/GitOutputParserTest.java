@@ -1,17 +1,18 @@
 package com.gitgui.infrastructure.cli;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.gitgui.domain.model.FileChange;
 import com.gitgui.domain.model.FileStatus;
 import com.gitgui.domain.model.LogEntry;
 import com.gitgui.domain.model.RefInfo;
 import com.gitgui.domain.model.RemoteConfig;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * GitOutputParser 单元测试
@@ -30,8 +31,10 @@ class GitOutputParserTest {
             String output = " M modified.txt\0";
             List<FileStatus> result = parser.parseStatus(output);
             assertEquals(1, result.size());
-            assertEquals(FileStatus.FileState.MODIFIED, result.get(0).getState());
-            assertEquals("modified.txt", result.get(0).getPath());
+            assertEquals(FileStatus.FileState.MODIFIED, result.get(0)
+                                                              .getState());
+            assertEquals("modified.txt", result.get(0)
+                                               .getPath());
         }
 
         @Test
@@ -40,7 +43,8 @@ class GitOutputParserTest {
             String output = "?? newfile.txt\0";
             List<FileStatus> result = parser.parseStatus(output);
             assertEquals(1, result.size());
-            assertEquals(FileStatus.FileState.UNTRACKED, result.get(0).getState());
+            assertEquals(FileStatus.FileState.UNTRACKED, result.get(0)
+                                                               .getState());
         }
 
         @Test
@@ -49,7 +53,8 @@ class GitOutputParserTest {
             String output = "M  staged.txt\0";
             List<FileStatus> result = parser.parseStatus(output);
             assertEquals(1, result.size());
-            assertEquals(FileStatus.FileState.STAGED, result.get(0).getState());
+            assertEquals(FileStatus.FileState.STAGED, result.get(0)
+                                                            .getState());
         }
 
         @Test
@@ -58,7 +63,8 @@ class GitOutputParserTest {
             String output = " D deleted.txt\0";
             List<FileStatus> result = parser.parseStatus(output);
             assertEquals(1, result.size());
-            assertEquals(FileStatus.FileState.DELETED, result.get(0).getState());
+            assertEquals(FileStatus.FileState.DELETED, result.get(0)
+                                                             .getState());
         }
 
         @Test
@@ -67,7 +73,8 @@ class GitOutputParserTest {
             String output = "UU conflict.txt\0";
             List<FileStatus> result = parser.parseStatus(output);
             assertEquals(1, result.size());
-            assertEquals(FileStatus.FileState.CONFLICT, result.get(0).getState());
+            assertEquals(FileStatus.FileState.CONFLICT, result.get(0)
+                                                              .getState());
         }
 
         @Test
@@ -90,9 +97,12 @@ class GitOutputParserTest {
             String output = " M modified.txt\0?? new.txt\0A  added.txt\0";
             List<FileStatus> result = parser.parseStatus(output);
             assertEquals(3, result.size());
-            assertEquals(FileStatus.FileState.MODIFIED, result.get(0).getState());
-            assertEquals(FileStatus.FileState.UNTRACKED, result.get(1).getState());
-            assertEquals(FileStatus.FileState.STAGED, result.get(2).getState());
+            assertEquals(FileStatus.FileState.MODIFIED, result.get(0)
+                                                              .getState());
+            assertEquals(FileStatus.FileState.UNTRACKED, result.get(1)
+                                                               .getState());
+            assertEquals(FileStatus.FileState.STAGED, result.get(2)
+                                                            .getState());
         }
     }
 
@@ -103,8 +113,8 @@ class GitOutputParserTest {
         @Test
         @DisplayName("解析单条日志")
         void shouldParseSingleLogEntry() {
-            String output = "abc1234def5678\0abc1234\0Test User\0test@test.com\0" +
-                    "2024-01-15T10:30:00+08:00\0Initial commit\0detailed body\0parentSha\n";
+            String output =
+                    "abc1234def5678\0abc1234\0Test User\0test@test.com\0" + "2024-01-15T10:30:00+08:00\0Initial commit\0detailed body\0parentSha\n";
             List<LogEntry> result = parser.parseLog(output);
             assertEquals(1, result.size());
             LogEntry entry = result.get(0);
@@ -113,7 +123,8 @@ class GitOutputParserTest {
             assertEquals("Test User", entry.getAuthor());
             assertEquals("test@test.com", entry.getAuthorEmail());
             assertNotNull(entry.getCommitTime());
-            assertTrue(entry.getMessage().contains("Initial commit"));
+            assertTrue(entry.getMessage()
+                            .contains("Initial commit"));
         }
 
         @Test
@@ -139,24 +150,27 @@ class GitOutputParserTest {
         @Test
         @DisplayName("解析单个 remote")
         void shouldParseSingleRemote() {
-            String output = "origin\thttps://github.com/user/repo.git (fetch)\n" +
-                    "origin\thttps://github.com/user/repo.git (push)\n";
+            String output = "origin\thttps://github.com/user/repo.git (fetch)\n" + "origin\thttps://github.com/user/repo.git (push)\n";
             List<RemoteConfig> result = parser.parseRemotes(output);
             assertEquals(1, result.size());
-            assertEquals("origin", result.get(0).getName());
-            assertEquals("https://github.com/user/repo.git", result.get(0).getFetchUrl());
-            assertEquals("https://github.com/user/repo.git", result.get(0).getPushUrl());
+            assertEquals("origin", result.get(0)
+                                         .getName());
+            assertEquals("https://github.com/user/repo.git", result.get(0)
+                                                                   .getFetchUrl());
+            assertEquals("https://github.com/user/repo.git", result.get(0)
+                                                                   .getPushUrl());
         }
 
         @Test
         @DisplayName("解析不同 fetch/push URL")
         void shouldParseDifferentFetchPushUrl() {
-            String output = "origin\thttps://github.com/user/repo.git (fetch)\n" +
-                    "origin\tgit@github.com:user/repo.git (push)\n";
+            String output = "origin\thttps://github.com/user/repo.git (fetch)\n" + "origin\tgit@github.com:user/repo.git (push)\n";
             List<RemoteConfig> result = parser.parseRemotes(output);
             assertEquals(1, result.size());
-            assertEquals("https://github.com/user/repo.git", result.get(0).getFetchUrl());
-            assertEquals("git@github.com:user/repo.git", result.get(0).getPushUrl());
+            assertEquals("https://github.com/user/repo.git", result.get(0)
+                                                                   .getFetchUrl());
+            assertEquals("git@github.com:user/repo.git", result.get(0)
+                                                               .getPushUrl());
         }
 
         @Test
@@ -177,9 +191,12 @@ class GitOutputParserTest {
             String output = "refs/heads/main\tabc123\t2024-01-15T10:30:00+08:00\tInitial commit\n";
             List<RefInfo> result = parser.parseRefs(output);
             assertEquals(1, result.size());
-            assertEquals("refs/heads/main", result.get(0).getRefName());
-            assertEquals("main", result.get(0).getDisplayName());
-            assertEquals("BRANCH", result.get(0).getKind());
+            assertEquals("refs/heads/main", result.get(0)
+                                                  .getRefName());
+            assertEquals("main", result.get(0)
+                                       .getDisplayName());
+            assertEquals("BRANCH", result.get(0)
+                                         .getKind());
         }
 
         @Test
@@ -188,19 +205,22 @@ class GitOutputParserTest {
             String output = "refs/tags/v1.0.0\tdef456\t2024-06-01T00:00:00Z\tRelease v1.0.0\n";
             List<RefInfo> result = parser.parseRefs(output);
             assertEquals(1, result.size());
-            assertEquals("TAG", result.get(0).getKind());
-            assertEquals("v1.0.0", result.get(0).getDisplayName());
+            assertEquals("TAG", result.get(0)
+                                      .getKind());
+            assertEquals("v1.0.0", result.get(0)
+                                         .getDisplayName());
         }
 
         @Test
         @DisplayName("解析远程引用")
         void shouldParseRemoteRef() {
-            String output = "refs/remotes/origin/main\tghi789\t" +
-                    "2024-01-15T10:30:00+08:00\tRemote commit\n";
+            String output = "refs/remotes/origin/main\tghi789\t" + "2024-01-15T10:30:00+08:00\tRemote commit\n";
             List<RefInfo> result = parser.parseRefs(output);
             assertEquals(1, result.size());
-            assertEquals("REMOTE", result.get(0).getKind());
-            assertEquals("origin", result.get(0).getRemoteName());
+            assertEquals("REMOTE", result.get(0)
+                                         .getKind());
+            assertEquals("origin", result.get(0)
+                                         .getRemoteName());
         }
     }
 
@@ -214,8 +234,10 @@ class GitOutputParserTest {
             String output = "A\tnewfile.txt\n";
             List<FileChange> result = parser.parseFileChanges(output);
             assertEquals(1, result.size());
-            assertEquals("ADD", result.get(0).getChangeType());
-            assertEquals("newfile.txt", result.get(0).getPath());
+            assertEquals("ADD", result.get(0)
+                                      .getChangeType());
+            assertEquals("newfile.txt", result.get(0)
+                                              .getPath());
         }
 
         @Test
@@ -224,7 +246,8 @@ class GitOutputParserTest {
             String output = "M\tmodified.txt\n";
             List<FileChange> result = parser.parseFileChanges(output);
             assertEquals(1, result.size());
-            assertEquals("MODIFY", result.get(0).getChangeType());
+            assertEquals("MODIFY", result.get(0)
+                                         .getChangeType());
         }
 
         @Test
@@ -233,7 +256,8 @@ class GitOutputParserTest {
             String output = "D\tremoved.txt\n";
             List<FileChange> result = parser.parseFileChanges(output);
             assertEquals(1, result.size());
-            assertEquals("DELETE", result.get(0).getChangeType());
+            assertEquals("DELETE", result.get(0)
+                                         .getChangeType());
         }
 
         @Test
@@ -242,9 +266,12 @@ class GitOutputParserTest {
             String output = "R100\toldname.txt\tnewname.txt\n";
             List<FileChange> result = parser.parseFileChanges(output);
             assertEquals(1, result.size());
-            assertEquals("RENAME", result.get(0).getChangeType());
-            assertEquals("oldname.txt", result.get(0).getOldPath());
-            assertEquals("newname.txt", result.get(0).getNewPath());
+            assertEquals("RENAME", result.get(0)
+                                         .getChangeType());
+            assertEquals("oldname.txt", result.get(0)
+                                              .getOldPath());
+            assertEquals("newname.txt", result.get(0)
+                                              .getNewPath());
         }
     }
 

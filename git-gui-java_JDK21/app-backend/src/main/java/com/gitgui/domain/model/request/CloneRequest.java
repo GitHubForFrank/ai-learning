@@ -14,27 +14,43 @@ import lombok.Data;
 @Builder
 public class CloneRequest {
 
-    /** 远程仓库 URL */
+    /**
+     * 远程仓库 URL
+     */
     private String remoteUrl;
 
-    /** 本地目标目录 */
+    /**
+     * 本地目标目录
+     */
     private String targetDir;
 
-    /** 选择分支（null 表示克隆默认分支） */
+    /**
+     * 选择分支（null 表示克隆默认分支）
+     */
     private String branch;
 
-    /** SSH 密钥文件路径 */
+    /**
+     * SSH 密钥文件路径
+     */
     private String sshKey;
 
-    /** 浅克隆深度（--depth，0 表示不浅克隆） */
+    /**
+     * 浅克隆深度（--depth，0 表示不浅克隆）
+     */
     private int depth;
 
-    /** 是否克隆为裸仓库（--bare） */
+    /**
+     * 是否克隆为裸仓库（--bare）
+     */
     private boolean bare;
 
-    /** 是否稀疏检出 */
+    /**
+     * 是否稀疏检出
+     */
     private boolean sparseCheckout;
 
-    /** 是否克隆到子目录 */
+    /**
+     * 是否克隆到子目录
+     */
     private boolean subdirectory;
 }

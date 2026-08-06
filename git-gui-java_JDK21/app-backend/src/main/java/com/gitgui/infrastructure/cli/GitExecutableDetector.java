@@ -1,12 +1,11 @@
 package com.gitgui.infrastructure.cli;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Git 可执行文件检测器
@@ -38,14 +37,16 @@ public class GitExecutableDetector {
         // 2. 从 PATH 查找
         String pathEnv = System.getenv("PATH");
         if (pathEnv != null) {
-            String osName = System.getProperty("os.name", "").toLowerCase();
+            String osName = System.getProperty("os.name", "")
+                                  .toLowerCase();
             String executable = osName.contains("win") ? "git.exe" : "git";
             for (String dir : pathEnv.split(File.pathSeparator)) {
                 try {
                     Path candidate = Paths.get(dir, executable);
                     if (Files.isExecutable(candidate)) {
                         log.info("Git 可执行文件（PATH）：{}", candidate);
-                        return candidate.toAbsolutePath().toString();
+                        return candidate.toAbsolutePath()
+                                        .toString();
                     }
                 } catch (RuntimeException e) {
                     // 路径异常跳过
@@ -53,12 +54,8 @@ public class GitExecutableDetector {
             }
         }
         // 3. 常见安装路径
-        String[] commonPaths = isWindows() ? new String[]{
-                "C:\\Program Files\\Git\\bin\\git.exe",
-                "C:\\Program Files (x86)\\Git\\bin\\git.exe"
-        } : new String[]{
-                "/usr/bin/git", "/usr/local/bin/git", "/opt/homebrew/bin/git"
-        };
+        String[] commonPaths = isWindows() ? new String[]{"C:\\Program Files\\Git\\bin\\git.exe", "C:\\Program Files (x86)\\Git\\bin\\git.exe"}
+                : new String[]{"/usr/bin/git", "/usr/local/bin/git", "/opt/homebrew/bin/git"};
         for (String p : commonPaths) {
             if (Files.isExecutable(Paths.get(p))) {
                 log.info("Git 可执行文件（常见路径）：{}", p);
@@ -73,6 +70,8 @@ public class GitExecutableDetector {
      * 是否 Windows 平台。
      */
     private static boolean isWindows() {
-        return System.getProperty("os.name", "").toLowerCase().contains("win");
+        return System.getProperty("os.name", "")
+                     .toLowerCase()
+                     .contains("win");
     }
 }

@@ -1,7 +1,6 @@
 package com.gitgui.ui;
 
 import com.gitgui.GitGuiApp;
-import com.gitgui.core.async.ProgressCallback;
 import com.gitgui.core.async.TaskHandle;
 import com.gitgui.domain.constant.TaskType;
 import com.gitgui.domain.service.AsyncTaskService;
@@ -39,7 +38,9 @@ public final class AsyncUiLoader {
 
     private static final Logger log = LoggerFactory.getLogger(AsyncUiLoader.class);
 
-    /** 无仓库上下文时使用的占位路径（如全局设置加载，对应 task_record.repo_path 默认空串） */
+    /**
+     * 无仓库上下文时使用的占位路径（如全局设置加载，对应 task_record.repo_path 默认空串）
+     */
     private static final String EMPTY_REPO_PATH = "";
 
     /**
@@ -55,7 +56,8 @@ public final class AsyncUiLoader {
      * @throws IllegalStateException 注入器未就绪时抛出
      */
     private static AsyncTaskService getAsyncTaskService() {
-        AsyncTaskService service = GitGuiApp.getInjector().getInstance(AsyncTaskService.class);
+        AsyncTaskService service = GitGuiApp.getInjector()
+                                            .getInstance(AsyncTaskService.class);
         if (service == null) {
             throw new IllegalStateException("AsyncTaskService 未注入，无法提交异步任务");
         }

@@ -10,4 +10,5 @@ import com.gitgui.domain.model.Favorite;
  * @since 2026-07-23
  */
 public interface FavoriteMapper extends BaseMapper<Favorite> {
+
 }

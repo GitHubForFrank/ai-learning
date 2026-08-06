@@ -1,4 +1,4 @@
-# Vue3 + Vite + JavaFX WebView 前端方案分析报告
+﻿# Vue3 + Vite + JavaFX WebView 前端方案分析报告
 
 > **方案描述**：在 `app-backend` 同级创建 `app-frontend`，使用 Vue3 + Vite 打包静态资源，通过 JavaFX WebView 加载渲染前端页面。
 
@@ -79,7 +79,7 @@
 
 ### 用户提出的方案
 
-```
+```plaintext
 git-gui-java_JDK21/
 ├── app-backend/          # JavaFX + Guice + JGit（保持现有）
 │   └── src/main/resources/static/  # ← 构建时自动复制前端产物
@@ -112,7 +112,7 @@ git-gui-java_JDK21/
 
 ### 2.1 现有技术栈概览
 
-```
+```plaintext
 ┌──────────────────────────────────────────────┐
 │                  JavaFX 21                    │
 │  ┌────────────┐  ┌────────────┐  ┌─────────┐ │
@@ -186,7 +186,7 @@ JavaFX WebView 基于 **WebKit** 内核（非 Chromium），版本随 JDK 分发
 
 ### 3.2 技术风险热力图
 
-```
+```plaintext
 风险等级    风险项
 ─────────────────────────────────────────────
 🔴 高       Java-JS Bridge 通信复杂度
@@ -359,7 +359,7 @@ webView.getEngine().load("http://localhost:" + port + "/index.html");
 
 这是**最核心的技术挑战**。通信链路如下：
 
-```
+```plaintext
 ┌──────────────┐         ┌──────────────┐
 │   Vue3 前端   │ ←?→    │  Java 后端    │
 │  (JS 线程)   │         │  (JavaFX 线程)│
@@ -382,7 +382,7 @@ webView.getEngine().load("http://localhost:" + port + "/index.html");
 
 **示例对比**——同一操作在两种模式下的代码量：
 
-```
+```plaintext
 当前 FXML 模式：                       WebView 模式：
 ┌───────────────────────┐          ┌──────────────────────────┐
 │ Controller:           │          │ Vue Component:           │
@@ -509,7 +509,7 @@ node scripts/properties-to-i18n.js \
 
 ### 5.2 三层调试架构
 
-```
+```plaintext
 ┌─────────────────────────────────────────────────────────────┐
 │                     开发调试三层架构                          │
 ├─────────────────────────────────────────────────────────────┤
@@ -835,7 +835,7 @@ cd app-backend && mvn exec:java -Dgitgui.dev=true  # 终端 2：JavaFX
 
 ### 5.7 调试工作流总结
 
-```
+```plaintext
 日常开发流程（90% 的时间）
 ══════════════════════════════════════════════════════
 
@@ -878,7 +878,7 @@ cd app-backend && mvn exec:java -Dgitgui.dev=true  # 终端 2：JavaFX
 
 如果决定实施，需要修订以下文件：
 
-```
+```plaintext
 需要修改的文件：
 ├── shared/05-frontend-base.md     ← 移除 WebView 禁用条款
 ├── project/05-frontend.md         ← 新增 Vue3 技术栈说明
@@ -910,7 +910,7 @@ cd app-backend && mvn exec:java -Dgitgui.dev=true  # 终端 2：JavaFX
 
 ### 7.2 综合研判
 
-```
+```plaintext
 推荐指数：★★☆☆☆（2.6/5.0）—— 不推荐
 ```
 
@@ -994,7 +994,7 @@ cd app-backend && mvn exec:java -Dgitgui.dev=true  # 终端 2：JavaFX
 
 ### 9.1 实施阶段规划
 
-```
+```plaintext
 Phase 1: 基础设施搭建（1-2 周）
 ├── 创建 app-frontend 项目（Vue3 + Vite + TS）
 ├── 实现 Java-JS Bridge 核心层
@@ -1290,7 +1290,7 @@ export default defineConfig({
 > **这是原方案中最严重的架构缺陷。** 9.2 节的 Bridge 设计采用同步调用模式（`javaBridge.invoke()` 同步返回结果），但 Git 操作可能耗时 **5 秒到 5 分钟**不等（Clone 大仓库）。同步调用会在等待期间**彻底冻结** WebView UI 线程。
 
 **错误示范**（9.2 节原设计）：
-```
+```plaintext
 JS: bridge.invoke("clone", params)
     → Java: 同步等待 clone 完成(5分钟...)
     → WebView UI: 白屏/无响应 5 分钟 ❌
@@ -1446,7 +1446,7 @@ await bridge.asyncCall('clone', { url: 'https://...', path: '/...' })
 
 ### 10.2 结论
 
-```
+```plaintext
 ┌──────────────────────────────────────────────────────────────┐
 │                                                              │
 │   ⚠️  不推荐在当前阶段引入 Vue3 + Vite + JavaFX WebView      │

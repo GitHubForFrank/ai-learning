@@ -5,10 +5,9 @@ import com.gitgui.core.exception.GitGuiException;
 import com.gitgui.domain.model.RemoteConfig;
 import com.gitgui.domain.service.RemoteConfigService;
 import com.gitgui.infrastructure.cli.GitProcessBuilder;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 /**
  * 远程配置服务实现
@@ -69,20 +68,28 @@ public class RemoteConfigServiceImpl implements RemoteConfigService {
     private List<RemoteConfig> parseRemoteOutput(String output) {
         java.util.Map<String, RemoteConfig.RemoteConfigBuilder> builders = new java.util.LinkedHashMap<>();
         for (String line : output.split("\n")) {
-            if (line.isBlank()) continue;
+            if (line.isBlank()) {
+                continue;
+            }
             // 格式：origin\tgit@github.com:foo/bar.git (fetch)
             String[] parts = line.split("\\s+");
-            if (parts.length < 2) continue;
+            if (parts.length < 2) {
+                continue;
+            }
             String name = parts[0];
             String url = parts[1];
             String type = parts.length >= 3 ? parts[2] : "";
-            RemoteConfig.RemoteConfigBuilder b = builders.computeIfAbsent(name, k -> RemoteConfig.builder().name(k));
+            RemoteConfig.RemoteConfigBuilder b = builders.computeIfAbsent(name, k -> RemoteConfig.builder()
+                                                                                                 .name(k));
             if (type.contains("fetch")) {
                 b.fetchUrl(url);
             } else if (type.contains("push")) {
                 b.pushUrl(url);
             }
         }
-        return builders.values().stream().map(RemoteConfig.RemoteConfigBuilder::build).toList();
+        return builders.values()
+                       .stream()
+                       .map(RemoteConfig.RemoteConfigBuilder::build)
+                       .toList();
     }
 }

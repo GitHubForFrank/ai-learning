@@ -20,6 +20,9 @@ import java.util.List;
  */
 public class LargeFileRule extends AbstractRedLineRule {
 
+    /**
+     * @param settingsService 设置服务
+     */
     @Inject
     public LargeFileRule(SettingsService settingsService) {
         super(settingsService);
@@ -28,7 +31,8 @@ public class LargeFileRule extends AbstractRedLineRule {
     @Override
     protected RedLineResult doCheck(RedLineContext ctx) {
         // 命中条件：暂存区含超大文件（非 LFS）
-        if (ctx.getStagedFilesWithSize() == null || ctx.getStagedFilesWithSize().isEmpty()) {
+        if (ctx.getStagedFilesWithSize() == null || ctx.getStagedFilesWithSize()
+                                                       .isEmpty()) {
             return RedLineResult.pass();
         }
         int thresholdMb = settingsService.getLargeFileThresholdMb();
@@ -42,10 +46,10 @@ public class LargeFileRule extends AbstractRedLineRule {
         }
         if (!hits.isEmpty()) {
             return RedLineResult.confirm(RedLineCode.RED_LARGE_FILE,
-                    "推送超大文件（> " + thresholdMb + "MB，非 LFS），建议走 LFS：" + String.join("、", hits))
-                    .toBuilder()
-                    .detail(JsonUtil.toJson(hits))
-                    .build();
+                                         "推送超大文件（> " + thresholdMb + "MB，非 LFS），建议走 LFS：" + String.join("、", hits))
+                                .toBuilder()
+                                .detail(JsonUtil.toJson(hits))
+                                .build();
         }
         return RedLineResult.pass();
     }

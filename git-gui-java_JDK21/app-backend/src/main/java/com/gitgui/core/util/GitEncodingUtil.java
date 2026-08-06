@@ -13,10 +13,14 @@ import java.util.Map;
  */
 public final class GitEncodingUtil {
 
-    /** 强制编码名称 */
+    /**
+     * 强制编码名称
+     */
     public static final String ENCODING = "UTF-8";
 
-    /** Git 环境变量：强制 locale 为 UTF-8 */
+    /**
+     * Git 环境变量：强制 locale 为 UTF-8
+     */
     public static final String ENV_LANG = "C";
 
     private GitEncodingUtil() {

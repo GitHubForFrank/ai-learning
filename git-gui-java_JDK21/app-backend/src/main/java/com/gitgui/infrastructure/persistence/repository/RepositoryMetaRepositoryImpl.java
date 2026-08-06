@@ -6,13 +6,12 @@ import com.gitgui.domain.model.RepositoryMeta;
 import com.gitgui.domain.repository.RepositoryMetaRepository;
 import com.gitgui.infrastructure.persistence.mapper.RepositoryMetaMapper;
 import com.gitgui.infrastructure.persistence.mybatis.MyBatisSqlSessionManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 仓库元信息仓储 MyBatis-Plus 实现
@@ -60,10 +59,7 @@ public class RepositoryMetaRepositoryImpl implements RepositoryMetaRepository {
     public RepositoryMeta findByRepoPath(String repoPath) {
         try (var session = sessionManager.openSession()) {
             RepositoryMetaMapper mapper = session.getMapper(RepositoryMetaMapper.class);
-            return mapper.selectOne(
-                    new LambdaQueryWrapper<RepositoryMeta>()
-                            .eq(RepositoryMeta::getRepoPath, repoPath)
-            );
+            return mapper.selectOne(new LambdaQueryWrapper<RepositoryMeta>().eq(RepositoryMeta::getRepoPath, repoPath));
         }
     }
 
@@ -71,10 +67,7 @@ public class RepositoryMetaRepositoryImpl implements RepositoryMetaRepository {
     public List<RepositoryMeta> findAll() {
         try (var session = sessionManager.openSession()) {
             RepositoryMetaMapper mapper = session.getMapper(RepositoryMetaMapper.class);
-            return mapper.selectList(
-                    new LambdaQueryWrapper<RepositoryMeta>()
-                            .orderByDesc(RepositoryMeta::getLastSyncedAt)
-            );
+            return mapper.selectList(new LambdaQueryWrapper<RepositoryMeta>().orderByDesc(RepositoryMeta::getLastSyncedAt));
         }
     }
 
@@ -82,10 +75,7 @@ public class RepositoryMetaRepositoryImpl implements RepositoryMetaRepository {
     public void deleteByRepoPath(String repoPath) {
         try (var session = sessionManager.openSession()) {
             RepositoryMetaMapper mapper = session.getMapper(RepositoryMetaMapper.class);
-            mapper.delete(
-                    new LambdaQueryWrapper<RepositoryMeta>()
-                            .eq(RepositoryMeta::getRepoPath, repoPath)
-            );
+            mapper.delete(new LambdaQueryWrapper<RepositoryMeta>().eq(RepositoryMeta::getRepoPath, repoPath));
         }
     }
 }

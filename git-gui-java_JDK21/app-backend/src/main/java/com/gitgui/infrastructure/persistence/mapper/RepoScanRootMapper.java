@@ -10,4 +10,5 @@ import com.gitgui.domain.model.RepoScanRoot;
  * @since 2026-07-24
  */
 public interface RepoScanRootMapper extends BaseMapper<RepoScanRoot> {
+
 }

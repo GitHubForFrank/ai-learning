@@ -6,13 +6,12 @@ import com.gitgui.domain.model.RecentRepo;
 import com.gitgui.domain.repository.RecentRepoRepository;
 import com.gitgui.infrastructure.persistence.mapper.RecentRepoMapper;
 import com.gitgui.infrastructure.persistence.mybatis.MyBatisSqlSessionManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 最近仓库仓储 MyBatis-Plus 实现
@@ -60,10 +59,7 @@ public class RecentRepoRepositoryImpl implements RecentRepoRepository {
     public List<RecentRepo> findAll() {
         try (var session = sessionManager.openSession()) {
             RecentRepoMapper mapper = session.getMapper(RecentRepoMapper.class);
-            return mapper.selectList(
-                    new LambdaQueryWrapper<RecentRepo>()
-                            .orderByDesc(RecentRepo::getLastOpenedAt)
-            );
+            return mapper.selectList(new LambdaQueryWrapper<RecentRepo>().orderByDesc(RecentRepo::getLastOpenedAt));
         }
     }
 
@@ -71,10 +67,7 @@ public class RecentRepoRepositoryImpl implements RecentRepoRepository {
     public RecentRepo findByRepoPath(String repoPath) {
         try (var session = sessionManager.openSession()) {
             RecentRepoMapper mapper = session.getMapper(RecentRepoMapper.class);
-            return mapper.selectOne(
-                    new LambdaQueryWrapper<RecentRepo>()
-                            .eq(RecentRepo::getRepoPath, repoPath)
-            );
+            return mapper.selectOne(new LambdaQueryWrapper<RecentRepo>().eq(RecentRepo::getRepoPath, repoPath));
         }
     }
 
@@ -107,13 +100,11 @@ public class RecentRepoRepositoryImpl implements RecentRepoRepository {
         // 删除超出 keep 数量的最旧记录（BR-05 淘汰）
         try (var session = sessionManager.openSession()) {
             RecentRepoMapper mapper = session.getMapper(RecentRepoMapper.class);
-            List<RecentRepo> all = mapper.selectList(
-                    new LambdaQueryWrapper<RecentRepo>()
-                            .orderByDesc(RecentRepo::getLastOpenedAt)
-            );
+            List<RecentRepo> all = mapper.selectList(new LambdaQueryWrapper<RecentRepo>().orderByDesc(RecentRepo::getLastOpenedAt));
             if (all.size() > keep) {
                 for (int i = keep; i < all.size(); i++) {
-                    mapper.deleteById(all.get(i).getId());
+                    mapper.deleteById(all.get(i)
+                                         .getId());
                 }
             }
         }

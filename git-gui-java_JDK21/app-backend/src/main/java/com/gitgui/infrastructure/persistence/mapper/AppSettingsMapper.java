@@ -10,4 +10,5 @@ import com.gitgui.domain.model.AppSettings;
  * @since 2026-07-23
  */
 public interface AppSettingsMapper extends BaseMapper<AppSettings> {
+
 }

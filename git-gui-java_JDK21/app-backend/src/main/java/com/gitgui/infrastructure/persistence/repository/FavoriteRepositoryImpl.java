@@ -6,13 +6,12 @@ import com.gitgui.domain.model.Favorite;
 import com.gitgui.domain.repository.FavoriteRepository;
 import com.gitgui.infrastructure.persistence.mapper.FavoriteMapper;
 import com.gitgui.infrastructure.persistence.mybatis.MyBatisSqlSessionManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 收藏仓储 MyBatis-Plus 实现
@@ -68,10 +67,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepository {
     public Favorite findByRepoPath(String repoPath) {
         try (var session = sessionManager.openSession()) {
             FavoriteMapper mapper = session.getMapper(FavoriteMapper.class);
-            return mapper.selectOne(
-                    new LambdaQueryWrapper<Favorite>()
-                            .eq(Favorite::getRepoPath, repoPath)
-            );
+            return mapper.selectOne(new LambdaQueryWrapper<Favorite>().eq(Favorite::getRepoPath, repoPath));
         }
     }
 
@@ -79,12 +75,9 @@ public class FavoriteRepositoryImpl implements FavoriteRepository {
     public List<Favorite> findAll() {
         try (var session = sessionManager.openSession()) {
             FavoriteMapper mapper = session.getMapper(FavoriteMapper.class);
-            return mapper.selectList(
-                    new LambdaQueryWrapper<Favorite>()
-                            .orderByDesc(Favorite::isPinned)
-                            .orderByAsc(Favorite::getSortOrder)
-                            .orderByDesc(Favorite::getCreatedAt)
-            );
+            return mapper.selectList(new LambdaQueryWrapper<Favorite>().orderByDesc(Favorite::isPinned)
+                                                                       .orderByAsc(Favorite::getSortOrder)
+                                                                       .orderByDesc(Favorite::getCreatedAt));
         }
     }
 
@@ -92,12 +85,9 @@ public class FavoriteRepositoryImpl implements FavoriteRepository {
     public List<Favorite> findByGroup(String group) {
         try (var session = sessionManager.openSession()) {
             FavoriteMapper mapper = session.getMapper(FavoriteMapper.class);
-            return mapper.selectList(
-                    new LambdaQueryWrapper<Favorite>()
-                            .eq(Favorite::getGroup, group)
-                            .orderByDesc(Favorite::isPinned)
-                            .orderByAsc(Favorite::getSortOrder)
-            );
+            return mapper.selectList(new LambdaQueryWrapper<Favorite>().eq(Favorite::getGroup, group)
+                                                                       .orderByDesc(Favorite::isPinned)
+                                                                       .orderByAsc(Favorite::getSortOrder));
         }
     }
 
@@ -113,10 +103,7 @@ public class FavoriteRepositoryImpl implements FavoriteRepository {
     public boolean existsByRepoPath(String repoPath) {
         try (var session = sessionManager.openSession()) {
             FavoriteMapper mapper = session.getMapper(FavoriteMapper.class);
-            return mapper.selectCount(
-                    new LambdaQueryWrapper<Favorite>()
-                            .eq(Favorite::getRepoPath, repoPath)
-            ) > 0;
+            return mapper.selectCount(new LambdaQueryWrapper<Favorite>().eq(Favorite::getRepoPath, repoPath)) > 0;
         }
     }
 }

@@ -1,10 +1,9 @@
 package com.gitgui.domain.redline;
 
 import com.gitgui.core.constant.OperationType;
+import java.util.List;
 import lombok.Builder;
 import lombok.Data;
-
-import java.util.List;
 
 /**
  * 红线校验上下文
@@ -18,55 +17,89 @@ import java.util.List;
 @Builder
 public class RedLineContext {
 
-    /** 操作类型 */
+    /**
+     * 操作类型
+     */
     private OperationType operation;
 
-    /** 实际命令（如 "git push --force"） */
+    /**
+     * 实际命令（如 "git push --force"）
+     */
     private String command;
 
-    /** 仓库路径 */
+    /**
+     * 仓库路径
+     */
     private String repoPath;
 
-    /** 涉及分支 */
+    /**
+     * 涉及分支
+     */
     private String branch;
 
-    /** 涉及远程 URL */
+    /**
+     * 涉及远程 URL
+     */
     private String remoteUrl;
 
-    /** 暂存区文件清单（敏感文件扫描用，BR-32） */
+    /**
+     * 暂存区文件清单（敏感文件扫描用，BR-32）
+     */
     private List<String> stagedFiles;
 
-    /** 暂存区文件大小映射（字节，超大文件检测用，BR-29） */
+    /**
+     * 暂存区文件大小映射（字节，超大文件检测用，BR-29）
+     */
     private List<StagedFile> stagedFilesWithSize;
 
-    /** 目标提交（reset/rebase 用） */
+    /**
+     * 目标提交（reset/rebase 用）
+     */
     private String targetCommit;
 
-    /** 目标提交是否已推送（amend/rebase 二次确认用，BR-29） */
+    /**
+     * 目标提交是否已推送（amend/rebase 二次确认用，BR-29）
+     */
     private boolean pushed;
 
-    /** 是否使用 --no-verify（BR-26） */
+    /**
+     * 是否使用 --no-verify（BR-26）
+     */
     private boolean noVerify;
 
-    /** 是否 amend 提交（BR-29） */
+    /**
+     * 是否 amend 提交（BR-29）
+     */
     private boolean amend;
 
-    /** 是否裸 --force（BR-26） */
+    /**
+     * 是否裸 --force（BR-26）
+     */
     private boolean force;
 
-    /** 是否 force with lease（BR-11 默认暴露） */
+    /**
+     * 是否 force with lease（BR-11 默认暴露）
+     */
     private boolean forceWithLease;
 
-    /** 是否删除远程分支 */
+    /**
+     * 是否删除远程分支
+     */
     private boolean deleteRemoteBranch;
 
-    /** 重置模式（reset --hard 时为 HARD，BR-29） */
+    /**
+     * 重置模式（reset --hard 时为 HARD，BR-29）
+     */
     private String resetMode;
 
-    /** 是否 clean -fdx（含忽略文件） */
+    /**
+     * 是否 clean -fdx（含忽略文件）
+     */
     private boolean cleanIncludeIgnored;
 
-    /** 是否 filter-branch / filter-repo */
+    /**
+     * 是否 filter-branch / filter-repo
+     */
     private boolean filterBranch;
 
     /**
@@ -75,9 +108,14 @@ public class RedLineContext {
     @Data
     @Builder
     public static class StagedFile {
-        /** 文件路径 */
+
+        /**
+         * 文件路径
+         */
         private String path;
-        /** 文件大小（字节） */
+        /**
+         * 文件大小（字节）
+         */
         private long size;
     }
 }

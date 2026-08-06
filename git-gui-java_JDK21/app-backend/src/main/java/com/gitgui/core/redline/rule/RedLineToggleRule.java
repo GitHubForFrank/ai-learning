@@ -16,6 +16,9 @@ import com.google.inject.Inject;
  */
 public class RedLineToggleRule extends AbstractRedLineRule {
 
+    /**
+     * @param settingsService 设置服务
+     */
     @Inject
     public RedLineToggleRule(SettingsService settingsService) {
         super(settingsService);
@@ -25,8 +28,7 @@ public class RedLineToggleRule extends AbstractRedLineRule {
     protected RedLineResult doCheck(RedLineContext ctx) {
         // 命中条件：切换红线总开关（通过 command 标识）
         if ("RED_LINE_TOGGLE".equalsIgnoreCase(ctx.getCommand())) {
-            return RedLineResult.confirm(RedLineCode.RED_LINE_TOGGLE,
-                    "切换命令红线总开关将影响所有阻断/确认行为，请确认是否继续");
+            return RedLineResult.confirm(RedLineCode.RED_LINE_TOGGLE, "切换命令红线总开关将影响所有阻断/确认行为，请确认是否继续");
         }
         return RedLineResult.pass();
     }

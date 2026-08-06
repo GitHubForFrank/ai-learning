@@ -3,10 +3,9 @@ package com.gitgui.domain.model;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.gitgui.core.constant.OperationType;
+import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Data;
-
-import java.time.LocalDateTime;
 
 /**
  * 操作日志领域模型
@@ -21,34 +20,54 @@ import java.time.LocalDateTime;
 @TableName("operation_log")
 public class OperationLog {
 
-    /** 主键 UUID */
+    /**
+     * 主键 UUID
+     */
     @TableId
     private String id;
 
-    /** 目标仓库路径 */
+    /**
+     * 目标仓库路径
+     */
     private String repoPath;
 
-    /** 操作类型（COMMIT/PULL/PUSH/...） */
+    /**
+     * 操作类型（COMMIT/PULL/PUSH/...）
+     */
     private OperationType operation;
 
-    /** 实际执行的 git 命令描述 */
+    /**
+     * 实际执行的 git 命令描述
+     */
     private String command;
 
-    /** 参数 JSON */
+    /**
+     * 参数 JSON
+     */
     private String args;
 
-    /** 是否成功 */
+    /**
+     * 是否成功
+     */
     private boolean success;
 
-    /** 耗时（毫秒） */
+    /**
+     * 耗时（毫秒）
+     */
     private long durationMs;
 
-    /** 错误信息（中文友好提示） */
+    /**
+     * 错误信息（中文友好提示）
+     */
     private String errorMessage;
 
-    /** 关联异步任务 ID（异步操作时） */
+    /**
+     * 关联异步任务 ID（异步操作时）
+     */
     private String taskId;
 
-    /** 创建时间 */
+    /**
+     * 创建时间
+     */
     private LocalDateTime createdAt;
 }

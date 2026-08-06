@@ -7,12 +7,11 @@ import com.gitgui.core.util.IdUtil;
 import com.gitgui.domain.model.Favorite;
 import com.gitgui.domain.repository.FavoriteRepository;
 import com.gitgui.domain.service.FavoriteService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.google.inject.Inject;
 import java.time.LocalDateTime;
 import java.util.List;
-import com.google.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 收藏服务实现
@@ -39,29 +38,26 @@ public class FavoriteServiceImpl implements FavoriteService {
             throw new GitGuiException(ErrorCode.VALIDATION_FAILED, "仓库路径不能为空");
         }
         if (alias != null && alias.length() > AppConfig.ALIAS_MAX_LENGTH) {
-            throw new GitGuiException(ErrorCode.VALIDATION_FAILED,
-                    "别名最大长度 " + AppConfig.ALIAS_MAX_LENGTH + " 字符（BR-03）");
+            throw new GitGuiException(ErrorCode.VALIDATION_FAILED, "别名最大长度 " + AppConfig.ALIAS_MAX_LENGTH + " 字符（BR-03）");
         }
         if (group != null && group.length() > AppConfig.GROUP_MAX_LENGTH) {
-            throw new GitGuiException(ErrorCode.VALIDATION_FAILED,
-                    "分组最大长度 " + AppConfig.GROUP_MAX_LENGTH + " 字符（BR-03）");
+            throw new GitGuiException(ErrorCode.VALIDATION_FAILED, "分组最大长度 " + AppConfig.GROUP_MAX_LENGTH + " 字符（BR-03）");
         }
         // BR-03：唯一性校验
         if (favoriteRepository.existsByRepoPath(repoPath)) {
-            throw new GitGuiException(ErrorCode.DUPLICATE_FAVORITE,
-                    "仓库已收藏：" + repoPath);
+            throw new GitGuiException(ErrorCode.DUPLICATE_FAVORITE, "仓库已收藏：" + repoPath);
         }
         Favorite favorite = Favorite.builder()
-                .id(IdUtil.newId())
-                .repoPath(repoPath)
-                .alias(alias == null ? "" : alias)
-                .group(group == null ? "" : group)
-                .pinned(false)
-                .sortOrder(0)
-                .remoteUrl("")
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
+                                    .id(IdUtil.newId())
+                                    .repoPath(repoPath)
+                                    .alias(alias == null ? "" : alias)
+                                    .group(group == null ? "" : group)
+                                    .pinned(false)
+                                    .sortOrder(0)
+                                    .remoteUrl("")
+                                    .createdAt(LocalDateTime.now())
+                                    .updatedAt(LocalDateTime.now())
+                                    .build();
         favoriteRepository.save(favorite);
         log.info("收藏新增：repoPath={}", repoPath);
         return favorite;

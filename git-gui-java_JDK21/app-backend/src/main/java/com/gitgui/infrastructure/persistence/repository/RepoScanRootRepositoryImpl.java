@@ -8,11 +8,10 @@ import com.gitgui.infrastructure.persistence.mapper.RepoScanRootMapper;
 import com.gitgui.infrastructure.persistence.mybatis.MyBatisSqlSessionManager;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.LocalDateTime;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 扫描根目录仓储 MyBatis-Plus 实现。
@@ -68,10 +67,7 @@ public class RepoScanRootRepositoryImpl implements RepoScanRootRepository {
     public RepoScanRoot findByRootPath(String rootPath) {
         try (var session = sessionManager.openSession()) {
             RepoScanRootMapper mapper = session.getMapper(RepoScanRootMapper.class);
-            return mapper.selectOne(
-                    new LambdaQueryWrapper<RepoScanRoot>()
-                            .eq(RepoScanRoot::getRootPath, rootPath)
-            );
+            return mapper.selectOne(new LambdaQueryWrapper<RepoScanRoot>().eq(RepoScanRoot::getRootPath, rootPath));
         }
     }
 
@@ -79,12 +75,9 @@ public class RepoScanRootRepositoryImpl implements RepoScanRootRepository {
     public List<RepoScanRoot> findEnabled() {
         try (var session = sessionManager.openSession()) {
             RepoScanRootMapper mapper = session.getMapper(RepoScanRootMapper.class);
-            return mapper.selectList(
-                    new LambdaQueryWrapper<RepoScanRoot>()
-                            .eq(RepoScanRoot::isEnabled, true)
-                            .orderByAsc(RepoScanRoot::getSortOrder)
-                            .orderByDesc(RepoScanRoot::getLastScannedAt)
-            );
+            return mapper.selectList(new LambdaQueryWrapper<RepoScanRoot>().eq(RepoScanRoot::isEnabled, true)
+                                                                           .orderByAsc(RepoScanRoot::getSortOrder)
+                                                                           .orderByDesc(RepoScanRoot::getLastScannedAt));
         }
     }
 
@@ -92,11 +85,8 @@ public class RepoScanRootRepositoryImpl implements RepoScanRootRepository {
     public List<RepoScanRoot> findAll() {
         try (var session = sessionManager.openSession()) {
             RepoScanRootMapper mapper = session.getMapper(RepoScanRootMapper.class);
-            return mapper.selectList(
-                    new LambdaQueryWrapper<RepoScanRoot>()
-                            .orderByAsc(RepoScanRoot::getSortOrder)
-                            .orderByDesc(RepoScanRoot::getLastScannedAt)
-            );
+            return mapper.selectList(new LambdaQueryWrapper<RepoScanRoot>().orderByAsc(RepoScanRoot::getSortOrder)
+                                                                           .orderByDesc(RepoScanRoot::getLastScannedAt));
         }
     }
 
@@ -112,10 +102,7 @@ public class RepoScanRootRepositoryImpl implements RepoScanRootRepository {
     public void deleteByRootPath(String rootPath) {
         try (var session = sessionManager.openSession()) {
             RepoScanRootMapper mapper = session.getMapper(RepoScanRootMapper.class);
-            mapper.delete(
-                    new LambdaQueryWrapper<RepoScanRoot>()
-                            .eq(RepoScanRoot::getRootPath, rootPath)
-            );
+            mapper.delete(new LambdaQueryWrapper<RepoScanRoot>().eq(RepoScanRoot::getRootPath, rootPath));
         }
     }
 
@@ -123,10 +110,7 @@ public class RepoScanRootRepositoryImpl implements RepoScanRootRepository {
     public boolean existsByRootPath(String rootPath) {
         try (var session = sessionManager.openSession()) {
             RepoScanRootMapper mapper = session.getMapper(RepoScanRootMapper.class);
-            return mapper.selectCount(
-                    new LambdaQueryWrapper<RepoScanRoot>()
-                            .eq(RepoScanRoot::getRootPath, rootPath)
-            ) > 0;
+            return mapper.selectCount(new LambdaQueryWrapper<RepoScanRoot>().eq(RepoScanRoot::getRootPath, rootPath)) > 0;
         }
     }
 }

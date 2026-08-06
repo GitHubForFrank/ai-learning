@@ -2,10 +2,9 @@ package com.gitgui.domain.model;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Data;
-
-import java.time.LocalDateTime;
 
 /**
  * 仓库元信息缓存领域模型
@@ -20,31 +19,49 @@ import java.time.LocalDateTime;
 @TableName("repository_meta")
 public class RepositoryMeta {
 
-    /** 主键 UUID */
+    /**
+     * 主键 UUID
+     */
     @TableId
     private String id;
 
-    /** 仓库绝对路径，唯一 */
+    /**
+     * 仓库绝对路径，唯一
+     */
     private String repoPath;
 
-    /** 当前分支 */
+    /**
+     * 当前分支
+     */
     private String currentBranch;
 
-    /** HEAD 提交哈希 */
+    /**
+     * HEAD 提交哈希
+     */
     private String headCommit;
 
-    /** 主远程 URL */
+    /**
+     * 主远程 URL
+     */
     private String remoteUrl;
 
-    /** 是否有未提交修改 */
+    /**
+     * 是否有未提交修改
+     */
     private boolean hasUncommittedChanges;
 
-    /** 元信息最后刷新时间 */
+    /**
+     * 元信息最后刷新时间
+     */
     private LocalDateTime lastSyncedAt;
 
-    /** 创建时间 */
+    /**
+     * 创建时间
+     */
     private LocalDateTime createdAt;
 
-    /** 更新时间 */
+    /**
+     * 更新时间
+     */
     private LocalDateTime updatedAt;
 }

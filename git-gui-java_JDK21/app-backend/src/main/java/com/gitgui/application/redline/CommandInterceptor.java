@@ -1,18 +1,16 @@
 package com.gitgui.application.redline;
 
-import com.gitgui.core.constant.RedLineCode;
 import com.gitgui.core.exception.RedLineBlockedException;
+import com.gitgui.core.util.JsonUtil;
 import com.gitgui.domain.model.AuditLog;
 import com.gitgui.domain.redline.RedLineContext;
 import com.gitgui.domain.redline.RedLineResult;
 import com.gitgui.domain.service.CommandRedLineService;
-import com.gitgui.core.util.JsonUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.google.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
-import com.google.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 命令拦截器
@@ -55,7 +53,8 @@ public class CommandInterceptor {
                 // 记录审计日志（BLOCKED）
                 recordAudit(ctx, result, "BLOCKED");
                 // 防御性 null 检查：BLOCK 结果正常情况下 ruleCode 不会为 null，但避免极端场景 NPE
-                String ruleCodeName = result.getRuleCode() == null ? "UNKNOWN" : result.getRuleCode().name();
+                String ruleCodeName = result.getRuleCode() == null ? "UNKNOWN" : result.getRuleCode()
+                                                                                       .name();
                 throw new RedLineBlockedException(ruleCodeName, result.getMessage());
             case CONFIRM:
                 // 返回 CONFIRM 由 UI 弹窗，UI 确认后调用 onConfirm，取消调用 onCancel
@@ -101,15 +100,17 @@ public class CommandInterceptor {
             detail.put("ruleDetail", result.getDetail());
         }
         AuditLog auditLog = AuditLog.builder()
-                .ruleCode(result.getRuleCode() == null ? "UNKNOWN" : result.getRuleCode().name())
-                .command(ctx.getCommand())
-                .repoPath(ctx.getRepoPath() == null ? "" : ctx.getRepoPath())
-                .branch(ctx.getBranch() == null ? "" : ctx.getBranch())
-                .remoteUrl(ctx.getRemoteUrl() == null ? "" : ctx.getRemoteUrl())
-                .action(result.getAction().name())
-                .actionResult(actionResult)
-                .detail(JsonUtil.toJson(detail))
-                .build();
+                                    .ruleCode(result.getRuleCode() == null ? "UNKNOWN" : result.getRuleCode()
+                                                                                               .name())
+                                    .command(ctx.getCommand())
+                                    .repoPath(ctx.getRepoPath() == null ? "" : ctx.getRepoPath())
+                                    .branch(ctx.getBranch() == null ? "" : ctx.getBranch())
+                                    .remoteUrl(ctx.getRemoteUrl() == null ? "" : ctx.getRemoteUrl())
+                                    .action(result.getAction()
+                                                  .name())
+                                    .actionResult(actionResult)
+                                    .detail(JsonUtil.toJson(detail))
+                                    .build();
         redLineService.recordAudit(auditLog);
     }
 }

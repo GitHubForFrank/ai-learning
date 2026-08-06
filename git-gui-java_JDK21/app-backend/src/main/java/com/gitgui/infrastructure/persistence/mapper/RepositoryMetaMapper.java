@@ -10,4 +10,5 @@ import com.gitgui.domain.model.RepositoryMeta;
  * @since 2026-07-23
  */
 public interface RepositoryMetaMapper extends BaseMapper<RepositoryMeta> {
+
 }

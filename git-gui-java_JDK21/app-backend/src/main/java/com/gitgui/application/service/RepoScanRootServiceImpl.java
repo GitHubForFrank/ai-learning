@@ -11,11 +11,10 @@ import com.gitgui.domain.repository.RepoScanRootRepository;
 import com.gitgui.domain.service.RepoScanRootService;
 import com.gitgui.domain.service.RepositoryService;
 import com.google.inject.Inject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.LocalDateTime;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 扫描根目录服务实现
@@ -33,9 +32,8 @@ public class RepoScanRootServiceImpl implements RepoScanRootService {
     private final AppSettingsRepository settingsRepository;
 
     @Inject
-    public RepoScanRootServiceImpl(RepoScanRootRepository repoScanRootRepository,
-                                   RepositoryService repositoryService,
-                                   AppSettingsRepository settingsRepository) {
+    public RepoScanRootServiceImpl(RepoScanRootRepository repoScanRootRepository, RepositoryService repositoryService,
+            AppSettingsRepository settingsRepository) {
         this.repoScanRootRepository = repoScanRootRepository;
         this.repositoryService = repositoryService;
         this.settingsRepository = settingsRepository;
@@ -57,15 +55,15 @@ public class RepoScanRootServiceImpl implements RepoScanRootService {
         RepoScanRoot root;
         if (existing == null) {
             root = RepoScanRoot.builder()
-                    .id(IdUtil.newId())
-                    .rootPath(rootPath)
-                    .alias(alias == null ? "" : alias)
-                    .scanDepth(scanDepth)
-                    .lastScannedAt(LocalDateTime.now())
-                    .enabled(true)
-                    .sortOrder(0)
-                    .createdAt(LocalDateTime.now())
-                    .build();
+                               .id(IdUtil.newId())
+                               .rootPath(rootPath)
+                               .alias(alias == null ? "" : alias)
+                               .scanDepth(scanDepth)
+                               .lastScannedAt(LocalDateTime.now())
+                               .enabled(true)
+                               .sortOrder(0)
+                               .createdAt(LocalDateTime.now())
+                               .build();
         } else {
             root = existing;
             root.setAlias(alias == null ? "" : alias);

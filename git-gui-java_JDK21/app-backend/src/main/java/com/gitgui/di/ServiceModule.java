@@ -1,7 +1,5 @@
 package com.gitgui.di;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Singleton;
 import com.gitgui.application.service.AsyncTaskServiceImpl;
 import com.gitgui.application.service.ConflictResolveServiceImpl;
 import com.gitgui.application.service.FavoriteServiceImpl;
@@ -24,6 +22,8 @@ import com.gitgui.domain.service.RepoScanRootService;
 import com.gitgui.domain.service.RepositoryService;
 import com.gitgui.domain.service.SettingsService;
 import com.gitgui.domain.service.StatusService;
+import com.google.inject.AbstractModule;
+import com.google.inject.Singleton;
 
 /**
  * 服务 Module
@@ -36,16 +36,27 @@ public class ServiceModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(AsyncTaskService.class).to(AsyncTaskServiceImpl.class).in(Singleton.class);
-        bind(ConflictResolveService.class).to(ConflictResolveServiceImpl.class).in(Singleton.class);
-        bind(FavoriteService.class).to(FavoriteServiceImpl.class).in(Singleton.class);
-        bind(GitOperationService.class).to(GitOperationServiceImpl.class).in(Singleton.class);
-        bind(OperationLogService.class).to(OperationLogServiceImpl.class).in(Singleton.class);
-        bind(RecentRepoService.class).to(RecentRepoServiceImpl.class).in(Singleton.class);
-        bind(RemoteConfigService.class).to(RemoteConfigServiceImpl.class).in(Singleton.class);
-        bind(RepoScanRootService.class).to(RepoScanRootServiceImpl.class).in(Singleton.class);
-        bind(RepositoryService.class).to(RepositoryServiceImpl.class).in(Singleton.class);
-        bind(SettingsService.class).to(SettingsServiceImpl.class).in(Singleton.class);
-        bind(StatusService.class).to(StatusServiceImpl.class).in(Singleton.class);
+        bind(AsyncTaskService.class).to(AsyncTaskServiceImpl.class)
+                                    .in(Singleton.class);
+        bind(ConflictResolveService.class).to(ConflictResolveServiceImpl.class)
+                                          .in(Singleton.class);
+        bind(FavoriteService.class).to(FavoriteServiceImpl.class)
+                                   .in(Singleton.class);
+        bind(GitOperationService.class).to(GitOperationServiceImpl.class)
+                                       .in(Singleton.class);
+        bind(OperationLogService.class).to(OperationLogServiceImpl.class)
+                                       .in(Singleton.class);
+        bind(RecentRepoService.class).to(RecentRepoServiceImpl.class)
+                                     .in(Singleton.class);
+        bind(RemoteConfigService.class).to(RemoteConfigServiceImpl.class)
+                                       .in(Singleton.class);
+        bind(RepoScanRootService.class).to(RepoScanRootServiceImpl.class)
+                                       .in(Singleton.class);
+        bind(RepositoryService.class).to(RepositoryServiceImpl.class)
+                                     .in(Singleton.class);
+        bind(SettingsService.class).to(SettingsServiceImpl.class)
+                                   .in(Singleton.class);
+        bind(StatusService.class).to(StatusServiceImpl.class)
+                                 .in(Singleton.class);
     }
 }

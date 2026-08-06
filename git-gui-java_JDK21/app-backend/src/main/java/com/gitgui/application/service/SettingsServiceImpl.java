@@ -1,8 +1,7 @@
 package com.gitgui.application.service;
 
 import com.gitgui.core.constant.RedLineCode;
-import com.gitgui.core.exception.ErrorCode;
-import com.gitgui.core.exception.GitGuiException;
+import com.gitgui.core.util.JsonUtil;
 import com.gitgui.domain.constant.SettingsCategory;
 import com.gitgui.domain.model.AppSettings;
 import com.gitgui.domain.model.AuditLog;
@@ -10,15 +9,12 @@ import com.gitgui.domain.model.SensitiveFileRule;
 import com.gitgui.domain.repository.AppSettingsRepository;
 import com.gitgui.domain.repository.AuditLogRepository;
 import com.gitgui.domain.service.SettingsService;
-import com.gitgui.core.util.JsonUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
+import com.google.inject.Inject;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import com.google.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 设置服务实现
@@ -35,8 +31,7 @@ public class SettingsServiceImpl implements SettingsService {
     private final AuditLogRepository auditLogRepository;
 
     @Inject
-    public SettingsServiceImpl(AppSettingsRepository settingsRepository,
-                               AuditLogRepository auditLogRepository) {
+    public SettingsServiceImpl(AppSettingsRepository settingsRepository, AuditLogRepository auditLogRepository) {
         this.settingsRepository = settingsRepository;
         this.auditLogRepository = auditLogRepository;
     }
@@ -50,12 +45,12 @@ public class SettingsServiceImpl implements SettingsService {
     public void set(String key, String value) {
         AppSettings existing = settingsRepository.findByKey(key);
         AppSettings settings = AppSettings.builder()
-                .id(existing == null ? null : existing.getId())
-                .key(key)
-                .value(value)
-                .category(existing == null ? SettingsCategory.UI : existing.getCategory())
-                .description(existing == null ? "" : existing.getDescription())
-                .build();
+                                          .id(existing == null ? null : existing.getId())
+                                          .key(key)
+                                          .value(value)
+                                          .category(existing == null ? SettingsCategory.UI : existing.getCategory())
+                                          .description(existing == null ? "" : existing.getDescription())
+                                          .build();
         settingsRepository.save(settings);
     }
 
@@ -119,13 +114,13 @@ public class SettingsServiceImpl implements SettingsService {
         String oldValue = settingsRepository.getValue("red_line.enabled");
         set("red_line.enabled", String.valueOf(enabled));
         AuditLog auditLog = AuditLog.builder()
-                .ruleCode(RedLineCode.RED_LINE_TOGGLE.name())
-                .command("RED_LINE_TOGGLE")
-                .repoPath("")
-                .action("CONFIRM")
-                .actionResult("CONFIRMED")
-                .detail("切换红线总开关：" + oldValue + " → " + enabled)
-                .build();
+                                    .ruleCode(RedLineCode.RED_LINE_TOGGLE.name())
+                                    .command("RED_LINE_TOGGLE")
+                                    .repoPath("")
+                                    .action("CONFIRM")
+                                    .actionResult("CONFIRMED")
+                                    .detail("切换红线总开关：" + oldValue + " → " + enabled)
+                                    .build();
         auditLogRepository.save(auditLog);
         log.info("红线总开关切换：{} → {}", oldValue, enabled);
     }

@@ -7,13 +7,12 @@ import com.gitgui.domain.model.OperationLog;
 import com.gitgui.domain.repository.OperationLogRepository;
 import com.gitgui.infrastructure.persistence.mapper.OperationLogMapper;
 import com.gitgui.infrastructure.persistence.mybatis.MyBatisSqlSessionManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 操作日志仓储 MyBatis-Plus 实现
@@ -51,10 +50,7 @@ public class OperationLogRepositoryImpl implements OperationLogRepository {
     public List<OperationLog> findAll() {
         try (var session = sessionManager.openSession()) {
             OperationLogMapper mapper = session.getMapper(OperationLogMapper.class);
-            return mapper.selectList(
-                    new LambdaQueryWrapper<OperationLog>()
-                            .orderByDesc(OperationLog::getCreatedAt)
-            );
+            return mapper.selectList(new LambdaQueryWrapper<OperationLog>().orderByDesc(OperationLog::getCreatedAt));
         }
     }
 
@@ -62,11 +58,8 @@ public class OperationLogRepositoryImpl implements OperationLogRepository {
     public List<OperationLog> findByRepoPath(String repoPath) {
         try (var session = sessionManager.openSession()) {
             OperationLogMapper mapper = session.getMapper(OperationLogMapper.class);
-            return mapper.selectList(
-                    new LambdaQueryWrapper<OperationLog>()
-                            .eq(OperationLog::getRepoPath, repoPath)
-                            .orderByDesc(OperationLog::getCreatedAt)
-            );
+            return mapper.selectList(new LambdaQueryWrapper<OperationLog>().eq(OperationLog::getRepoPath, repoPath)
+                                                                           .orderByDesc(OperationLog::getCreatedAt));
         }
     }
 
@@ -74,11 +67,8 @@ public class OperationLogRepositoryImpl implements OperationLogRepository {
     public List<OperationLog> findByOperation(OperationType operation) {
         try (var session = sessionManager.openSession()) {
             OperationLogMapper mapper = session.getMapper(OperationLogMapper.class);
-            return mapper.selectList(
-                    new LambdaQueryWrapper<OperationLog>()
-                            .eq(OperationLog::getOperation, operation)
-                            .orderByDesc(OperationLog::getCreatedAt)
-            );
+            return mapper.selectList(new LambdaQueryWrapper<OperationLog>().eq(OperationLog::getOperation, operation)
+                                                                           .orderByDesc(OperationLog::getCreatedAt));
         }
     }
 }

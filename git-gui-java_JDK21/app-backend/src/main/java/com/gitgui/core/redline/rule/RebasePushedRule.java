@@ -16,6 +16,9 @@ import com.google.inject.Inject;
  */
 public class RebasePushedRule extends AbstractRedLineRule {
 
+    /**
+     * @param settingsService 设置服务
+     */
     @Inject
     public RebasePushedRule(SettingsService settingsService) {
         super(settingsService);
@@ -25,8 +28,7 @@ public class RebasePushedRule extends AbstractRedLineRule {
     protected RedLineResult doCheck(RedLineContext ctx) {
         // 命中条件：rebase 操作且目标提交已推送
         if (ctx.getOperation() == com.gitgui.core.constant.OperationType.REBASE && ctx.isPushed()) {
-            return RedLineResult.confirm(RedLineCode.RED_REBASE_PUSHED,
-                    "rebase 已推送的提交将篡改共享历史，可能导致他人冲突，请确认是否继续");
+            return RedLineResult.confirm(RedLineCode.RED_REBASE_PUSHED, "rebase 已推送的提交将篡改共享历史，可能导致他人冲突，请确认是否继续");
         }
         return RedLineResult.pass();
     }

@@ -1,7 +1,5 @@
 package com.gitgui.di;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Singleton;
 import com.gitgui.domain.repository.AppSettingsRepository;
 import com.gitgui.domain.repository.AuditLogRepository;
 import com.gitgui.domain.repository.FavoriteRepository;
@@ -20,6 +18,8 @@ import com.gitgui.infrastructure.persistence.repository.RecentRepoRepositoryImpl
 import com.gitgui.infrastructure.persistence.repository.RepoScanRootRepositoryImpl;
 import com.gitgui.infrastructure.persistence.repository.RepositoryMetaRepositoryImpl;
 import com.gitgui.infrastructure.persistence.repository.TaskRecordRepositoryImpl;
+import com.google.inject.AbstractModule;
+import com.google.inject.Singleton;
 
 /**
  * 数据库 Module（MyBatis-Plus）
@@ -36,14 +36,22 @@ public class DatabaseModule extends AbstractModule {
         bind(MyBatisSqlSessionManager.class).in(Singleton.class);
 
         // Repository 接口 → MyBatis-Plus 实现
-        bind(AppSettingsRepository.class).to(AppSettingsRepositoryImpl.class).in(Singleton.class);
-        bind(AuditLogRepository.class).to(AuditLogRepositoryImpl.class).in(Singleton.class);
-        bind(FavoriteRepository.class).to(FavoriteRepositoryImpl.class).in(Singleton.class);
-        bind(OperationLogRepository.class).to(OperationLogRepositoryImpl.class).in(Singleton.class);
-        bind(RecentRepoRepository.class).to(RecentRepoRepositoryImpl.class).in(Singleton.class);
-        bind(RepoScanRootRepository.class).to(RepoScanRootRepositoryImpl.class).in(Singleton.class);
-        bind(RepositoryMetaRepository.class).to(RepositoryMetaRepositoryImpl.class).in(Singleton.class);
-        bind(TaskRecordRepository.class).to(TaskRecordRepositoryImpl.class).in(Singleton.class);
+        bind(AppSettingsRepository.class).to(AppSettingsRepositoryImpl.class)
+                                         .in(Singleton.class);
+        bind(AuditLogRepository.class).to(AuditLogRepositoryImpl.class)
+                                      .in(Singleton.class);
+        bind(FavoriteRepository.class).to(FavoriteRepositoryImpl.class)
+                                      .in(Singleton.class);
+        bind(OperationLogRepository.class).to(OperationLogRepositoryImpl.class)
+                                          .in(Singleton.class);
+        bind(RecentRepoRepository.class).to(RecentRepoRepositoryImpl.class)
+                                        .in(Singleton.class);
+        bind(RepoScanRootRepository.class).to(RepoScanRootRepositoryImpl.class)
+                                          .in(Singleton.class);
+        bind(RepositoryMetaRepository.class).to(RepositoryMetaRepositoryImpl.class)
+                                            .in(Singleton.class);
+        bind(TaskRecordRepository.class).to(TaskRecordRepositoryImpl.class)
+                                        .in(Singleton.class);
 
         // SQLite DataSource（实现 javax.sql.DataSource，供 MyBatis 环境使用）
         bind(SqliteDataSource.class).in(Singleton.class);

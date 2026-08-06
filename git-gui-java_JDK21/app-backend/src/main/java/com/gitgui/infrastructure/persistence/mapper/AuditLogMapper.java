@@ -10,4 +10,5 @@ import com.gitgui.domain.model.AuditLog;
  * @since 2026-07-23
  */
 public interface AuditLogMapper extends BaseMapper<AuditLog> {
+
 }

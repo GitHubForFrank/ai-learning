@@ -1,5 +1,10 @@
 package com.gitgui.core.redline.rule;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.gitgui.core.constant.OperationType;
 import com.gitgui.core.constant.RedLineCode;
 import com.gitgui.domain.redline.RedLineContext;
@@ -8,11 +13,6 @@ import com.gitgui.domain.service.SettingsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * 裸 --force push 规则单元测试（BR-26）
@@ -24,10 +24,14 @@ import static org.mockito.Mockito.when;
  */
 class ForcePushRuleTest {
 
-    /** 被测规则依赖的设置服务 mock */
+    /**
+     * 被测规则依赖的设置服务 mock
+     */
     private SettingsService settingsService;
 
-    /** 被测规则实例 */
+    /**
+     * 被测规则实例
+     */
     private ForcePushRule rule;
 
     @BeforeEach
@@ -46,11 +50,11 @@ class ForcePushRuleTest {
     @DisplayName("裸 --force push 应返回 BLOCK")
     void shouldBlockBareForcePush() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.PUSH)
-                .command("git push --force")
-                .force(true)
-                .forceWithLease(false)
-                .build();
+                                           .operation(OperationType.PUSH)
+                                           .command("git push --force")
+                                           .force(true)
+                                           .forceWithLease(false)
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -68,11 +72,11 @@ class ForcePushRuleTest {
     @DisplayName("--force-with-lease 推送应返回 PASS")
     void shouldPassForceWithLease() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.PUSH)
-                .command("git push --force-with-lease")
-                .force(true)
-                .forceWithLease(true)
-                .build();
+                                           .operation(OperationType.PUSH)
+                                           .command("git push --force-with-lease")
+                                           .force(true)
+                                           .forceWithLease(true)
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -86,10 +90,10 @@ class ForcePushRuleTest {
     @DisplayName("仅 forceWithLease=true 也应返回 PASS")
     void shouldPassWhenOnlyForceWithLease() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.PUSH)
-                .force(false)
-                .forceWithLease(true)
-                .build();
+                                           .operation(OperationType.PUSH)
+                                           .force(false)
+                                           .forceWithLease(true)
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -103,11 +107,11 @@ class ForcePushRuleTest {
     @DisplayName("非 force 推送应返回 PASS")
     void shouldPassNonForcePush() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.PUSH)
-                .command("git push")
-                .force(false)
-                .forceWithLease(false)
-                .build();
+                                           .operation(OperationType.PUSH)
+                                           .command("git push")
+                                           .force(false)
+                                           .forceWithLease(false)
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -125,10 +129,10 @@ class ForcePushRuleTest {
         when(settingsService.isRedLineEnabled()).thenReturn(false);
 
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.PUSH)
-                .force(true)
-                .forceWithLease(false)
-                .build();
+                                           .operation(OperationType.PUSH)
+                                           .force(true)
+                                           .forceWithLease(false)
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 

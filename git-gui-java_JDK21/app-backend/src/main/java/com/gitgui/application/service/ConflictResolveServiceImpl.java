@@ -5,11 +5,10 @@ import com.gitgui.core.exception.GitGuiException;
 import com.gitgui.domain.service.ConflictResolveService;
 import com.gitgui.domain.service.SettingsService;
 import com.gitgui.infrastructure.cli.GitProcessBuilder;
+import com.google.inject.Inject;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import com.google.inject.Inject;
 
 /**
  * 冲突解决服务实现
@@ -54,8 +53,7 @@ public class ConflictResolveServiceImpl implements ConflictResolveService {
         // PRD 4.15：优先调用外部 Merge 工具，未配置时使用内置合并器
         String mergeTool = settingsService.get("external.merge_tool");
         if (mergeTool == null || mergeTool.isBlank()) {
-            throw new GitGuiException(ErrorCode.MERGE_TOOL_NOT_CONFIGURED,
-                    "未配置外部合并工具，请在 Settings 中配置 external.merge_tool");
+            throw new GitGuiException(ErrorCode.MERGE_TOOL_NOT_CONFIGURED, "未配置外部合并工具，请在 Settings 中配置 external.merge_tool");
         }
         GitProcessBuilder.execute(repoPath, List.of("mergetool", "--tool=" + mergeTool, path), null);
     }

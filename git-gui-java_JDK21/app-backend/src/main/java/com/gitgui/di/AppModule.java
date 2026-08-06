@@ -1,8 +1,6 @@
 package com.gitgui.di;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Singleton;
-import com.gitgui.core.config.AppConfig;
 
 /**
  * 应用核心 Module

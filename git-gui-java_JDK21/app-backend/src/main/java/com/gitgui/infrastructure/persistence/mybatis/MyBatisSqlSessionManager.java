@@ -1,6 +1,7 @@
 package com.gitgui.infrastructure.persistence.mybatis;
 
 import com.baomidou.mybatisplus.core.MybatisConfiguration;
+import com.baomidou.mybatisplus.core.MybatisSqlSessionFactoryBuilder;
 import com.baomidou.mybatisplus.core.config.GlobalConfig;
 import com.baomidou.mybatisplus.core.toolkit.GlobalConfigUtils;
 import com.gitgui.infrastructure.persistence.SqliteDataSource;
@@ -12,16 +13,14 @@ import com.gitgui.infrastructure.persistence.mapper.RecentRepoMapper;
 import com.gitgui.infrastructure.persistence.mapper.RepoScanRootMapper;
 import com.gitgui.infrastructure.persistence.mapper.RepositoryMetaMapper;
 import com.gitgui.infrastructure.persistence.mapper.TaskRecordMapper;
-import com.baomidou.mybatisplus.core.MybatisSqlSessionFactoryBuilder;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import java.time.LocalDateTime;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import java.time.LocalDateTime;
 
 /**
  * MyBatis-Plus SqlSessionFactory 管理器。
@@ -61,26 +60,24 @@ public class MyBatisSqlSessionManager {
      * @return Mapper 代理
      */
     public <T> T getMapper(Class<T> mapperClass) {
-        return sqlSessionFactory.getConfiguration().getMapper(mapperClass, openSession());
+        return sqlSessionFactory.getConfiguration()
+                                .getMapper(mapperClass, openSession());
     }
 
     private SqlSessionFactory buildSqlSessionFactory(SqliteDataSource dataSource) {
         MybatisConfiguration configuration = new MybatisConfiguration();
 
         // 环境配置
-        org.apache.ibatis.mapping.Environment environment =
-                new org.apache.ibatis.mapping.Environment(
-                        "git-gui",
-                        new JdbcTransactionFactory(),
-                        dataSource
-                );
+        org.apache.ibatis.mapping.Environment environment = new org.apache.ibatis.mapping.Environment("git-gui", new JdbcTransactionFactory(),
+                                                                                                      dataSource);
         configuration.setEnvironment(environment);
 
         // 驼峰命名自动映射（repo_path ↔ repoPath）
         configuration.setMapUnderscoreToCamelCase(true);
 
         // 注册自定义 TypeHandler — LocalDateTime ↔ SQLite TEXT
-        configuration.getTypeHandlerRegistry().register(LocalDateTime.class, SqliteLocalDateTimeTypeHandler.class);
+        configuration.getTypeHandlerRegistry()
+                     .register(LocalDateTime.class, SqliteLocalDateTimeTypeHandler.class);
 
         // MyBatis-Plus 全局配置
         GlobalConfig globalConfig = GlobalConfigUtils.defaults();

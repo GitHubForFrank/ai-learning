@@ -16,6 +16,9 @@ import com.google.inject.Inject;
  */
 public class DeleteProtectedBranchRule extends AbstractRedLineRule {
 
+    /**
+     * @param settingsService 设置服务
+     */
     @Inject
     public DeleteProtectedBranchRule(SettingsService settingsService) {
         super(settingsService);
@@ -28,7 +31,7 @@ public class DeleteProtectedBranchRule extends AbstractRedLineRule {
             var protectedBranches = settingsService.getProtectedBranches();
             if (matchesProtected(ctx.getBranch(), protectedBranches)) {
                 return RedLineResult.block(RedLineCode.RED_DELETE_PROTECTED_BRANCH,
-                        "禁止通过 push :branch 删除保护分支 " + ctx.getBranch() + "（误删主干）");
+                                           "禁止通过 push :branch 删除保护分支 " + ctx.getBranch() + "（误删主干）");
             }
         }
         return RedLineResult.pass();

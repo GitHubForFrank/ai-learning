@@ -1,5 +1,10 @@
 package com.gitgui.core.redline.rule;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.gitgui.core.constant.OperationType;
 import com.gitgui.core.constant.RedLineCode;
 import com.gitgui.domain.redline.RedLineContext;
@@ -8,11 +13,6 @@ import com.gitgui.domain.service.SettingsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * --no-verify 跳过 hook 规则单元测试（BR-26）
@@ -23,10 +23,14 @@ import static org.mockito.Mockito.when;
  */
 class NoVerifyRuleTest {
 
-    /** 被测规则依赖的设置服务 mock */
+    /**
+     * 被测规则依赖的设置服务 mock
+     */
     private SettingsService settingsService;
 
-    /** 被测规则实例 */
+    /**
+     * 被测规则实例
+     */
     private NoVerifyRule rule;
 
     @BeforeEach
@@ -43,10 +47,10 @@ class NoVerifyRuleTest {
     @DisplayName("--no-verify 提交应返回 BLOCK")
     void shouldBlockNoVerify() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.COMMIT)
-                .command("git commit --no-verify -m msg")
-                .noVerify(true)
-                .build();
+                                           .operation(OperationType.COMMIT)
+                                           .command("git commit --no-verify -m msg")
+                                           .noVerify(true)
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -62,10 +66,10 @@ class NoVerifyRuleTest {
     @DisplayName("正常提交应返回 PASS")
     void shouldPassNormalCommit() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.COMMIT)
-                .command("git commit -m msg")
-                .noVerify(false)
-                .build();
+                                           .operation(OperationType.COMMIT)
+                                           .command("git commit -m msg")
+                                           .noVerify(false)
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -81,9 +85,9 @@ class NoVerifyRuleTest {
         when(settingsService.isRedLineEnabled()).thenReturn(false);
 
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.COMMIT)
-                .noVerify(true)
-                .build();
+                                           .operation(OperationType.COMMIT)
+                                           .noVerify(true)
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 

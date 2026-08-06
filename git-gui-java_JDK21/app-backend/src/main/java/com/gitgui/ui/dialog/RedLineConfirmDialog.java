@@ -3,7 +3,12 @@ package com.gitgui.ui.dialog;
 import com.gitgui.domain.redline.RedLineResult;
 import com.gitgui.ui.i18n.I18nUtil;
 import javafx.geometry.Insets;
-import javafx.scene.control.*;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
@@ -34,10 +39,9 @@ public class RedLineConfirmDialog extends Dialog<Boolean> {
 
         DialogPane pane = getDialogPane();
         pane.setContent(buildContent(result));
-        pane.getButtonTypes().addAll(
-                new ButtonType(I18nUtil.get("redline.confirm.abort"), ButtonBar.ButtonData.CANCEL_CLOSE),
-                new ButtonType(I18nUtil.get("redline.confirm.proceed"), ButtonBar.ButtonData.OK_DONE)
-        );
+        pane.getButtonTypes()
+            .addAll(new ButtonType(I18nUtil.get("redline.confirm.abort"), ButtonBar.ButtonData.CANCEL_CLOSE),
+                    new ButtonType(I18nUtil.get("redline.confirm.proceed"), ButtonBar.ButtonData.OK_DONE));
 
         setResultConverter(buttonType -> {
             if (buttonType == null) {
@@ -45,6 +49,18 @@ public class RedLineConfirmDialog extends Dialog<Boolean> {
             }
             return buttonType.getButtonData() == ButtonBar.ButtonData.OK_DONE;
         });
+    }
+
+    /**
+     * 弹窗并等待用户确认。
+     *
+     * @param result 校验结果
+     * @return true 表示用户确认继续，false 表示取消
+     */
+    public static boolean confirm(RedLineResult result) {
+        RedLineConfirmDialog dialog = new RedLineConfirmDialog(result);
+        return dialog.showAndWait()
+                     .orElse(false);
     }
 
     /**
@@ -68,7 +84,8 @@ public class RedLineConfirmDialog extends Dialog<Boolean> {
         grid.setVgap(10);
 
         // 命中规则代码
-        Label ruleCodeLabel = new Label(result.getRuleCode() == null ? "-" : result.getRuleCode().name());
+        Label ruleCodeLabel = new Label(result.getRuleCode() == null ? "-" : result.getRuleCode()
+                                                                                   .name());
         grid.add(new Label(I18nUtil.get("redline.confirm.hitRule")), 0, 0);
         grid.add(ruleCodeLabel, 1, 0);
 
@@ -81,7 +98,8 @@ public class RedLineConfirmDialog extends Dialog<Boolean> {
         grid.add(riskArea, 1, 1);
 
         // 详情
-        if (result.getDetail() != null && !result.getDetail().isEmpty()) {
+        if (result.getDetail() != null && !result.getDetail()
+                                                 .isEmpty()) {
             TextArea detailArea = new TextArea(result.getDetail());
             detailArea.setWrapText(true);
             detailArea.setPrefRowCount(3);
@@ -90,18 +108,8 @@ public class RedLineConfirmDialog extends Dialog<Boolean> {
             grid.add(detailArea, 1, 2);
         }
 
-        vbox.getChildren().addAll(messageLabel, grid);
+        vbox.getChildren()
+            .addAll(messageLabel, grid);
         return vbox;
-    }
-
-    /**
-     * 弹窗并等待用户确认。
-     *
-     * @param result 校验结果
-     * @return true 表示用户确认继续，false 表示取消
-     */
-    public static boolean confirm(RedLineResult result) {
-        RedLineConfirmDialog dialog = new RedLineConfirmDialog(result);
-        return dialog.showAndWait().orElse(false);
     }
 }

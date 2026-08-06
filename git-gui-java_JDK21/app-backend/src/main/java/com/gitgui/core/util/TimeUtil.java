@@ -12,7 +12,9 @@ import java.time.format.DateTimeFormatter;
  */
 public final class TimeUtil {
 
-    /** ISO-8601 紧凑格式：yyyyMMdd HH:mm:ss */
+    /**
+     * ISO-8601 紧凑格式：yyyyMMdd HH:mm:ss
+     */
     public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private TimeUtil() {
@@ -25,7 +27,8 @@ public final class TimeUtil {
      * @return 当前时间字符串
      */
     public static String now() {
-        return LocalDateTime.now().format(FORMATTER);
+        return LocalDateTime.now()
+                            .format(FORMATTER);
     }
 
     /**

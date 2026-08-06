@@ -22,16 +22,24 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class FileChange {
 
-    /** 主显示路径（删除用 oldPath，其他用 newPath） */
+    /**
+     * 主显示路径（删除用 oldPath，其他用 newPath）
+     */
     private String path;
 
-    /** 变更类型：ADD / MODIFY / DELETE / RENAME / COPY */
+    /**
+     * 变更类型：ADD / MODIFY / DELETE / RENAME / COPY
+     */
     private String changeType;
 
-    /** 旧路径（删除 / 重命名时使用） */
+    /**
+     * 旧路径（删除 / 重命名时使用）
+     */
     private String oldPath;
 
-    /** 新路径（新增 / 修改 / 重命名时使用） */
+    /**
+     * 新路径（新增 / 修改 / 重命名时使用）
+     */
     private String newPath;
 
     /**

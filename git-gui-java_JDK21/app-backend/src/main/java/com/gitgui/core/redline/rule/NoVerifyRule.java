@@ -16,6 +16,9 @@ import com.google.inject.Inject;
  */
 public class NoVerifyRule extends AbstractRedLineRule {
 
+    /**
+     * @param settingsService 设置服务
+     */
     @Inject
     public NoVerifyRule(SettingsService settingsService) {
         super(settingsService);
@@ -25,8 +28,7 @@ public class NoVerifyRule extends AbstractRedLineRule {
     protected RedLineResult doCheck(RedLineContext ctx) {
         // 命中条件：使用 --no-verify
         if (ctx.isNoVerify()) {
-            return RedLineResult.block(RedLineCode.RED_NO_VERIFY,
-                    "禁止使用 --no-verify 跳过 hook 校验（绕过公司提交校验）");
+            return RedLineResult.block(RedLineCode.RED_NO_VERIFY, "禁止使用 --no-verify 跳过 hook 校验（绕过公司提交校验）");
         }
         return RedLineResult.pass();
     }

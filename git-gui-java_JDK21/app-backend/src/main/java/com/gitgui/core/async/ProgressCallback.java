@@ -11,6 +11,26 @@ package com.gitgui.core.async;
 public interface ProgressCallback {
 
     /**
+     * 空实现（用于不需要进度反馈的场景）。
+     */
+    ProgressCallback NOOP = new ProgressCallback() {
+        @Override
+        public void onProgress(int percent, String message) {
+            // 空实现
+        }
+
+        @Override
+        public void onOutput(String line) {
+            // 空实现
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return false;
+        }
+    };
+
+    /**
      * 通知进度更新。
      *
      * @param percent 进度百分比 0-100
@@ -32,24 +52,4 @@ public interface ProgressCallback {
      * @return true 表示用户已请求取消
      */
     boolean isCancelled();
-
-    /**
-     * 空实现（用于不需要进度反馈的场景）。
-     */
-    ProgressCallback NOOP = new ProgressCallback() {
-        @Override
-        public void onProgress(int percent, String message) {
-            // 空实现
-        }
-
-        @Override
-        public void onOutput(String line) {
-            // 空实现
-        }
-
-        @Override
-        public boolean isCancelled() {
-            return false;
-        }
-    };
 }

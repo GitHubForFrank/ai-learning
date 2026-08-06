@@ -16,6 +16,9 @@ import com.google.inject.Inject;
  */
 public class AmendPushedRule extends AbstractRedLineRule {
 
+    /**
+     * @param settingsService 设置服务
+     */
     @Inject
     public AmendPushedRule(SettingsService settingsService) {
         super(settingsService);
@@ -25,8 +28,7 @@ public class AmendPushedRule extends AbstractRedLineRule {
     protected RedLineResult doCheck(RedLineContext ctx) {
         // 命中条件：amend 操作且目标提交已推送
         if (ctx.isAmend() && ctx.isPushed()) {
-            return RedLineResult.confirm(RedLineCode.RED_AMEND_PUSHED,
-                    "amend 已推送的提交将篡改共享历史，可能导致他人冲突，请确认是否继续");
+            return RedLineResult.confirm(RedLineCode.RED_AMEND_PUSHED, "amend 已推送的提交将篡改共享历史，可能导致他人冲突，请确认是否继续");
         }
         return RedLineResult.pass();
     }

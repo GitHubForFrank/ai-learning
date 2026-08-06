@@ -1,14 +1,13 @@
 package com.gitgui.infrastructure.persistence.mybatis;
 
 import com.gitgui.core.util.TimeUtil;
-import org.apache.ibatis.type.BaseTypeHandler;
-import org.apache.ibatis.type.JdbcType;
-
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import org.apache.ibatis.type.BaseTypeHandler;
+import org.apache.ibatis.type.JdbcType;
 
 /**
  * SQLite LocalDateTime 类型处理器。
@@ -21,8 +20,7 @@ import java.time.LocalDateTime;
 public class SqliteLocalDateTimeTypeHandler extends BaseTypeHandler<LocalDateTime> {
 
     @Override
-    public void setNonNullParameter(PreparedStatement ps, int i, LocalDateTime parameter, JdbcType jdbcType)
-            throws SQLException {
+    public void setNonNullParameter(PreparedStatement ps, int i, LocalDateTime parameter, JdbcType jdbcType) throws SQLException {
         ps.setString(i, TimeUtil.format(parameter));
     }
 

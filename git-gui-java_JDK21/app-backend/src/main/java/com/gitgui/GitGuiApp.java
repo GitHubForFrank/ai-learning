@@ -1,7 +1,5 @@
 package com.gitgui;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import com.gitgui.core.async.TaskManager;
 import com.gitgui.core.config.AppConfig;
 import com.gitgui.di.AppModule;
@@ -13,18 +11,18 @@ import com.gitgui.di.ServiceModule;
 import com.gitgui.infrastructure.cli.GitExecutableDetector;
 import com.gitgui.infrastructure.cli.GitProcessBuilder;
 import com.gitgui.ui.MainAppLauncher;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * JavaFX 应用入口
@@ -47,8 +45,19 @@ public class GitGuiApp extends Application {
     @Getter
     private static Injector injector;
 
-    /** 单实例锁文件句柄 */
+    /**
+     * 单实例锁文件句柄
+     */
     private static FileChannel lockChannel;
+
+    /**
+     * main 方法入口。
+     *
+     * @param args 启动参数
+     */
+    public static void main(String[] args) {
+        launch(args);
+    }
 
     @Override
     public void start(Stage primaryStage) {
@@ -58,14 +67,8 @@ public class GitGuiApp extends Application {
             acquireSingleInstanceLock();
 
             // 2. 创建 Guice Injector（Flyway 迁移在 SqliteDataSource 构造时触发）
-            injector = Guice.createInjector(
-                    new AppModule(),
-                    new DatabaseModule(),
-                    new GitModule(),
-                    new ServiceModule(),
-                    new RedLineModule(),
-                    new AsyncModule()
-            );
+            injector = Guice.createInjector(new AppModule(), new DatabaseModule(), new GitModule(), new ServiceModule(), new RedLineModule(),
+                                            new AsyncModule());
 
             // 3. Git 可执行文件检测（BR-41）
             String gitPath = GitExecutableDetector.detect(null);
@@ -110,10 +113,8 @@ public class GitGuiApp extends Application {
         try {
             Path lockPath = Paths.get(AppConfig.lockFilePath());
             Files.createDirectories(lockPath.getParent());
-            lockChannel = java.nio.channels.FileChannel.open(
-                    lockPath,
-                    java.nio.file.StandardOpenOption.CREATE,
-                    java.nio.file.StandardOpenOption.WRITE);
+            lockChannel = java.nio.channels.FileChannel.open(lockPath, java.nio.file.StandardOpenOption.CREATE,
+                                                             java.nio.file.StandardOpenOption.WRITE);
             // 尝试获取独占锁
             java.nio.channels.FileLock lock = lockChannel.tryLock();
             if (lock == null) {
@@ -138,14 +139,5 @@ public class GitGuiApp extends Application {
         } catch (IOException e) {
             log.warn("释放单实例锁失败", e);
         }
-    }
-
-    /**
-     * main 方法入口。
-     *
-     * @param args 启动参数
-     */
-    public static void main(String[] args) {
-        launch(args);
     }
 }

@@ -1,11 +1,10 @@
 package com.gitgui.ui.i18n;
 
+import java.util.Locale;
+import java.util.ResourceBundle;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 /**
  * 国际化工具
@@ -19,7 +18,9 @@ public final class I18nUtil {
 
     private static final Logger log = LoggerFactory.getLogger(I18nUtil.class);
 
-    /** 资源包基础名 */
+    /**
+     * 资源包基础名
+     */
     private static final String BASE_NAME = "i18n.messages";
 
     @Getter
@@ -50,9 +51,7 @@ public final class I18nUtil {
      * @param language 语言代码（zh/en）
      */
     public static void switchLanguage(String language) {
-        Locale locale = "en".equalsIgnoreCase(language)
-                ? Locale.ENGLISH
-                : Locale.SIMPLIFIED_CHINESE;
+        Locale locale = "en".equalsIgnoreCase(language) ? Locale.ENGLISH : Locale.SIMPLIFIED_CHINESE;
         bundle = ResourceBundle.getBundle(BASE_NAME, locale);
         log.info("语言切换：{}", language);
     }

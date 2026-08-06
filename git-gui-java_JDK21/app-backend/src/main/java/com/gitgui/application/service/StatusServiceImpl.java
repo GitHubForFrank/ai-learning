@@ -7,13 +7,12 @@ import com.gitgui.domain.model.LogEntry;
 import com.gitgui.domain.model.RefInfo;
 import com.gitgui.domain.service.StatusService;
 import com.gitgui.infrastructure.cli.CliGitExecutor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.google.inject.Inject;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
-import com.google.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 状态查询服务实现
@@ -82,18 +81,25 @@ public class StatusServiceImpl implements StatusService {
     }
 
     @Override
-    public List<LogEntry> listLogEntries(String repoPath, LocalDateTime fromDate, LocalDateTime toDate,
-                                         String author, String message, int limit) {
+    public List<LogEntry> listLogEntries(String repoPath, LocalDateTime fromDate, LocalDateTime toDate, String author, String message, int limit) {
         List<LogEntry> raw = gitExecutor.getLog(repoPath, 1, Math.max(1, limit * 4));
-        String lowerAuthor = author == null ? "" : author.trim().toLowerCase(Locale.ROOT);
-        String lowerMsg = message == null ? "" : message.trim().toLowerCase(Locale.ROOT);
+        String lowerAuthor = author == null ? "" : author.trim()
+                                                         .toLowerCase(Locale.ROOT);
+        String lowerMsg = message == null ? "" : message.trim()
+                                                        .toLowerCase(Locale.ROOT);
         return raw.stream()
-                .filter(le -> fromDate == null || (le.getCommitTime() != null && !le.getCommitTime().isBefore(fromDate)))
-                .filter(le -> toDate == null || (le.getCommitTime() != null && !le.getCommitTime().isAfter(toDate)))
-                .filter(le -> lowerAuthor.isEmpty() || (le.getAuthor() != null && le.getAuthor().toLowerCase(Locale.ROOT).contains(lowerAuthor)))
-                .filter(le -> lowerMsg.isEmpty() || (le.getMessage() != null && le.getMessage().toLowerCase(Locale.ROOT).contains(lowerMsg)))
-                .limit(Math.max(1, limit))
-                .toList();
+                  .filter(le -> fromDate == null || (le.getCommitTime() != null && !le.getCommitTime()
+                                                                                      .isBefore(fromDate)))
+                  .filter(le -> toDate == null || (le.getCommitTime() != null && !le.getCommitTime()
+                                                                                    .isAfter(toDate)))
+                  .filter(le -> lowerAuthor.isEmpty() || (le.getAuthor() != null && le.getAuthor()
+                                                                                      .toLowerCase(Locale.ROOT)
+                                                                                      .contains(lowerAuthor)))
+                  .filter(le -> lowerMsg.isEmpty() || (le.getMessage() != null && le.getMessage()
+                                                                                    .toLowerCase(Locale.ROOT)
+                                                                                    .contains(lowerMsg)))
+                  .limit(Math.max(1, limit))
+                  .toList();
     }
 
     @Override

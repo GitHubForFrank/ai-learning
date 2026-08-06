@@ -14,19 +14,29 @@ import lombok.Data;
 @Builder
 public class RemoteConfig {
 
-    /** Remote 名称（如 origin） */
+    /**
+     * Remote 名称（如 origin）
+     */
     private String name;
 
-    /** Fetch URL */
+    /**
+     * Fetch URL
+     */
     private String fetchUrl;
 
-    /** Push URL（可空，与 fetchUrl 相同） */
+    /**
+     * Push URL（可空，与 fetchUrl 相同）
+     */
     private String pushUrl;
 
-    /** 是否默认 push remote */
+    /**
+     * 是否默认 push remote
+     */
     private boolean defaultPush;
 
-    /** 是否默认 pull remote */
+    /**
+     * 是否默认 pull remote
+     */
     private boolean defaultPull;
 
     /**
@@ -37,7 +47,8 @@ public class RemoteConfig {
     public String toString() {
         StringBuilder sb = new StringBuilder(name == null ? "" : name);
         if (fetchUrl != null && !fetchUrl.isEmpty()) {
-            sb.append("  ").append(fetchUrl);
+            sb.append("  ")
+              .append(fetchUrl);
         }
         return sb.toString();
     }

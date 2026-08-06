@@ -10,40 +10,64 @@ package com.gitgui.core.config;
  */
 public final class AppConfig {
 
-    /** 应用数据根目录：{@code ~/.git-gui} */
+    /**
+     * 应用数据根目录：{@code ~/.git-gui}
+     */
     public static final String DATA_DIR_NAME = ".git-gui";
 
-    /** 数据库文件相对路径：{@code db/git-gui.db} */
+    /**
+     * 数据库文件相对路径：{@code db/git-gui.db}
+     */
     public static final String DB_RELATIVE_PATH = "db/git-gui.db";
 
-    /** 日志目录相对路径：{@code logs} */
+    /**
+     * 日志目录相对路径：{@code logs}
+     */
     public static final String LOG_RELATIVE_PATH = "logs";
 
-    /** 单实例锁文件相对路径：{@code .git-gui.lock}（BR-40） */
+    /**
+     * 单实例锁文件相对路径：{@code .git-gui.lock}（BR-40）
+     */
     public static final String LOCK_FILE_NAME = ".git-gui.lock";
 
-    /** Flyway 迁移脚本 classpath 位置 */
+    /**
+     * Flyway 迁移脚本 classpath 位置
+     */
     public static final String FLYWAY_LOCATION = "db/migration";
 
-    /** 多仓库检索默认深度：3 层（BR-01） */
+    /**
+     * 多仓库检索默认深度：3 层（BR-01）
+     */
     public static final int DEFAULT_SCAN_DEPTH = 3;
 
-    /** 最近仓库列表最大保留条数：20（BR-05） */
+    /**
+     * 最近仓库列表最大保留条数：20（BR-05）
+     */
     public static final int DEFAULT_RECENT_MAX_KEEP = 20;
 
-    /** 推送超大文件阈值：50MB（BR-29） */
+    /**
+     * 推送超大文件阈值：50MB（BR-29）
+     */
     public static final int DEFAULT_LARGE_FILE_THRESHOLD_MB = 50;
 
-    /** 字符串最大长度校验：收藏别名 100 字符（BR-03） */
+    /**
+     * 字符串最大长度校验：收藏别名 100 字符（BR-03）
+     */
     public static final int ALIAS_MAX_LENGTH = 100;
 
-    /** 分组最大长度：50 字符（BR-03） */
+    /**
+     * 分组最大长度：50 字符（BR-03）
+     */
     public static final int GROUP_MAX_LENGTH = 50;
 
-    /** 输入数组上限：100 */
+    /**
+     * 输入数组上限：100
+     */
     public static final int INPUT_ARRAY_MAX_SIZE = 100;
 
-    /** 日志单页条数：200（BR-18 分页加载） */
+    /**
+     * 日志单页条数：200（BR-18 分页加载）
+     */
     public static final int LOG_DEFAULT_PAGE_SIZE = 200;
 
     private AppConfig() {

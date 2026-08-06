@@ -6,12 +6,11 @@ import com.gitgui.domain.model.RecentRepo;
 import com.gitgui.domain.repository.AppSettingsRepository;
 import com.gitgui.domain.repository.RecentRepoRepository;
 import com.gitgui.domain.service.RecentRepoService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.google.inject.Inject;
 import java.time.LocalDateTime;
 import java.util.List;
-import com.google.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 最近仓库服务实现
@@ -28,8 +27,7 @@ public class RecentRepoServiceImpl implements RecentRepoService {
     private final AppSettingsRepository settingsRepository;
 
     @Inject
-    public RecentRepoServiceImpl(RecentRepoRepository recentRepoRepository,
-                                 AppSettingsRepository settingsRepository) {
+    public RecentRepoServiceImpl(RecentRepoRepository recentRepoRepository, AppSettingsRepository settingsRepository) {
         this.recentRepoRepository = recentRepoRepository;
         this.settingsRepository = settingsRepository;
     }
@@ -40,14 +38,14 @@ public class RecentRepoServiceImpl implements RecentRepoService {
         RecentRepo existing = recentRepoRepository.findByRepoPath(repoPath);
         if (existing == null) {
             RecentRepo recent = RecentRepo.builder()
-                    .id(IdUtil.newId())
-                    .repoPath(repoPath)
-                    .lastBranch(lastBranch == null ? "" : lastBranch)
-                    .lastOpenedAt(LocalDateTime.now())
-                    .openCount(1)
-                    .createdAt(LocalDateTime.now())
-                    .updatedAt(LocalDateTime.now())
-                    .build();
+                                          .id(IdUtil.newId())
+                                          .repoPath(repoPath)
+                                          .lastBranch(lastBranch == null ? "" : lastBranch)
+                                          .lastOpenedAt(LocalDateTime.now())
+                                          .openCount(1)
+                                          .createdAt(LocalDateTime.now())
+                                          .updatedAt(LocalDateTime.now())
+                                          .build();
             recentRepoRepository.save(recent);
         } else {
             existing.setLastBranch(lastBranch == null ? "" : lastBranch);

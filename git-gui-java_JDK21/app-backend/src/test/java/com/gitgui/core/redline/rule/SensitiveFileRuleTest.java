@@ -1,20 +1,19 @@
 package com.gitgui.core.redline.rule;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.gitgui.core.constant.OperationType;
 import com.gitgui.core.constant.RedLineCode;
 import com.gitgui.domain.redline.RedLineContext;
 import com.gitgui.domain.redline.RedLineResult;
 import com.gitgui.domain.service.SettingsService;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * 推送含敏感信息文件规则单元测试（BR-26/BR-32）
@@ -28,10 +27,14 @@ import static org.mockito.Mockito.when;
  */
 class SensitiveFileRuleTest {
 
-    /** 被测规则依赖的设置服务 mock */
+    /**
+     * 被测规则依赖的设置服务 mock
+     */
     private SettingsService settingsService;
 
-    /** 被测规则实例 */
+    /**
+     * 被测规则实例
+     */
     private SensitiveFileRule rule;
 
     @BeforeEach
@@ -39,16 +42,22 @@ class SensitiveFileRuleTest {
         settingsService = mock(SettingsService.class);
         when(settingsService.isRedLineEnabled()).thenReturn(true);
         // 内置默认敏感文件规则集（BR-32），使用全限定名避免与规则类同名冲突
-        when(settingsService.getSensitiveFileRules()).thenReturn(List.of(
-                com.gitgui.domain.model.SensitiveFileRule.builder()
-                        .pattern("\\.env$").description("环境变量文件").build(),
-                com.gitgui.domain.model.SensitiveFileRule.builder()
-                        .pattern("\\.pem$").description("PEM 私钥文件").build(),
-                com.gitgui.domain.model.SensitiveFileRule.builder()
-                        .pattern("credentials").description("凭据文件").build(),
-                com.gitgui.domain.model.SensitiveFileRule.builder()
-                        .pattern("id_rsa").description("SSH 私钥").build()
-        ));
+        when(settingsService.getSensitiveFileRules()).thenReturn(List.of(com.gitgui.domain.model.SensitiveFileRule.builder()
+                                                                                                                  .pattern("\\.env$")
+                                                                                                                  .description("环境变量文件")
+                                                                                                                  .build(),
+                                                                         com.gitgui.domain.model.SensitiveFileRule.builder()
+                                                                                                                  .pattern("\\.pem$")
+                                                                                                                  .description("PEM 私钥文件")
+                                                                                                                  .build(),
+                                                                         com.gitgui.domain.model.SensitiveFileRule.builder()
+                                                                                                                  .pattern("credentials")
+                                                                                                                  .description("凭据文件")
+                                                                                                                  .build(),
+                                                                         com.gitgui.domain.model.SensitiveFileRule.builder()
+                                                                                                                  .pattern("id_rsa")
+                                                                                                                  .description("SSH 私钥")
+                                                                                                                  .build()));
         rule = new SensitiveFileRule(settingsService);
     }
 
@@ -59,9 +68,9 @@ class SensitiveFileRuleTest {
     @DisplayName("提交 .env 文件应返回 BLOCK")
     void shouldBlockEnvFile() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.COMMIT)
-                .stagedFiles(List.of(".env"))
-                .build();
+                                           .operation(OperationType.COMMIT)
+                                           .stagedFiles(List.of(".env"))
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -79,9 +88,9 @@ class SensitiveFileRuleTest {
     @DisplayName("提交普通文件应返回 PASS")
     void shouldPassNormalFile() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.COMMIT)
-                .stagedFiles(List.of("README.md", "src/Main.java"))
-                .build();
+                                           .operation(OperationType.COMMIT)
+                                           .stagedFiles(List.of("README.md", "src/Main.java"))
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -95,9 +104,9 @@ class SensitiveFileRuleTest {
     @DisplayName("提交 *.pem 文件应返回 BLOCK")
     void shouldBlockPemFile() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.PUSH)
-                .stagedFiles(List.of("src/main/resources/server.pem"))
-                .build();
+                                           .operation(OperationType.PUSH)
+                                           .stagedFiles(List.of("src/main/resources/server.pem"))
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -112,9 +121,9 @@ class SensitiveFileRuleTest {
     @DisplayName("暂存区为空应返回 PASS")
     void shouldPassEmptyStagedFiles() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.COMMIT)
-                .stagedFiles(List.of())
-                .build();
+                                           .operation(OperationType.COMMIT)
+                                           .stagedFiles(List.of())
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -128,9 +137,9 @@ class SensitiveFileRuleTest {
     @DisplayName("stagedFiles 为 null 应返回 PASS")
     void shouldPassNullStagedFiles() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.COMMIT)
-                .stagedFiles(null)
-                .build();
+                                           .operation(OperationType.COMMIT)
+                                           .stagedFiles(null)
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -144,9 +153,9 @@ class SensitiveFileRuleTest {
     @DisplayName("暂存区混合文件含敏感文件应返回 BLOCK")
     void shouldBlockWhenMixedFilesContainSensitive() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.COMMIT)
-                .stagedFiles(List.of("README.md", "config/.env", "src/App.java"))
-                .build();
+                                           .operation(OperationType.COMMIT)
+                                           .stagedFiles(List.of("README.md", "config/.env", "src/App.java"))
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -163,9 +172,9 @@ class SensitiveFileRuleTest {
         when(settingsService.isRedLineEnabled()).thenReturn(false);
 
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.COMMIT)
-                .stagedFiles(List.of(".env"))
-                .build();
+                                           .operation(OperationType.COMMIT)
+                                           .stagedFiles(List.of(".env"))
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 

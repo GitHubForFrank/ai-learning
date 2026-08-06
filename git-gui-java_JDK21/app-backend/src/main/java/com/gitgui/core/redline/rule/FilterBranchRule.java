@@ -16,6 +16,9 @@ import com.google.inject.Inject;
  */
 public class FilterBranchRule extends AbstractRedLineRule {
 
+    /**
+     * @param settingsService 设置服务
+     */
     @Inject
     public FilterBranchRule(SettingsService settingsService) {
         super(settingsService);
@@ -25,8 +28,7 @@ public class FilterBranchRule extends AbstractRedLineRule {
     protected RedLineResult doCheck(RedLineContext ctx) {
         // 命中条件：使用 filter-branch / filter-repo
         if (ctx.isFilterBranch()) {
-            return RedLineResult.confirm(RedLineCode.RED_FILTER_BRANCH,
-                    "filter-branch / filter-repo 将重写历史，可能删除他人提交，请确认是否继续");
+            return RedLineResult.confirm(RedLineCode.RED_FILTER_BRANCH, "filter-branch / filter-repo 将重写历史，可能删除他人提交，请确认是否继续");
         }
         return RedLineResult.pass();
     }

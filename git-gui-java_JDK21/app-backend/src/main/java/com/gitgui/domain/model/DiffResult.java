@@ -1,9 +1,8 @@
 package com.gitgui.domain.model;
 
+import java.util.List;
 import lombok.Builder;
 import lombok.Data;
-
-import java.util.List;
 
 /**
  * Diff 对比结果领域模型
@@ -16,19 +15,29 @@ import java.util.List;
 @Builder
 public class DiffResult {
 
-    /** 文件路径 */
+    /**
+     * 文件路径
+     */
     private String path;
 
-    /** 旧版本哈希 */
+    /**
+     * 旧版本哈希
+     */
     private String oldRev;
 
-    /** 新版本哈希 */
+    /**
+     * 新版本哈希
+     */
     private String newRev;
 
-    /** Diff 文本（unified diff 格式） */
+    /**
+     * Diff 文本（unified diff 格式）
+     */
     private String diffText;
 
-    /** 变更文件块列表 */
+    /**
+     * 变更文件块列表
+     */
     private List<DiffHunk> hunks;
 
     /**
@@ -37,15 +46,26 @@ public class DiffResult {
     @Data
     @Builder
     public static class DiffHunk {
-        /** 旧文件起始行 */
+
+        /**
+         * 旧文件起始行
+         */
         private int oldStart;
-        /** 旧文件行数 */
+        /**
+         * 旧文件行数
+         */
         private int oldLines;
-        /** 新文件起始行 */
+        /**
+         * 新文件起始行
+         */
         private int newStart;
-        /** 新文件行数 */
+        /**
+         * 新文件行数
+         */
         private int newLines;
-        /** 块内容 */
+        /**
+         * 块内容
+         */
         private String content;
     }
 }

@@ -21,7 +21,7 @@ public interface StatusService {
     /**
      * 获取工作区文件状态列表（PRD 4.3）。
      *
-     * @param repoPath 仓库路径
+     * @param repoPath      仓库路径
      * @param showUntracked 是否显示未跟踪文件
      * @param showIgnored   是否显示已忽略文件
      * @return 文件状态列表
@@ -103,16 +103,15 @@ public interface StatusService {
     /**
      * 列出 commit 日志条目（带过滤条件），用于 LogMessagesDialog。
      *
-     * @param repoPath   仓库路径
-     * @param fromDate   起始日期（含），可空
-     * @param toDate     截止日期（含），可空
-     * @param author     作者名过滤（substring 匹配），可空
-     * @param message    message 关键词过滤（substring 匹配），可空
-     * @param limit      上限条数
+     * @param repoPath 仓库路径
+     * @param fromDate 起始日期（含），可空
+     * @param toDate   截止日期（含），可空
+     * @param author   作者名过滤（substring 匹配），可空
+     * @param message  message 关键词过滤（substring 匹配），可空
+     * @param limit    上限条数
      * @return commit 日志条目列表
      */
-    List<LogEntry> listLogEntries(String repoPath, LocalDateTime fromDate, LocalDateTime toDate,
-                                  String author, String message, int limit);
+    List<LogEntry> listLogEntries(String repoPath, LocalDateTime fromDate, LocalDateTime toDate, String author, String message, int limit);
 
     /**
      * 获取 commit 引发的文件变更列表。

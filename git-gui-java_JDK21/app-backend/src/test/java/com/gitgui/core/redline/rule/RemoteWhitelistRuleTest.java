@@ -1,20 +1,19 @@
 package com.gitgui.core.redline.rule;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.gitgui.core.constant.OperationType;
 import com.gitgui.core.constant.RedLineCode;
 import com.gitgui.domain.redline.RedLineContext;
 import com.gitgui.domain.redline.RedLineResult;
 import com.gitgui.domain.service.SettingsService;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * 推送到非授权远程规则单元测试（BR-26/BR-28）
@@ -26,10 +25,14 @@ import static org.mockito.Mockito.when;
  */
 class RemoteWhitelistRuleTest {
 
-    /** 被测规则依赖的设置服务 mock */
+    /**
+     * 被测规则依赖的设置服务 mock
+     */
     private SettingsService settingsService;
 
-    /** 被测规则实例 */
+    /**
+     * 被测规则实例
+     */
     private RemoteWhitelistRule rule;
 
     @BeforeEach
@@ -37,8 +40,7 @@ class RemoteWhitelistRuleTest {
         settingsService = mock(SettingsService.class);
         when(settingsService.isRedLineEnabled()).thenReturn(true);
         // 默认白名单：仅允许 github.com 与 gitlab.com
-        when(settingsService.getRemoteWhitelist())
-                .thenReturn(List.of("github.com", "gitlab.com"));
+        when(settingsService.getRemoteWhitelist()).thenReturn(List.of("github.com", "gitlab.com"));
         rule = new RemoteWhitelistRule(settingsService);
     }
 
@@ -49,9 +51,9 @@ class RemoteWhitelistRuleTest {
     @DisplayName("推送到白名单主机应返回 PASS")
     void shouldPassWhitelistedHost() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.PUSH)
-                .remoteUrl("https://github.com/org/repo.git")
-                .build();
+                                           .operation(OperationType.PUSH)
+                                           .remoteUrl("https://github.com/org/repo.git")
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -65,9 +67,9 @@ class RemoteWhitelistRuleTest {
     @DisplayName("推送到非白名单主机应返回 BLOCK")
     void shouldBlockNonWhitelistedHost() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.PUSH)
-                .remoteUrl("https://evil.com/repo.git")
-                .build();
+                                           .operation(OperationType.PUSH)
+                                           .remoteUrl("https://evil.com/repo.git")
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -83,9 +85,9 @@ class RemoteWhitelistRuleTest {
     @DisplayName("SSH 协议推送到白名单主机应返回 PASS")
     void shouldPassSshWhitelistedHost() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.PUSH)
-                .remoteUrl("git@github.com:org/repo.git")
-                .build();
+                                           .operation(OperationType.PUSH)
+                                           .remoteUrl("git@github.com:org/repo.git")
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -99,9 +101,9 @@ class RemoteWhitelistRuleTest {
     @DisplayName("SSH 协议推送到非白名单主机应返回 BLOCK")
     void shouldBlockSshNonWhitelistedHost() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.PUSH)
-                .remoteUrl("git@evil.com:org/repo.git")
-                .build();
+                                           .operation(OperationType.PUSH)
+                                           .remoteUrl("git@evil.com:org/repo.git")
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -118,9 +120,9 @@ class RemoteWhitelistRuleTest {
         when(settingsService.getRemoteWhitelist()).thenReturn(List.of());
 
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.PUSH)
-                .remoteUrl("https://anywhere.com/repo.git")
-                .build();
+                                           .operation(OperationType.PUSH)
+                                           .remoteUrl("https://anywhere.com/repo.git")
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -136,9 +138,9 @@ class RemoteWhitelistRuleTest {
         when(settingsService.getRemoteWhitelist()).thenReturn(null);
 
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.PUSH)
-                .remoteUrl("https://anywhere.com/repo.git")
-                .build();
+                                           .operation(OperationType.PUSH)
+                                           .remoteUrl("https://anywhere.com/repo.git")
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -152,9 +154,9 @@ class RemoteWhitelistRuleTest {
     @DisplayName("remoteUrl 为空应返回 PASS")
     void shouldPassWhenRemoteUrlBlank() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.PUSH)
-                .remoteUrl("")
-                .build();
+                                           .operation(OperationType.PUSH)
+                                           .remoteUrl("")
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -168,9 +170,9 @@ class RemoteWhitelistRuleTest {
     @DisplayName("remoteUrl 为 null 应返回 PASS")
     void shouldPassWhenRemoteUrlNull() {
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.PUSH)
-                .remoteUrl(null)
-                .build();
+                                           .operation(OperationType.PUSH)
+                                           .remoteUrl(null)
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -183,13 +185,12 @@ class RemoteWhitelistRuleTest {
     @Test
     @DisplayName("白名单含完整 URL 时应返回 PASS")
     void shouldPassWhenWhitelistContainsFullUrl() {
-        when(settingsService.getRemoteWhitelist())
-                .thenReturn(List.of("https://github.com/org/repo.git"));
+        when(settingsService.getRemoteWhitelist()).thenReturn(List.of("https://github.com/org/repo.git"));
 
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.PUSH)
-                .remoteUrl("https://github.com/org/repo.git")
-                .build();
+                                           .operation(OperationType.PUSH)
+                                           .remoteUrl("https://github.com/org/repo.git")
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 
@@ -205,9 +206,9 @@ class RemoteWhitelistRuleTest {
         when(settingsService.isRedLineEnabled()).thenReturn(false);
 
         RedLineContext ctx = RedLineContext.builder()
-                .operation(OperationType.PUSH)
-                .remoteUrl("https://evil.com/repo.git")
-                .build();
+                                           .operation(OperationType.PUSH)
+                                           .remoteUrl("https://evil.com/repo.git")
+                                           .build();
 
         RedLineResult result = rule.check(ctx);
 

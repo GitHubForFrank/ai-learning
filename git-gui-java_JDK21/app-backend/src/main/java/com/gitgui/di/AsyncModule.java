@@ -1,10 +1,10 @@
 package com.gitgui.di;
 
+import com.gitgui.core.async.TaskManager;
+import com.gitgui.domain.repository.TaskRecordRepository;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.gitgui.core.async.TaskManager;
-import com.gitgui.domain.repository.TaskRecordRepository;
 
 /**
  * 异步任务 Module

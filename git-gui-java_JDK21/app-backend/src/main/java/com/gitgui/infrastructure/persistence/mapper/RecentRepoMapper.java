@@ -10,4 +10,5 @@ import com.gitgui.domain.model.RecentRepo;
  * @since 2026-07-23
  */
 public interface RecentRepoMapper extends BaseMapper<RecentRepo> {
+
 }

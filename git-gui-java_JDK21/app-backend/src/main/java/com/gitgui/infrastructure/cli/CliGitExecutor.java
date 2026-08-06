@@ -13,14 +13,13 @@ import com.gitgui.domain.model.request.CloneRequest;
 import com.gitgui.domain.model.request.CommitRequest;
 import com.gitgui.domain.model.request.PullRequest;
 import com.gitgui.domain.model.request.PushRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Git CLI 执行器（统一适配器）
@@ -75,7 +74,9 @@ public class CliGitExecutor {
      */
     public List<FileStatus> getStatus(String repoPath, boolean showUntracked) {
         List<String> args = new ArrayList<>(List.of("status", "--porcelain", "-z"));
-        if (!showUntracked) args.add("-uno");
+        if (!showUntracked) {
+            args.add("-uno");
+        }
         try {
             String output = execute(repoPath, args, true);
             return outputParser.parseStatus(output);
@@ -92,11 +93,17 @@ public class CliGitExecutor {
     public String getCurrentBranch(String repoPath) {
         try {
             String out = execute(repoPath, List.of("rev-parse", "--abbrev-ref", "HEAD"), true);
-            if (out == null || out.isBlank()) return "UNKNOWN";
+            if (out == null || out.isBlank()) {
+                return "UNKNOWN";
+            }
             String trimmed = out.trim();
             // 排除 git 错误消息（rev-parse 对无 HEAD 仓库返回 fatal:...）
-            if (trimmed.startsWith("fatal:") || trimmed.contains("fatal:")) return "UNKNOWN";
-            if (trimmed.equals("HEAD")) return "DETACHED_HEAD";
+            if (trimmed.startsWith("fatal:") || trimmed.contains("fatal:")) {
+                return "UNKNOWN";
+            }
+            if (trimmed.equals("HEAD")) {
+                return "DETACHED_HEAD";
+            }
             return trimmed;
         } catch (Exception e) {
             return "UNKNOWN";
@@ -107,7 +114,9 @@ public class CliGitExecutor {
      * 获取分支 HEAD SHA-1。
      */
     public String getBranchHeadSha(String repoPath, String branch) {
-        if (repoPath == null || branch == null) return null;
+        if (repoPath == null || branch == null) {
+            return null;
+        }
         try {
             String out = execute(repoPath, List.of("rev-parse", branch), true);
             return out == null || out.isBlank() ? null : out.trim();
@@ -135,8 +144,13 @@ public class CliGitExecutor {
     public List<String> listBranches(String repoPath) {
         try {
             String out = execute(repoPath, List.of("branch", "-a", "--format=%(refname:short)"), true);
-            if (out == null || out.isBlank()) return List.of();
-            return out.lines().map(String::trim).filter(s -> !s.isEmpty() && !s.startsWith("HEAD")).toList();
+            if (out == null || out.isBlank()) {
+                return List.of();
+            }
+            return out.lines()
+                      .map(String::trim)
+                      .filter(s -> !s.isEmpty() && !s.startsWith("HEAD"))
+                      .toList();
         } catch (Exception e) {
             log.warn("列出分支失败：{}", e.getMessage());
             return List.of();
@@ -149,8 +163,13 @@ public class CliGitExecutor {
     public List<String> listTags(String repoPath) {
         try {
             String out = execute(repoPath, List.of("tag", "-l"), true);
-            if (out == null || out.isBlank()) return List.of();
-            return out.lines().map(String::trim).filter(s -> !s.isEmpty()).toList();
+            if (out == null || out.isBlank()) {
+                return List.of();
+            }
+            return out.lines()
+                      .map(String::trim)
+                      .filter(s -> !s.isEmpty())
+                      .toList();
         } catch (Exception e) {
             log.warn("列出标签失败：{}", e.getMessage());
             return List.of();
@@ -177,10 +196,7 @@ public class CliGitExecutor {
         int skip = Math.max(0, (page - 1) * pageSize);
         String format = "%H%x00%h%x00%an%x00%ae%x00%aI%x00%s%x00%b%x00%P";
         try {
-            String out = execute(repoPath,
-                    List.of("log", "--skip=" + skip, "-n" + pageSize,
-                            "--format=" + format, "--date=iso-strict"),
-                    true);
+            String out = execute(repoPath, List.of("log", "--skip=" + skip, "-n" + pageSize, "--format=" + format, "--date=iso-strict"), true);
             return outputParser.parseLog(out);
         } catch (Exception e) {
             log.warn("获取日志失败：{}", e.getMessage());
@@ -196,13 +212,10 @@ public class CliGitExecutor {
             throw new GitGuiException(ErrorCode.VALIDATION_FAILED, "仓库路径或 commit id 不能为空");
         }
         try {
-            String out = execute(repoPath,
-                    List.of("show", "--name-status", "--format=", commitId),
-                    true);
+            String out = execute(repoPath, List.of("show", "--name-status", "--format=", commitId), true);
             return outputParser.parseFileChanges(out);
         } catch (Exception e) {
-            throw new GitGuiException(ErrorCode.GIT_EXECUTION_FAILED,
-                    "查询 commit 文件变更失败：" + e.getMessage(), e);
+            throw new GitGuiException(ErrorCode.GIT_EXECUTION_FAILED, "查询 commit 文件变更失败：" + e.getMessage(), e);
         }
     }
 
@@ -215,8 +228,12 @@ public class CliGitExecutor {
         }
         // 构建参数
         List<String> args = new ArrayList<>(List.of("diff", "--no-color"));
-        if (oldRev != null && !oldRev.isBlank()) args.add(oldRev);
-        if (newRev != null && !newRev.isBlank()) args.add(newRev);
+        if (oldRev != null && !oldRev.isBlank()) {
+            args.add(oldRev);
+        }
+        if (newRev != null && !newRev.isBlank()) {
+            args.add(newRev);
+        }
         args.add("--");
         args.add(path);
 
@@ -225,11 +242,11 @@ public class CliGitExecutor {
             String out = execute(repoPath, args, true);
             if (out != null && !out.isBlank()) {
                 return DiffResult.builder()
-                        .path(path)
-                        .oldRev(oldRev)
-                        .newRev(newRev)
-                        .diffText(outputParser.parseDiff(out))
-                        .build();
+                                 .path(path)
+                                 .oldRev(oldRev)
+                                 .newRev(newRev)
+                                 .diffText(outputParser.parseDiff(out))
+                                 .build();
             }
         } catch (Exception e) {
             log.debug("标准 diff 失败：{}，尝试降级", e.getMessage());
@@ -241,11 +258,11 @@ public class CliGitExecutor {
             String out = execute(repoPath, altArgs, true);
             if (out != null && !out.isBlank()) {
                 return DiffResult.builder()
-                        .path(path)
-                        .oldRev("HEAD")
-                        .newRev(newRev)
-                        .diffText(outputParser.parseDiff(out))
-                        .build();
+                                 .path(path)
+                                 .oldRev("HEAD")
+                                 .newRev(newRev)
+                                 .diffText(outputParser.parseDiff(out))
+                                 .build();
             }
         } catch (Exception e2) {
             log.debug("HEAD diff 失败：{}", e2.getMessage());
@@ -267,28 +284,45 @@ public class CliGitExecutor {
             String newText = workContent == null ? "" : workContent;
 
             StringBuilder sb = new StringBuilder();
-            sb.append("--- a/").append(path).append("\n");
-            sb.append("+++ b/").append(path).append("\n");
+            sb.append("--- a/")
+              .append(path)
+              .append("\n");
+            sb.append("+++ b/")
+              .append(path)
+              .append("\n");
             String mode = oldText.isEmpty() ? "new file" : (newText.isEmpty() ? "deleted file" : "modified");
-            sb.append("@@ -0,0 +0,0 @@ ").append(mode).append("\n");
+            sb.append("@@ -0,0 +0,0 @@ ")
+              .append(mode)
+              .append("\n");
 
             if (!oldText.isEmpty()) {
                 for (String line : oldText.split("\n", -1)) {
-                    sb.append("-").append(line).append("\n");
+                    sb.append("-")
+                      .append(line)
+                      .append("\n");
                 }
             }
             if (!newText.isEmpty()) {
                 for (String line : newText.split("\n", -1)) {
-                    sb.append("+").append(line).append("\n");
+                    sb.append("+")
+                      .append(line)
+                      .append("\n");
                 }
             }
             return DiffResult.builder()
-                    .path(path).oldRev("HEAD").newRev("WORKTREE")
-                    .diffText(sb.toString()).build();
+                             .path(path)
+                             .oldRev("HEAD")
+                             .newRev("WORKTREE")
+                             .diffText(sb.toString())
+                             .build();
         } catch (Exception e) {
             log.error("兜底 diff 失败：{}", path, e);
             return DiffResult.builder()
-                    .path(path).oldRev("HEAD").newRev(null).diffText("").build();
+                             .path(path)
+                             .oldRev("HEAD")
+                             .newRev(null)
+                             .diffText("")
+                             .build();
         }
     }
 
@@ -303,14 +337,79 @@ public class CliGitExecutor {
         String format = "%(refname)%09%(objectname)%09%(committerdate:iso-strict)%09%(subject)";
         try {
             String out = execute(repoPath,
-                    List.of("for-each-ref", "--format=" + format,
-                            "--sort=-committerdate",
-                            "refs/heads/", "refs/remotes/", "refs/tags/"),
-                    true);
+                                 List.of("for-each-ref", "--format=" + format, "--sort=-committerdate", "refs/heads/", "refs/remotes/", "refs/tags/"),
+                                 true);
             return outputParser.parseRefs(out);
         } catch (Exception e) {
             log.warn("批量查询 ref 失败：{}", e.getMessage());
             return List.of();
+        }
+    }
+
+    /**
+     * 查询两个 ref 之间的 commit 列表（顺序：新→旧）。
+     * <p>等价于 {@code git log fromRef..toRef}。当 {@code fromRef} 为 null/空/不存在时，
+     * 降级为查询 {@code toRef} 的全部历史（首次推送场景：本地分支未设置上游跟踪）。</p>
+     * <p>复用 {@code getLog} 的 NUL 分隔 format 和 {@link GitOutputParser#parseLog(String)}，
+     * 渲染层的列定义可与主窗口日志区域一致。</p>
+     *
+     * @param repoPath 仓库路径
+     * @param fromRef  起点 ref（不包含），可为 null/空
+     * @param toRef    终点 ref（包含），不能为空
+     * @param limit    最大数量（≤0 取全部）
+     * @return commit 列表；查询失败返回空列表
+     */
+    public List<LogEntry> getCommitsBetween(String repoPath, String fromRef, String toRef, int limit) {
+        if (repoPath == null || repoPath.isBlank()) {
+            return List.of();
+        }
+        if (toRef == null || toRef.isBlank()) {
+            return List.of();
+        }
+        String format = "%H%x00%h%x00%an%x00%ae%x00%aI%x00%s%x00%b%x00%P";
+        List<String> args = new ArrayList<>();
+        args.add("log");
+        if (limit > 0) {
+            args.add("-n" + limit);
+        }
+        args.add(String.format("--format=%s", format));
+        args.add("--date=iso-strict");
+        // 构建范围表达式 fromRef..toRef
+        StringBuilder range = new StringBuilder();
+        if (fromRef != null && !fromRef.isBlank()) {
+            range.append(fromRef);
+        }
+        range.append("..")
+             .append(toRef);
+        args.add(range.toString());
+        try {
+            String out = execute(repoPath, args, true);
+            return outputParser.parseLog(out);
+        } catch (Exception e) {
+            log.debug("查询 commit 范围失败：{}..{}", fromRef, toRef);
+            return List.of();
+        }
+    }
+
+    /**
+     * 检查远程 ref（如 {@code origin/master}）是否存在。
+     * <p>用 {@code git rev-parse --verify --quiet <ref>}，存在 → 返回 ref 全 SHA；不存在 → 输出空；</p>
+     *
+     * @param repoPath 仓库路径
+     * @param remote   远程名（如 origin）
+     * @param branch   分支名（如 master）
+     * @return true=远端 ref 存在；false=不存在
+     */
+    public boolean remoteRefExists(String repoPath, String remote, String branch) {
+        if (repoPath == null || repoPath.isBlank() || remote == null || remote.isBlank() || branch == null || branch.isBlank()) {
+            return false;
+        }
+        try {
+            String out = execute(repoPath, List.of("rev-parse", "--verify", "--quiet", remote + "/" + branch), true);
+            // 输出 SHA 表示存在；空输出表示不存在（fatal 已被 execute 抑制）
+            return out != null && !out.isBlank();
+        } catch (Exception e) {
+            return false;
         }
     }
 
@@ -322,10 +421,14 @@ public class CliGitExecutor {
     public String readFileFromHead(String repoPath, String filePath) {
         try {
             String out = execute(repoPath, List.of("show", "HEAD:" + filePath), true);
-            if (out == null) return "";
+            if (out == null) {
+                return "";
+            }
             String trimmed = out.trim();
             // 排除 git 错误消息（如无 HEAD 时）
-            if (trimmed.startsWith("fatal:") || trimmed.contains("fatal:")) return "";
+            if (trimmed.startsWith("fatal:") || trimmed.contains("fatal:")) {
+                return "";
+            }
             return out;
         } catch (Exception e) {
             return "";
@@ -338,7 +441,9 @@ public class CliGitExecutor {
     private String readWorkingFile(String repoPath, String filePath) {
         try {
             Path file = Path.of(repoPath, filePath);
-            if (!Files.exists(file) || !Files.isRegularFile(file)) return null;
+            if (!Files.exists(file) || !Files.isRegularFile(file)) {
+                return null;
+            }
             return Files.readString(file, StandardCharsets.UTF_8);
         } catch (Exception e) {
             return null;
@@ -349,91 +454,105 @@ public class CliGitExecutor {
      * 读取 git config。
      */
     public String getConfig(String repoPath, String key) {
+        // 用 `git config --get <key>` 而不是 `--local` + `--global` 回退：
+        // 当 key 不在 local 时，--local 不抛异常（退出码非 0，输出空），
+        // 旧实现捕获到 "" 误判 null 后直接返回，**永远不会回退到 global**。
+        // `--get`（无 flag）让 git 自动按 local → global → system 优先级链查找，最自然。
         try {
-            String out = execute(repoPath, List.of("config", "--local", key), true);
+            String out = execute(repoPath, List.of("config", "--get", key), true);
             return out == null || out.isBlank() ? null : out.trim();
         } catch (Exception e) {
-            // 尝试 --global
-            try {
-                String out = execute(repoPath, List.of("config", "--global", key), true);
-                return out == null || out.isBlank() ? null : out.trim();
-            } catch (Exception e2) {
-                return null;
-            }
+            log.debug("读取 git config 失败：{} = {}", key, e.getMessage());
+            return null;
         }
     }
 
     // ========== 变更操作（同步） ==========
 
     /**
-     * 提交。
+     * 提交（同步，不带 callback，保留兼容性）。
      * <p>工作区干净时 git commit 返回 exit=1（"nothing to commit"），这不是真正的错误，
      * 而是表示"没有新变更可提交"。此时仍返回当前 HEAD SHA，让 UI 层走成功路径。</p>
+     *
+     * @param req 提交请求
+     * @return 提交的完整 SHA
      */
     public String commit(CommitRequest req) throws GitGuiException {
-        List<String> args = new ArrayList<>();
+        return commit(req, null);
+    }
 
-        // 暂存未提交文件
-        if (req.getStagedFiles() != null && !req.getStagedFiles().isEmpty()) {
+    /**
+     * 提交（同步，带 callback，实时把 git 进程的输出推到调用方）。
+     * <p>使用 git add 先暂存文件，然后 {@code git commit -F tmpfile} 执行提交。</p>
+     * <p>特殊路径：</p>
+     * <ul>
+     *   <li>工作区干净时 git commit 返回 exit=1（"nothing to commit"），不视为错误，返回当前 HEAD SHA</li>
+     *   <li>其它非零退出码以 {@link GitGuiException} 抛出</li>
+     * </ul>
+     *
+     * @param req 提交请求（已精简，不再支持 amend/author/signCommit 等）
+     * @param cb  进度回调（可空；非空时每行输出实时通过 {@code callback.onOutput(line)} 推送）
+     * @return 提交的完整 SHA
+     */
+    public String commit(CommitRequest req, ProgressCallback cb) throws GitGuiException {
+        if (req == null || req.getRepoPath() == null || req.getRepoPath()
+                                                           .isBlank()) {
+            throw new GitGuiException(ErrorCode.VALIDATION_FAILED, "仓库路径不能为空");
+        }
+        final String repoPath = req.getRepoPath();
+
+        // 步骤 1：暂存未提交文件（add 无 callback，工具步骤；allowNonZero=true 兼容 working tree clean）
+        if (req.getStagedFiles() != null && !req.getStagedFiles()
+                                                .isEmpty()) {
             List<String> addArgs = new ArrayList<>(List.of("add"));
             addArgs.addAll(req.getStagedFiles());
-            execute(req.getRepoPath(), addArgs, true);
+            GitProcessBuilder.executeQuietly(repoPath, addArgs, null, true);
         } else {
-            // 未指定文件时，暂存全部。允许非零退出码：git add -A 在工作区干净时返回 exit=1
-            // （"nothing to commit, working tree clean"），这不是错误。
-            execute(req.getRepoPath(), List.of("add", "-A"), true);
+            GitProcessBuilder.executeQuietly(repoPath, List.of("add", "-A"), null, true);
         }
 
-        // 提交
-        args.add("commit");
-        if (req.isAmend()) args.add("--amend");
-
-        // 多行 commit message 用临时文件传递
-        boolean useTempFile = req.getMessage() != null && !req.getMessage().isBlank();
+        // 步骤 2：执行 commit，把 git 进程输出实时推到 callback
+        List<String> args = new ArrayList<>(List.of("commit"));
+        boolean useTempFile = req.getMessage() != null && !req.getMessage()
+                                                              .isBlank();
         try {
             if (useTempFile) {
                 Path tmpFile = Files.createTempFile("git-commit-msg-", ".txt");
                 try {
                     Files.writeString(tmpFile, req.getMessage(), StandardCharsets.UTF_8);
                     args.add("-F");
-                    args.add(tmpFile.toAbsolutePath().toString());
-                    execute(req.getRepoPath(), args, false);
+                    args.add(tmpFile.toAbsolutePath()
+                                    .toString());
+                    GitProcessBuilder.execute(repoPath, args, cb);
                 } finally {
-                    try { Files.deleteIfExists(tmpFile); } catch (Exception ignored) {}
+                    try {
+                        Files.deleteIfExists(tmpFile);
+                    } catch (Exception ignored) {
+                    }
                 }
             } else {
                 args.add("--allow-empty-message");
                 args.add("-m");
                 args.add("");
-                if (req.getAuthor() != null && !req.getAuthor().isBlank()) {
-                    args.add("--author=" + req.getAuthor());
-                }
-                if (req.isSetAuthorDate() && req.getAuthorDate() != null) {
-                    args.add("--date=" + req.getAuthorDate().toString());
-                }
-                if (req.isSignCommit()) args.add("-S");
-                execute(req.getRepoPath(), args, false);
+                GitProcessBuilder.execute(repoPath, args, cb);
             }
         } catch (Exception e) {
-            // 工作区干净时 git commit 返回 exit=1（"nothing to commit, working tree clean"），
-            // 这不是真正的错误，而是表示"没有新变更可提交"。此时仍返回当前 HEAD SHA，
-            // 让 UI 层走成功路径自动关闭对话框。
-            if (e instanceof GitGuiException gge && gge.getMessage() != null
-                    && gge.getMessage().contains("nothing to commit")) {
-                log.info("工作区干净，无新变更可提交：repoPath={}", req.getRepoPath());
-                String fullSha = getBranchHeadSha(req.getRepoPath(), "HEAD");
+            // 「nothing to commit, working tree clean」是 exit=1 但不算真正的失败
+            if (e instanceof GitGuiException gge && gge.getMessage() != null && gge.getMessage()
+                                                                                   .contains("nothing to commit")) {
+                log.info("工作区干净，无新变更可提交：repoPath={}", repoPath);
+                String fullSha = getBranchHeadSha(repoPath, "HEAD");
                 return fullSha != null ? fullSha : "";
             }
-            // 统一包装为 GitGuiException 抛出
             if (e instanceof GitGuiException gge) {
                 throw gge;
             }
-            throw new GitGuiException(ErrorCode.GIT_EXECUTION_FAILED, e.getMessage());
+            throw new GitGuiException(ErrorCode.GIT_EXECUTION_FAILED, e.getMessage(), e);
         }
 
-        // 获取完整 SHA（git commit 输出的是缩写 SHA）
-        String fullSha = getBranchHeadSha(req.getRepoPath(), "HEAD");
-        log.info("提交成功：repoPath={}, sha={}", req.getRepoPath(), fullSha);
+        // 步骤 3：获取完整 SHA（git commit 输出的是缩写 SHA）
+        String fullSha = getBranchHeadSha(repoPath, "HEAD");
+        log.info("提交成功：repoPath={}, sha={}", repoPath, fullSha);
         return fullSha != null ? fullSha : "";
     }
 
@@ -442,7 +561,9 @@ public class CliGitExecutor {
      */
     public void init(String dir, boolean bare) {
         List<String> args = new ArrayList<>(List.of("init"));
-        if (bare) args.add("--bare");
+        if (bare) {
+            args.add("--bare");
+        }
         args.add(dir);
         execute(null, args, false);
         log.info("仓库初始化成功：{}", dir);
@@ -452,32 +573,19 @@ public class CliGitExecutor {
 
     /**
      * 推送。
+     * <p>自 v3 起 UI 选项简化（移除 Force / Tags / Push All / 上游跟踪 / 临时 URL 等），</p>
+     * <p>本方法固定产生 {@code git push --progress <remote> <branch>}，不再有条件分支。</p>
+     * <p>冗余字段（{@code forceWithLease/force/includeTags/pushAllBranches/...}）暂保留于
+     * {@link PushRequest}，便于未来扩展 / 红线检查；这里不再读取它们。</p>
      */
     public void push(PushRequest req, ProgressCallback callback) {
         List<String> args = new ArrayList<>(List.of("push", "--progress"));
-        if (req.isForceWithLease()) {
-            args.add("--force-with-lease");
-        } else if (req.isForce()) {
-            args.add("--force");
-        }
-        if (req.isIncludeTags() || req.isPushAllTags()) {
-            args.add("--tags");
-        }
-        if (req.isPushAllBranches()) {
-            args.add("--all");
-        }
-        if (req.isSetUpstream()) {
-            args.add("-u");
-        }
-        if (req.isDeleteRemoteBranch()) {
-            args.add("--delete");
-        }
-        if (req.getPushToUrl() != null && !req.getPushToUrl().isBlank()) {
-            args.add(req.getPushToUrl());
-        } else if (req.getRemote() != null && !req.getRemote().isBlank()) {
+        if (req.getRemote() != null && !req.getRemote()
+                                           .isBlank()) {
             args.add(req.getRemote());
         }
-        if (req.getBranch() != null && !req.getBranch().isBlank()) {
+        if (req.getBranch() != null && !req.getBranch()
+                                           .isBlank()) {
             args.add(req.getBranch());
         }
         executeAsync(req.getRepoPath(), args, callback);
@@ -489,16 +597,30 @@ public class CliGitExecutor {
      */
     public void pull(PullRequest req, ProgressCallback callback) {
         List<String> args = new ArrayList<>(List.of("pull", "--progress"));
-        if (req.isRebaseInsteadOfMerge()) args.add("--rebase");
-        if (req.isAutoStash()) args.add("--autostash");
-        if (req.isFetchTags()) args.add("--tags");
-        if (req.isAllBranches()) args.add("--all");
-        if (req.isUpdateSubmodules()) args.add("--recurse-submodules");
-        if (req.isDryRun()) args.add("--dry-run");
-        if (req.getRemote() != null && !req.getRemote().isBlank()) {
+        if (req.isRebaseInsteadOfMerge()) {
+            args.add("--rebase");
+        }
+        if (req.isAutoStash()) {
+            args.add("--autostash");
+        }
+        if (req.isFetchTags()) {
+            args.add("--tags");
+        }
+        if (req.isAllBranches()) {
+            args.add("--all");
+        }
+        if (req.isUpdateSubmodules()) {
+            args.add("--recurse-submodules");
+        }
+        if (req.isDryRun()) {
+            args.add("--dry-run");
+        }
+        if (req.getRemote() != null && !req.getRemote()
+                                           .isBlank()) {
             args.add(req.getRemote());
         }
-        if (req.getBranch() != null && !req.getBranch().isBlank()) {
+        if (req.getBranch() != null && !req.getBranch()
+                                           .isBlank()) {
             args.add(req.getBranch());
         }
         executeAsync(req.getRepoPath(), args, callback);
@@ -510,9 +632,15 @@ public class CliGitExecutor {
      */
     public void fetch(String repoPath, String remote, String branch, boolean prune, ProgressCallback callback) {
         List<String> args = new ArrayList<>(List.of("fetch", "--progress"));
-        if (prune) args.add("--prune");
-        if (remote != null && !remote.isBlank()) args.add(remote);
-        if (branch != null && !branch.isBlank()) args.add("refs/heads/" + branch + ":refs/remotes/" + remote + "/" + branch);
+        if (prune) {
+            args.add("--prune");
+        }
+        if (remote != null && !remote.isBlank()) {
+            args.add(remote);
+        }
+        if (branch != null && !branch.isBlank()) {
+            args.add(String.format("refs/heads/%s:refs/remotes/%s/%s", branch, remote, branch));
+        }
         executeAsync(repoPath, args, callback);
         log.info("获取完成：repoPath={}", repoPath);
     }
@@ -522,7 +650,8 @@ public class CliGitExecutor {
      */
     public String clone(CloneRequest req, ProgressCallback callback) {
         List<String> args = new ArrayList<>(List.of("clone", "--progress"));
-        if (req.getBranch() != null && !req.getBranch().isBlank()) {
+        if (req.getBranch() != null && !req.getBranch()
+                                           .isBlank()) {
             args.add("--branch");
             args.add(req.getBranch());
         }
@@ -530,7 +659,9 @@ public class CliGitExecutor {
             args.add("--depth");
             args.add(String.valueOf(req.getDepth()));
         }
-        if (req.isBare()) args.add("--bare");
+        if (req.isBare()) {
+            args.add("--bare");
+        }
         args.add(req.getRemoteUrl());
         args.add(req.getTargetDir());
         executeAsync(null, args, callback);
@@ -551,8 +682,12 @@ public class CliGitExecutor {
             throw new GitGuiException(ErrorCode.VALIDATION_FAILED, "分支名不能为空");
         }
         List<String> args = new ArrayList<>(List.of("checkout"));
-        if (create) args.add("-b");
-        if (force) args.add("-f");
+        if (create) {
+            args.add("-b");
+        }
+        if (force) {
+            args.add("-f");
+        }
         args.add(branch);
         execute(repoPath, args, false);
         log.info("切换分支成功：{} -> {}", repoPath, branch);
@@ -569,7 +704,9 @@ public class CliGitExecutor {
             throw new GitGuiException(ErrorCode.VALIDATION_FAILED, "refName 不能为空");
         }
         List<String> args = new ArrayList<>(List.of("checkout"));
-        if (force) args.add("-f");
+        if (force) {
+            args.add("-f");
+        }
         args.add(refName);
         execute(repoPath, args, false);
         log.info("通过 ref 切换成功：{} -> {}", repoPath, refName);
@@ -586,7 +723,9 @@ public class CliGitExecutor {
             throw new GitGuiException(ErrorCode.VALIDATION_FAILED, "commit id 不能为空");
         }
         List<String> args = new ArrayList<>(List.of("checkout"));
-        if (force) args.add("-f");
+        if (force) {
+            args.add("-f");
+        }
         args.add(commitId);
         execute(repoPath, args, false);
         log.info("切换到 commit 成功：{} -> {}", repoPath, commitId);
@@ -604,8 +743,10 @@ public class CliGitExecutor {
         }
         String tagName = tag.startsWith("refs/tags/") ? tag.substring("refs/tags/".length()) : tag;
         List<String> args = new ArrayList<>(List.of("checkout"));
-        if (force) args.add("-f");
-        args.add("tags/" + tagName);
+        if (force) {
+            args.add("-f");
+        }
+        args.add(String.format("tags/%s", tagName));
         execute(repoPath, args, false);
         log.info("切换到 tag 成功：{} -> {}", repoPath, tagName);
     }
@@ -613,8 +754,7 @@ public class CliGitExecutor {
     /**
      * 从指定 commit 创建新分支并切换。
      */
-    public void checkoutNewBranchFromCommit(String repoPath, String branch, String commitId,
-                                            boolean forceCheckout, boolean overrideExisting) {
+    public void checkoutNewBranchFromCommit(String repoPath, String branch, String commitId, boolean forceCheckout, boolean overrideExisting) {
         if (repoPath == null || repoPath.isBlank()) {
             throw new GitGuiException(ErrorCode.VALIDATION_FAILED, "仓库路径不能为空");
         }
@@ -628,7 +768,9 @@ public class CliGitExecutor {
         List<String> args = new ArrayList<>(List.of("checkout"));
         args.add(overrideExisting ? "-B" : "-b");
         args.add(branch);
-        if (forceCheckout) args.add("-f");
+        if (forceCheckout) {
+            args.add("-f");
+        }
         args.add(commitId);
         execute(repoPath, args, false);
         log.info("从 commit 创建新分支成功：repo={}, branch={}, commit={}", repoPath, branch, commitId);
@@ -638,9 +780,10 @@ public class CliGitExecutor {
      * 创建本地分支并设置跟踪远程上游（git checkout -b branch --track origin/branch）。
      */
     public void checkoutWithTrack(String repoPath, String branchName, boolean force) {
-        List<String> args = new ArrayList<>(List.of("checkout", "-b", branchName,
-                "--track", "origin/" + branchName));
-        if (force) args.add("-f");
+        List<String> args = new ArrayList<>(List.of("checkout", "-b", branchName, "--track", String.format("origin/%s", branchName)));
+        if (force) {
+            args.add("-f");
+        }
         execute(repoPath, args, false);
     }
 
@@ -661,9 +804,10 @@ public class CliGitExecutor {
         String branchPath = rest.substring(slash + 1);
 
         // git checkout -b branchPath --track remote/branchPath
-        List<String> args = new ArrayList<>(List.of("checkout", "-b", branchPath,
-                "--track", remote + "/" + branchPath));
-        if (force) args.add("-f");
+        List<String> args = new ArrayList<>(List.of("checkout", "-b", branchPath, "--track", String.format("%s/%s", remote, branchPath)));
+        if (force) {
+            args.add("-f");
+        }
         execute(repoPath, args, false);
         log.info("远程分支 checkout 完成：repo={}, ref={} → local={}/{}", repoPath, refName, remote, branchPath);
     }
@@ -675,7 +819,9 @@ public class CliGitExecutor {
      */
     public void submoduleUpdate(String repoPath, boolean recursive, ProgressCallback callback) {
         List<String> args = new ArrayList<>(List.of("submodule", "update"));
-        if (recursive) args.add("--recursive");
+        if (recursive) {
+            args.add("--recursive");
+        }
         executeAsync(repoPath, args, callback);
     }
 

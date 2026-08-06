@@ -1,7 +1,5 @@
 package com.gitgui.application.redline;
 
-import com.gitgui.core.constant.RedLineCode;
-import com.gitgui.core.exception.RedLineBlockedException;
 import com.gitgui.domain.model.AuditLog;
 import com.gitgui.domain.redline.RedLineContext;
 import com.gitgui.domain.redline.RedLineResult;
@@ -9,14 +7,12 @@ import com.gitgui.domain.redline.RedLineRule;
 import com.gitgui.domain.repository.AuditLogRepository;
 import com.gitgui.domain.service.CommandRedLineService;
 import com.gitgui.domain.service.SettingsService;
-import com.gitgui.core.util.JsonUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.google.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import com.google.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 命令红线服务实现（闭环核心）
@@ -30,17 +26,21 @@ public class CommandRedLineServiceImpl implements CommandRedLineService {
 
     private static final Logger log = LoggerFactory.getLogger(CommandRedLineServiceImpl.class);
 
-    /** 13 个红线规则集合（由 Guice Multibindings 收集） */
+    /**
+     * 13 个红线规则集合（由 Guice Multibindings 收集）
+     */
     private final Set<RedLineRule> rules;
-    /** 审计日志仓储 */
+    /**
+     * 审计日志仓储
+     */
     private final AuditLogRepository auditLogRepository;
-    /** 设置服务（用于读取红线开关与配置） */
+    /**
+     * 设置服务（用于读取红线开关与配置）
+     */
     private final SettingsService settingsService;
 
     @Inject
-    public CommandRedLineServiceImpl(Set<RedLineRule> rules,
-                                     AuditLogRepository auditLogRepository,
-                                     SettingsService settingsService) {
+    public CommandRedLineServiceImpl(Set<RedLineRule> rules, AuditLogRepository auditLogRepository, SettingsService settingsService) {
         this.rules = rules;
         this.auditLogRepository = auditLogRepository;
         this.settingsService = settingsService;

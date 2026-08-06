@@ -1,4 +1,4 @@
-# 移除 JGit 依赖、全面改用 Git CLI 方案分析报告
+﻿# 移除 JGit 依赖、全面改用 Git CLI 方案分析报告
 
 > **方案描述**：移除 `org.eclipse.jgit` 依赖，将所有 Git 操作从 JGit 纯 Java 实现全面切换为系统 `git` CLI 命令行调用。
 
@@ -53,7 +53,7 @@
 
 ### 1.1 当前架构：JGit 主适配器 + CLI 兜底
 
-```
+```plaintext
 ┌─────────────────────────────────────────────────────────────┐
 │                      现状架构                                │
 ├─────────────────────────────────────────────────────────────┤
@@ -119,7 +119,7 @@
 
 #### 问题 1：`force-with-lease` 推送 BUG（已知但未修复）
 
-```
+```plaintext
 文件：JGitOperationExecutor.java push() 方法
 问题：JGit 6.9.0 无法正确实现 force-with-lease，代码中直接降级为 --force
 ```
@@ -134,7 +134,7 @@
 
 #### 问题 2：`ClassCastException` 内部异常
 
-```
+```plaintext
 文件：CommitDialog.java / GitOperationServiceImpl.java
 问题：JGit 在某些环境（特定网络配置/HTTPS）下抛内部 ClassCastException
 ```
@@ -163,7 +163,7 @@ private boolean isJGitInternalBug(Throwable e) {
 
 #### 问题 3：子模块/LFS/Hook 支持不完整
 
-```
+```plaintext
 文件：CliGitExecutor.java（专门为这些场景而存在）
 原因：JGit 对 submodule update --recursive、git lfs install、
      git gc --prune=now 等操作支持不完整或不存在
@@ -255,7 +255,7 @@ CommitDialog 直接使用了 JGit，不经过 JGitOperationExecutor：
 
 ### 4.1 变更文件清单
 
-```
+```plaintext
 需要删除/重写的文件（5 个）：
 ├── ✕ infrastructure/jgit/JGitOperationExecutor.java   (~1328 行)
 ├── ✕ infrastructure/jgit/JGitRepository.java          (~40 行)
@@ -316,7 +316,7 @@ CommitDialog 直接使用了 JGit，不经过 JGitOperationExecutor：
 
 ### 5.1 核心设计原则
 
-```
+```plaintext
 1. 进程执行：始终使用 ProcessBuilder（不用 Runtime.exec()）
 2. 参数安全：使用 List<String> args（不用字符串拼接）
 3. 输出编码：统一使用 UTF-8（加上 -c core.quotepath=false）
@@ -755,7 +755,7 @@ Runtime.getRuntime().exec("git log --format=%H myfile; rm -rf /")
 
 ### 8.1 三阶段实施
 
-```
+```plaintext
 Phase 1: 基础设施（3-5 天）
 ├── 创建 GitOutputParser，覆盖 4 个核心解析方法
 │   ├── parseStatus() — git status --porcelain -z
@@ -791,7 +791,7 @@ Phase 3: 清理与验证（2-3 天）
 
 > **关键原则**：先扩展 CLI，后删除 JGit。两者并行运行一段时间，确认 CLI 稳定后再移除 JGit。
 
-```
+```plaintext
 第 1 步：扩展 CliGitExecutor，但保留 JGitOperationExecutor
 第 2 步：Service 层通过 Feature Toggle 切换调用目标
          if (useCli) cli.exec() else jgit.exec()
@@ -844,7 +844,7 @@ public List<FileStatus> getStatus(String repoPath) {
 
 ### 9.1 结论
 
-```
+```plaintext
 ┌──────────────────────────────────────────────────────────────┐
 │                                                              │
 │   ✅  推荐移除 JGit，全面改用 Git CLI                         │

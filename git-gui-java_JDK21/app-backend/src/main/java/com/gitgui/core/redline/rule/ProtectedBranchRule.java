@@ -16,6 +16,9 @@ import com.google.inject.Inject;
  */
 public class ProtectedBranchRule extends AbstractRedLineRule {
 
+    /**
+     * @param settingsService 设置服务
+     */
     @Inject
     public ProtectedBranchRule(SettingsService settingsService) {
         super(settingsService);
@@ -27,8 +30,7 @@ public class ProtectedBranchRule extends AbstractRedLineRule {
         if ((ctx.isForce() || ctx.isForceWithLease()) && ctx.getBranch() != null) {
             var protectedBranches = settingsService.getProtectedBranches();
             if (matchesProtected(ctx.getBranch(), protectedBranches)) {
-                return RedLineResult.block(RedLineCode.RED_PROTECTED_BRANCH,
-                        "禁止向保护分支 " + ctx.getBranch() + " 强制推送（篡改主干历史）");
+                return RedLineResult.block(RedLineCode.RED_PROTECTED_BRANCH, "禁止向保护分支 " + ctx.getBranch() + " 强制推送（篡改主干历史）");
             }
         }
         return RedLineResult.pass();

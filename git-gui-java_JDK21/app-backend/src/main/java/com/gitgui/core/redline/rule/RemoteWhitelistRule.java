@@ -21,6 +21,9 @@ import java.util.List;
  */
 public class RemoteWhitelistRule extends AbstractRedLineRule {
 
+    /**
+     * @param settingsService 设置服务
+     */
     @Inject
     public RemoteWhitelistRule(SettingsService settingsService) {
         super(settingsService);
@@ -29,7 +32,8 @@ public class RemoteWhitelistRule extends AbstractRedLineRule {
     @Override
     protected RedLineResult doCheck(RedLineContext ctx) {
         // 命中条件：Push 操作且远程 URL 不在白名单
-        if (ctx.getRemoteUrl() == null || ctx.getRemoteUrl().isBlank()) {
+        if (ctx.getRemoteUrl() == null || ctx.getRemoteUrl()
+                                             .isBlank()) {
             return RedLineResult.pass();
         }
         List<String> whitelist = settingsService.getRemoteWhitelist();
@@ -47,7 +51,7 @@ public class RemoteWhitelistRule extends AbstractRedLineRule {
             }
         }
         return RedLineResult.block(RedLineCode.RED_REMOTE_WHITELIST,
-                "禁止推送到非授权远程：" + ctx.getRemoteUrl() + "（不在白名单），请检查配置或改用授权远程");
+                                   "禁止推送到非授权远程：" + ctx.getRemoteUrl() + "（不在白名单），请检查配置或改用授权远程");
     }
 
     /**

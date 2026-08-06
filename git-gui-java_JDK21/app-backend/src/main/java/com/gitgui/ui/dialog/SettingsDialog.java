@@ -6,20 +6,27 @@ import com.gitgui.domain.model.SensitiveFileRule;
 import com.gitgui.domain.service.SettingsService;
 import com.gitgui.ui.AsyncUiLoader;
 import com.gitgui.ui.i18n.I18nUtil;
-import javafx.application.Platform;
-import javafx.geometry.Insets;
-import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 执行红线设置对话框
@@ -37,17 +44,29 @@ public class SettingsDialog extends Dialog<Void> {
 
     private final SettingsService settingsService;
 
-    /** 红线总开关 */
+    /**
+     * 红线总开关
+     */
     private final CheckBox redlineEnabledCheck = new CheckBox(I18nUtil.get("settings.redline.enabled"));
-    /** 保护分支清单 */
+    /**
+     * 保护分支清单
+     */
     private final TextArea protectedBranchesArea = new TextArea();
-    /** 远程白名单 */
+    /**
+     * 远程白名单
+     */
     private final TextArea remoteWhitelistArea = new TextArea();
-    /** 敏感文件规则 */
+    /**
+     * 敏感文件规则
+     */
     private final TextArea sensitiveFileRulesArea = new TextArea();
-    /** 超大文件阈值 */
+    /**
+     * 超大文件阈值
+     */
     private final TextField largeFileThresholdField = new TextField();
-    /** 已加载的敏感文件规则（保存时保留其 description，避免覆盖丢失） */
+    /**
+     * 已加载的敏感文件规则（保存时保留其 description，避免覆盖丢失）
+     */
     private List<SensitiveFileRule> loadedSensitiveRules = Collections.emptyList();
 
     /**
@@ -63,7 +82,8 @@ public class SettingsDialog extends Dialog<Void> {
 
         DialogPane pane = getDialogPane();
         pane.setContent(buildContent());
-        pane.getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
+        pane.getButtonTypes()
+            .addAll(ButtonType.CANCEL, ButtonType.OK);
 
         loadSettings();
 
@@ -116,7 +136,8 @@ public class SettingsDialog extends Dialog<Void> {
         grid.add(new Label(I18nUtil.get("settings.redline.largeFileThreshold")), 0, 4);
         grid.add(largeFileThresholdField, 1, 4);
 
-        vbox.getChildren().add(grid);
+        vbox.getChildren()
+            .add(grid);
         return vbox;
     }
 
@@ -141,9 +162,11 @@ public class SettingsDialog extends Dialog<Void> {
                     remoteWhitelistArea.setText(String.join("\n", remoteWhitelist));
                     StringBuilder sb = new StringBuilder();
                     for (SensitiveFileRule rule : loadedSensitiveRules) {
-                        sb.append(rule.getPattern()).append("\n");
+                        sb.append(rule.getPattern())
+                          .append("\n");
                     }
-                    sensitiveFileRulesArea.setText(sb.toString().trim());
+                    sensitiveFileRulesArea.setText(sb.toString()
+                                                     .trim());
                     largeFileThresholdField.setText(String.valueOf(largeFileThreshold));
                 });
             } catch (Exception e) {
@@ -170,7 +193,8 @@ public class SettingsDialog extends Dialog<Void> {
 
             // 敏感文件规则：保存为 JSON 数组到 red_line.sensitive_file_rules（BR-32）
             // 配置键名与 V1 SQL/SettingsServiceImpl 保持一致；保留已加载规则的 description
-            String sensitiveText = sensitiveFileRulesArea.getText().trim();
+            String sensitiveText = sensitiveFileRulesArea.getText()
+                                                         .trim();
             List<SensitiveFileRule> rulesToSave = new ArrayList<>();
             if (!sensitiveText.isEmpty()) {
                 // 以 pattern 为键建立已加载规则的索引，便于保留 description
@@ -184,7 +208,10 @@ public class SettingsDialog extends Dialog<Void> {
                     String pattern = line.trim();
                     if (!pattern.isEmpty()) {
                         String desc = existingDesc.getOrDefault(pattern, "");
-                        rulesToSave.add(SensitiveFileRule.builder().pattern(pattern).description(desc).build());
+                        rulesToSave.add(SensitiveFileRule.builder()
+                                                         .pattern(pattern)
+                                                         .description(desc)
+                                                         .build());
                     }
                 }
             }
@@ -193,7 +220,8 @@ public class SettingsDialog extends Dialog<Void> {
             // 超大文件阈值（键名与 V1 SQL 一致）
             int threshold;
             try {
-                threshold = Integer.parseInt(largeFileThresholdField.getText().trim());
+                threshold = Integer.parseInt(largeFileThresholdField.getText()
+                                                                    .trim());
             } catch (NumberFormatException e) {
                 threshold = 100;
             }

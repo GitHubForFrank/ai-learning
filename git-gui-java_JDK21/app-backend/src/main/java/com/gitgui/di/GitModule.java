@@ -1,9 +1,9 @@
 package com.gitgui.di;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Singleton;
 import com.gitgui.infrastructure.cli.CliGitExecutor;
 import com.gitgui.infrastructure.credential.SystemCredentialHelper;
+import com.google.inject.AbstractModule;
+import com.google.inject.Singleton;
 
 /**
  * Git Module

@@ -37,8 +37,10 @@ public final class PathUtil {
         if (rawPath == null || rawPath.isBlank()) {
             throw new InvalidPathException("", "仓库路径不能为空");
         }
-        Path normalized = Paths.get(rawPath).normalize();
-        if (rawPath.contains("..") && normalized.toString().contains("..")) {
+        Path normalized = Paths.get(rawPath)
+                               .normalize();
+        if (rawPath.contains("..") && normalized.toString()
+                                                .contains("..")) {
             throw new InvalidPathException(rawPath, "仓库路径不允许包含 .. 穿越");
         }
         if (!normalized.isAbsolute()) {
@@ -78,6 +80,9 @@ public final class PathUtil {
         if (rawPath == null || rawPath.isBlank()) {
             return "";
         }
-        return Paths.get(rawPath).normalize().toAbsolutePath().toString();
+        return Paths.get(rawPath)
+                    .normalize()
+                    .toAbsolutePath()
+                    .toString();
     }
 }

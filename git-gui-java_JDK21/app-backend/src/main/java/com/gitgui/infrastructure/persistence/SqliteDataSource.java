@@ -3,11 +3,6 @@ package com.gitgui.infrastructure.persistence;
 import com.gitgui.core.config.AppConfig;
 import com.gitgui.core.exception.ErrorCode;
 import com.gitgui.core.exception.GitGuiException;
-import org.flywaydb.core.Flyway;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,6 +11,10 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import javax.sql.DataSource;
+import org.flywaydb.core.Flyway;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * SQLite 数据源与 Flyway 迁移管理，同时实现 {@link javax.sql.DataSource} 供 MyBatis-Plus 使用。
@@ -29,7 +28,9 @@ public class SqliteDataSource implements DataSource {
 
     private static final Logger log = LoggerFactory.getLogger(SqliteDataSource.class);
 
-    /** SQLite JDBC 连接串 */
+    /**
+     * SQLite JDBC 连接串
+     */
     private final String jdbcUrl;
 
     /**
@@ -39,13 +40,13 @@ public class SqliteDataSource implements DataSource {
         String dbPath = AppConfig.dbPath();
         // 确保数据库目录存在
         try {
-            Path dbDir = Paths.get(dbPath).getParent();
+            Path dbDir = Paths.get(dbPath)
+                              .getParent();
             if (dbDir != null) {
                 Files.createDirectories(dbDir);
             }
         } catch (Exception e) {
-            throw new GitGuiException(ErrorCode.GIT_EXECUTION_FAILED,
-                    "无法创建数据库目录：" + dbPath, e);
+            throw new GitGuiException(ErrorCode.GIT_EXECUTION_FAILED, "无法创建数据库目录：" + dbPath, e);
         }
         this.jdbcUrl = "jdbc:sqlite:" + dbPath;
         // 启用 WAL 模式提升并发读
@@ -74,8 +75,7 @@ public class SqliteDataSource implements DataSource {
      * 初始化 SQLite PRAGMA（WAL 模式 + UTF-8 编码）。
      */
     private void initPragma() {
-        try (Connection conn = DriverManager.getConnection(jdbcUrl);
-             var stmt = conn.createStatement()) {
+        try (Connection conn = DriverManager.getConnection(jdbcUrl); var stmt = conn.createStatement()) {
             // 单写多读，提升并发读性能
             stmt.execute("PRAGMA journal_mode = WAL");
             // UTF-8 编码
@@ -90,10 +90,10 @@ public class SqliteDataSource implements DataSource {
      */
     private void migrate() {
         Flyway flyway = Flyway.configure()
-                .dataSource(jdbcUrl, "", null)
-                .locations("classpath:db/migration")
-                .baselineOnMigrate(true)
-                .load();
+                              .dataSource(jdbcUrl, "", null)
+                              .locations("classpath:db/migration")
+                              .baselineOnMigrate(true)
+                              .load();
         flyway.migrate();
         log.info("Flyway 迁移完成");
     }

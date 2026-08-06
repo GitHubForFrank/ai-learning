@@ -6,21 +6,40 @@ import com.gitgui.domain.model.LogEntry;
 import com.gitgui.domain.service.StatusService;
 import com.gitgui.ui.AsyncUiLoader;
 import com.gitgui.ui.i18n.I18nUtil;
-import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import javafx.stage.Modality;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.SplitPane;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.Tooltip;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 日志消息对话框（Log Messages）
@@ -58,31 +77,27 @@ public class LogMessagesDialog extends Dialog<LogEntry> {
 
     private static final Logger log = LoggerFactory.getLogger(LogMessagesDialog.class);
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-
+    /**
+     * 默认 commit 条数上限
+     */
+    private static final int DEFAULT_LIMIT = 500;
     private final StatusService statusService;
     private final String repoPath;
-
     // 顶部过滤
     private final DatePicker fromPicker = new DatePicker();
     private final DatePicker toPicker = new DatePicker();
     private final ComboBox<String> authorFilter = new ComboBox<>();
-
     // Commit 表格
     private final ObservableList<LogEntry> commitData = FXCollections.observableArrayList();
     private final TableView<LogEntry> commitTable = new TableView<>();
-
     // 详情
     private final Label shaLabel = new Label();
     private final TextArea messageArea = new TextArea();
     private final ListView<FileChange> fileListView = new ListView<>();
     private final ObservableList<FileChange> fileChangesData = FXCollections.observableArrayList();
-
     // 过滤缓存
     private String authorKeyword = "";
     private String messageKeyword = "";
-
-    /** 默认 commit 条数上限 */
-    private static final int DEFAULT_LIMIT = 500;
 
     public LogMessagesDialog(StatusService statusService, String repoPath) {
         this.statusService = statusService;
@@ -98,7 +113,8 @@ public class LogMessagesDialog extends Dialog<LogEntry> {
         ButtonType okType = new ButtonType(I18nUtil.get("button.ok"), ButtonBar.ButtonData.OK_DONE);
         ButtonType cancelType = new ButtonType(I18nUtil.get("button.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
         ButtonType helpType = new ButtonType(I18nUtil.get("button.help"), ButtonBar.ButtonData.HELP);
-        pane.getButtonTypes().addAll(okType, cancelType, helpType);
+        pane.getButtonTypes()
+            .addAll(okType, cancelType, helpType);
 
         Button okButton = (Button) pane.lookupButton(okType);
         if (okButton != null) {
@@ -129,6 +145,17 @@ public class LogMessagesDialog extends Dialog<LogEntry> {
     }
 
     /**
+     * 取 message 第一行（避免撑爆表格行）。
+     */
+    private static String firstLine(String message) {
+        if (message == null) {
+            return "";
+        }
+        int nl = message.indexOf('\n');
+        return nl >= 0 ? message.substring(0, nl) : message;
+    }
+
+    /**
      * 构建对话框主体。
      */
     private BorderPane buildContent() {
@@ -138,14 +165,9 @@ public class LogMessagesDialog extends Dialog<LogEntry> {
         // === 顶部过滤 ===
         HBox topBar = new HBox(6);
         topBar.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-        topBar.getChildren().addAll(
-                new Label(I18nUtil.get("log.from")),
-                fromPicker,
-                new Label(I18nUtil.get("log.to")),
-                toPicker,
-                buildNavigationBox(),
-                authorFilter
-        );
+        topBar.getChildren()
+              .addAll(new Label(I18nUtil.get("log.from")), fromPicker, new Label(I18nUtil.get("log.to")), toPicker, buildNavigationBox(),
+                      authorFilter);
         HBox.setHgrow(authorFilter, Priority.ALWAYS);
         root.setTop(topBar);
         BorderPane.setMargin(topBar, new Insets(0, 0, 6, 0));
@@ -154,7 +176,8 @@ public class LogMessagesDialog extends Dialog<LogEntry> {
         SplitPane split = new SplitPane();
         split.setOrientation(javafx.geometry.Orientation.VERTICAL);
         split.setDividerPositions(0.55);
-        split.getItems().addAll(buildCommitTable(), buildDetailPane());
+        split.getItems()
+             .addAll(buildCommitTable(), buildDetailPane());
         root.setCenter(split);
 
         // === 底部 ===
@@ -165,7 +188,8 @@ public class LogMessagesDialog extends Dialog<LogEntry> {
         refreshBtn.setOnAction(e -> loadCommits());
         Button statsBtn = new Button(I18nUtil.get("log.btn.statistics"));
         statsBtn.setOnAction(e -> showStatistics());
-        bottomBar.getChildren().addAll(refreshBtn, statsBtn);
+        bottomBar.getChildren()
+                 .addAll(refreshBtn, statsBtn);
         root.setBottom(bottomBar);
 
         return root;
@@ -224,24 +248,28 @@ public class LogMessagesDialog extends Dialog<LogEntry> {
 
         // Message 列
         TableColumn<LogEntry, String> colMsg = new TableColumn<>(I18nUtil.get("log.col.message"));
-        colMsg.setCellValueFactory(cd -> new javafx.beans.property.SimpleStringProperty(firstLine(cd.getValue().getMessage())));
+        colMsg.setCellValueFactory(cd -> new javafx.beans.property.SimpleStringProperty(firstLine(cd.getValue()
+                                                                                                    .getMessage())));
         colMsg.setPrefWidth(420);
 
         // Author 列
         TableColumn<LogEntry, String> colAuthor = new TableColumn<>(I18nUtil.get("log.col.author"));
-        colAuthor.setCellValueFactory(cd -> new javafx.beans.property.SimpleStringProperty(
-                cd.getValue().getAuthor() == null ? "" : cd.getValue().getAuthor()));
+        colAuthor.setCellValueFactory(cd -> new javafx.beans.property.SimpleStringProperty(cd.getValue()
+                                                                                             .getAuthor() == null ? "" : cd.getValue()
+                                                                                                                           .getAuthor()));
         colAuthor.setPrefWidth(120);
 
         // Date 列
         TableColumn<LogEntry, String> colDate = new TableColumn<>(I18nUtil.get("log.col.date"));
         colDate.setCellValueFactory(cd -> {
-            LocalDateTime t = cd.getValue().getCommitTime();
+            LocalDateTime t = cd.getValue()
+                                .getCommitTime();
             return new javafx.beans.property.SimpleStringProperty(t == null ? "" : t.format(DATE_FORMATTER));
         });
         colDate.setPrefWidth(90);
 
-        commitTable.getColumns().addAll(colGraph, colMsg, colAuthor, colDate);
+        commitTable.getColumns()
+                   .addAll(colGraph, colMsg, colAuthor, colDate);
         commitTable.setRowFactory(tv -> {
             TableRow<LogEntry> row = new TableRow<>();
             row.setOnMouseClicked(e -> {
@@ -257,8 +285,9 @@ public class LogMessagesDialog extends Dialog<LogEntry> {
         });
 
         // 监听选中变化（键盘上下键）
-        commitTable.getSelectionModel().selectedItemProperty().addListener(
-                (obs, o, n) -> updateDetailPanel(n));
+        commitTable.getSelectionModel()
+                   .selectedItemProperty()
+                   .addListener((obs, o, n) -> updateDetailPanel(n));
 
         return commitTable;
     }
@@ -276,15 +305,18 @@ public class LogMessagesDialog extends Dialog<LogEntry> {
         Label shaTitle = new Label(I18nUtil.get("log.sha"));
         shaTitle.setMinWidth(60);
         shaLabel.setStyle("-fx-font-family: 'Consolas', 'Courier New', monospace;");
-        shaRow.getChildren().addAll(shaTitle, shaLabel);
-        detail.getChildren().add(shaRow);
+        shaRow.getChildren()
+              .addAll(shaTitle, shaLabel);
+        detail.getChildren()
+              .add(shaRow);
 
         // message
         Label msgTitle = new Label(I18nUtil.get("log.message"));
         messageArea.setEditable(false);
         messageArea.setWrapText(true);
         messageArea.setPrefHeight(80);
-        detail.getChildren().addAll(msgTitle, messageArea);
+        detail.getChildren()
+              .addAll(msgTitle, messageArea);
 
         // 文件变更
         Label pathTitle = new Label(I18nUtil.get("log.path"));
@@ -302,7 +334,8 @@ public class LogMessagesDialog extends Dialog<LogEntry> {
             }
         });
         VBox.setVgrow(fileListView, Priority.ALWAYS);
-        detail.getChildren().addAll(pathTitle, fileListView);
+        detail.getChildren()
+              .addAll(pathTitle, fileListView);
 
         return detail;
     }
@@ -327,15 +360,15 @@ public class LogMessagesDialog extends Dialog<LogEntry> {
                     commitData.setAll(list);
                     commitTable.setPlaceholder(new Label(I18nUtil.get("log.empty")));
                     if (!list.isEmpty()) {
-                        commitTable.getSelectionModel().select(0);
+                        commitTable.getSelectionModel()
+                                   .select(0);
                     } else {
                         clearDetailPanel();
                     }
                 });
             } catch (Exception e) {
                 log.error("加载 commit 列表失败：{}", repoPath, e);
-                Platform.runLater(() -> commitTable.setPlaceholder(new Label(
-                        I18nUtil.get("log.loadFailed") + "：" + e.getMessage())));
+                Platform.runLater(() -> commitTable.setPlaceholder(new Label(I18nUtil.get("log.loadFailed") + "：" + e.getMessage())));
             }
         });
     }
@@ -378,7 +411,8 @@ public class LogMessagesDialog extends Dialog<LogEntry> {
      * 确认选择。
      */
     private void confirmSelection() {
-        LogEntry sel = commitTable.getSelectionModel().getSelectedItem();
+        LogEntry sel = commitTable.getSelectionModel()
+                                  .getSelectedItem();
         if (sel == null) {
             new Alert(Alert.AlertType.WARNING, I18nUtil.get("log.selectRequired")).showAndWait();
             return;
@@ -390,7 +424,8 @@ public class LogMessagesDialog extends Dialog<LogEntry> {
      * 获取当前选中的 commit。
      */
     private LogEntry getSelectedCommit() {
-        return commitTable.getSelectionModel().getSelectedItem();
+        return commitTable.getSelectionModel()
+                          .getSelectedItem();
     }
 
     /**
@@ -425,11 +460,15 @@ public class LogMessagesDialog extends Dialog<LogEntry> {
      * </ul>
      */
     private String renderGraph(LogEntry entry) {
-        if (entry == null) return "";
-        if (entry.getParents() == null || entry.getParents().isEmpty()) {
+        if (entry == null) {
+            return "";
+        }
+        if (entry.getParents() == null || entry.getParents()
+                                               .isEmpty()) {
             return "★";
         }
-        if (entry.getParents().size() > 1) {
+        if (entry.getParents()
+                 .size() > 1) {
             return "M";
         }
         return "●";
@@ -439,23 +478,22 @@ public class LogMessagesDialog extends Dialog<LogEntry> {
      * 文件变更类型 → 显示前缀字符。
      */
     private String changeTypePrefix(String changeType) {
-        if (changeType == null) return "?";
-        switch (changeType) {
-            case "ADD":    return "[+]";
-            case "DELETE": return "[-]";
-            case "MODIFY": return "[M]";
-            case "RENAME": return "[→]";
-            case "COPY":   return "[C]";
-            default: return "[?]";
+        if (changeType == null) {
+            return "?";
         }
-    }
-
-    /**
-     * 取 message 第一行（避免撑爆表格行）。
-     */
-    private static String firstLine(String message) {
-        if (message == null) return "";
-        int nl = message.indexOf('\n');
-        return nl >= 0 ? message.substring(0, nl) : message;
+        switch (changeType) {
+            case "ADD":
+                return "[+]";
+            case "DELETE":
+                return "[-]";
+            case "MODIFY":
+                return "[M]";
+            case "RENAME":
+                return "[→]";
+            case "COPY":
+                return "[C]";
+            default:
+                return "[?]";
+        }
     }
 }

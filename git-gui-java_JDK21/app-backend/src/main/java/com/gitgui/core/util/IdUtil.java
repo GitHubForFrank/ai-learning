@@ -21,6 +21,8 @@ public final class IdUtil {
      * @return 32 位 UUID 字符串
      */
     public static String newId() {
-        return UUID.randomUUID().toString().replace("-", "");
+        return UUID.randomUUID()
+                   .toString()
+                   .replace("-", "");
     }
 }

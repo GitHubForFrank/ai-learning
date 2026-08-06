@@ -16,6 +16,9 @@ import com.google.inject.Inject;
  */
 public class ForcePushRule extends AbstractRedLineRule {
 
+    /**
+     * @param settingsService 设置服务
+     */
     @Inject
     public ForcePushRule(SettingsService settingsService) {
         super(settingsService);
@@ -26,7 +29,7 @@ public class ForcePushRule extends AbstractRedLineRule {
         // 命中条件：推送操作且使用裸 --force（非 force-with-lease）
         if (ctx.isForce() && !ctx.isForceWithLease()) {
             return RedLineResult.block(RedLineCode.RED_FORCE_PUSH,
-                    "禁止使用裸 --force 推送（覆盖远程历史），请改用 --force-with-lease（安全检查的强制推送）");
+                                       "禁止使用裸 --force 推送（覆盖远程历史），请改用 --force-with-lease（安全检查的强制推送）");
         }
         return RedLineResult.pass();
     }

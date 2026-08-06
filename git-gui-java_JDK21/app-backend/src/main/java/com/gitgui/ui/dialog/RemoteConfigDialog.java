@@ -6,19 +6,35 @@ import com.gitgui.domain.model.RemoteConfig;
 import com.gitgui.domain.service.RemoteConfigService;
 import com.gitgui.ui.AsyncUiLoader;
 import com.gitgui.ui.i18n.I18nUtil;
+import java.util.List;
+import java.util.Optional;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.SplitPane;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.Optional;
 
 /**
  * 远程配置对话框（Remote）
@@ -63,29 +79,43 @@ public class RemoteConfigDialog extends Dialog<Void> {
     private final RemoteConfigService remoteConfigService;
     private final String repoPath;
 
-    /** Remote 列表数据源 */
+    /**
+     * Remote 列表数据源
+     */
     private final ObservableList<RemoteConfig> remotes = FXCollections.observableArrayList();
-    /** Remote 列表视图 */
+    /**
+     * Remote 列表视图
+     */
     private final ListView<RemoteConfig> remoteList = new ListView<>();
-
-    /** 防止保存重复触发的并发控制标志 */
-    private volatile boolean savingInProgress = false;
-    /** 当前选中 Remote 的详细信息（编辑区） */
+    /**
+     * 当前选中 Remote 的详细信息（编辑区）
+     */
     private final TextField nameField = new TextField();
     private final TextField urlField = new TextField();
     private final TextField pushUrlField = new TextField();
-    /** push URL 行标签，用于切换可见性 */
-    private Label pushUrlLabel = new Label();
-    /** 当前 push URL 是否可见 */
-    private boolean pushUrlVisible = false;
-    /** 切换 push URL 显示/隐藏的按钮 */
-    private Button togglePushBtn;
     private final TextField puttyKeyField = new TextField();
     private final ComboBox<String> tagsCombo = new ComboBox<>();
     private final CheckBox pushDefaultCheck = new CheckBox();
     private final CheckBox pruneCheck = new CheckBox();
-
-    /** 标记当前是否在「新建」模式（未持久化的临时 Remote） */
+    /**
+     * 防止保存重复触发的并发控制标志
+     */
+    private volatile boolean savingInProgress = false;
+    /**
+     * push URL 行标签，用于切换可见性
+     */
+    private Label pushUrlLabel = new Label();
+    /**
+     * 当前 push URL 是否可见
+     */
+    private boolean pushUrlVisible = false;
+    /**
+     * 切换 push URL 显示/隐藏的按钮
+     */
+    private Button togglePushBtn;
+    /**
+     * 标记当前是否在「新建」模式（未持久化的临时 Remote）
+     */
     private boolean creatingNew = false;
 
     public RemoteConfigDialog(RemoteConfigService remoteConfigService, String repoPath) {
@@ -101,7 +131,8 @@ public class RemoteConfigDialog extends Dialog<Void> {
 
         ButtonType okType = new ButtonType(I18nUtil.get("button.ok"), ButtonBar.ButtonData.OK_DONE);
         ButtonType cancelType = new ButtonType(I18nUtil.get("button.cancel"), ButtonBar.ButtonData.CANCEL_CLOSE);
-        pane.getButtonTypes().addAll(okType, cancelType);
+        pane.getButtonTypes()
+            .addAll(okType, cancelType);
 
         Button okButton = (Button) pane.lookupButton(okType);
         if (okButton != null) {
@@ -114,8 +145,9 @@ public class RemoteConfigDialog extends Dialog<Void> {
         setResultConverter(buttonType -> null);
 
         // 列表选中变化 → 右侧详情
-        remoteList.getSelectionModel().selectedItemProperty().addListener(
-                (obs, oldVal, newVal) -> fillDetails(newVal));
+        remoteList.getSelectionModel()
+                  .selectedItemProperty()
+                  .addListener((obs, oldVal, newVal) -> fillDetails(newVal));
 
         // 异步加载 remotes
         loadRemotes();
@@ -139,13 +171,16 @@ public class RemoteConfigDialog extends Dialog<Void> {
         remoteList.setItems(remotes);
         remoteList.setPlaceholder(new Label(I18nUtil.get("remote.empty")));
         VBox.setVgrow(remoteList, Priority.ALWAYS);
-        leftBox.getChildren().addAll(leftTitle, remoteList);
+        leftBox.getChildren()
+               .addAll(leftTitle, remoteList);
         leftBox.setPadding(new Insets(0, 6, 0, 0));
-        split.getItems().add(leftBox);
+        split.getItems()
+             .add(leftBox);
 
         // 右侧：详情编辑区
         GridPane rightGrid = buildDetailGrid();
-        split.getItems().add(rightGrid);
+        split.getItems()
+             .add(rightGrid);
 
         // === 底部：按钮区 ===
         HBox bottomBar = new HBox(10);
@@ -164,7 +199,8 @@ public class RemoteConfigDialog extends Dialog<Void> {
 
         HBox leftButtons = new HBox(6, addNewBtn, saveBtn, removeBtn, renameBtn);
         HBox.setHgrow(leftButtons, Priority.ALWAYS);
-        bottomBar.getChildren().add(leftButtons);
+        bottomBar.getChildren()
+                 .add(leftButtons);
 
         root.setBottom(bottomBar);
 
@@ -185,14 +221,16 @@ public class RemoteConfigDialog extends Dialog<Void> {
         col1.setHalignment(HPos.RIGHT);
         ColumnConstraints col2 = new ColumnConstraints();
         col2.setPercentWidth(78);
-        grid.getColumnConstraints().addAll(col1, col2);
+        grid.getColumnConstraints()
+            .addAll(col1, col2);
 
         int row = 0;
 
         // Remote 名称 + Rename 按钮（同行）
         HBox nameRow = new HBox(6, nameField, new Button(I18nUtil.get("remote.btn.renameInline")));
         HBox.setHgrow(nameField, Priority.ALWAYS);
-        Button renameInline = (Button) nameRow.getChildren().get(1);
+        Button renameInline = (Button) nameRow.getChildren()
+                                              .get(1);
         renameInline.setOnAction(e -> onRename());
         grid.add(new Label(I18nUtil.get("remote.label.name")), 0, row);
         grid.add(nameRow, 1, row++);
@@ -214,7 +252,8 @@ public class RemoteConfigDialog extends Dialog<Void> {
         grid.add(pushUrlField, 1, row++);
         // 切换按钮：Show / Hide Push URL
         togglePushBtn = new Button(I18nUtil.get("remote.btn.showPush"));
-        togglePushBtn.getStyleClass().add("remote-toggle-btn");
+        togglePushBtn.getStyleClass()
+                     .add("remote-toggle-btn");
         togglePushBtn.setOnAction(e -> showPushUrlRow(!pushUrlVisible));
         grid.add(togglePushBtn, 1, row++);
 
@@ -226,7 +265,8 @@ public class RemoteConfigDialog extends Dialog<Void> {
         grid.add(puttyRow, 1, row++);
 
         // Tags: Reachable / All / None
-        tagsCombo.getItems().addAll("Reachable", "All", "None");
+        tagsCombo.getItems()
+                 .addAll("Reachable", "All", "None");
         tagsCombo.setValue("Reachable");
         HBox tagsRow = new HBox(6, tagsCombo, pushDefaultCheck);
         HBox.setHgrow(tagsCombo, Priority.ALWAYS);
@@ -253,7 +293,8 @@ public class RemoteConfigDialog extends Dialog<Void> {
                 Platform.runLater(() -> {
                     remotes.setAll(list);
                     if (!list.isEmpty()) {
-                        remoteList.getSelectionModel().select(0);
+                        remoteList.getSelectionModel()
+                                  .select(0);
                     } else {
                         // 没有 Remote，自动进入新建模式
                         onAddNew();
@@ -262,8 +303,7 @@ public class RemoteConfigDialog extends Dialog<Void> {
             } catch (Exception e) {
                 log.error("加载 Remote 列表失败：{}", repoPath, e);
                 Platform.runLater(() -> {
-                    Alert alert = new Alert(Alert.AlertType.ERROR,
-                            I18nUtil.get("remote.loadFailed") + "：" + e.getMessage());
+                    Alert alert = new Alert(Alert.AlertType.ERROR, I18nUtil.get("remote.loadFailed") + "：" + e.getMessage());
                     alert.showAndWait();
                 });
             }
@@ -318,7 +358,8 @@ public class RemoteConfigDialog extends Dialog<Void> {
         showPushUrlRow(false);
         pushUrlField.clear();
         nameField.requestFocus();
-        remoteList.getSelectionModel().clearSelection();
+        remoteList.getSelectionModel()
+                  .clearSelection();
     }
 
     /**
@@ -336,9 +377,7 @@ public class RemoteConfigDialog extends Dialog<Void> {
             pushUrlField.clear();
         }
         if (togglePushBtn != null) {
-            togglePushBtn.setText(visible
-                    ? I18nUtil.get("remote.btn.hidePush")
-                    : I18nUtil.get("remote.btn.showPush"));
+            togglePushBtn.setText(visible ? I18nUtil.get("remote.btn.hidePush") : I18nUtil.get("remote.btn.showPush"));
         }
     }
 
@@ -353,9 +392,12 @@ public class RemoteConfigDialog extends Dialog<Void> {
         if (savingInProgress) {
             return;
         }
-        String name = nameField.getText() == null ? "" : nameField.getText().trim();
-        String url = urlField.getText() == null ? "" : urlField.getText().trim();
-        String pushUrl = pushUrlField.getText() == null ? "" : pushUrlField.getText().trim();
+        String name = nameField.getText() == null ? "" : nameField.getText()
+                                                                  .trim();
+        String url = urlField.getText() == null ? "" : urlField.getText()
+                                                               .trim();
+        String pushUrl = pushUrlField.getText() == null ? "" : pushUrlField.getText()
+                                                                           .trim();
 
         if (name.isEmpty()) {
             warn(I18nUtil.get("remote.error.nameRequired"));
@@ -386,7 +428,8 @@ public class RemoteConfigDialog extends Dialog<Void> {
                     }
                 } else {
                     // 更新 fetch URL
-                    RemoteConfig selected = remoteList.getSelectionModel().getSelectedItem();
+                    RemoteConfig selected = remoteList.getSelectionModel()
+                                                      .getSelectedItem();
                     String oldName = selected != null ? selected.getName() : fName;
                     if (!oldName.equals(fName)) {
                         // 名称变化：先 rename 再 set-url
@@ -448,12 +491,9 @@ public class RemoteConfigDialog extends Dialog<Void> {
      */
     private void setPushUrl(String repoPath, String name, String pushUrl) {
         try {
-            com.gitgui.infrastructure.cli.GitProcessBuilder.execute(repoPath,
-                    java.util.List.of("remote", "set-url", "--push", name, pushUrl),
-                    null);
+            com.gitgui.infrastructure.cli.GitProcessBuilder.execute(repoPath, java.util.List.of("remote", "set-url", "--push", name, pushUrl), null);
         } catch (Exception e) {
-            throw new GitGuiException(com.gitgui.core.exception.ErrorCode.GIT_EXECUTION_FAILED,
-                    "设置 push URL 失败：" + e.getMessage(), e);
+            throw new GitGuiException(com.gitgui.core.exception.ErrorCode.GIT_EXECUTION_FAILED, "设置 push URL 失败：" + e.getMessage(), e);
         }
     }
 
@@ -466,8 +506,7 @@ public class RemoteConfigDialog extends Dialog<Void> {
         try {
             // 先检查是否存在，避免 unset 不存在时报错
             com.gitgui.infrastructure.cli.GitProcessBuilder.execute(repoPath,
-                    java.util.List.of("config", "--unset-all", "remote." + name + ".pushurl"),
-                    null);
+                                                                    java.util.List.of("config", "--unset-all", "remote." + name + ".pushurl"), null);
         } catch (Exception e) {
             // unset 失败不是致命错误（可能本来就不存在），仅记录日志
             log.warn("删除 push URL 配置失败（非致命）：name={}, repo={}", name, repoPath, e);
@@ -478,7 +517,8 @@ public class RemoteConfigDialog extends Dialog<Void> {
      * 删除当前 Remote。
      */
     private void onRemove() {
-        RemoteConfig selected = remoteList.getSelectionModel().getSelectedItem();
+        RemoteConfig selected = remoteList.getSelectionModel()
+                                          .getSelectedItem();
         if (selected == null) {
             warn(I18nUtil.get("remote.error.selectFirst"));
             return;
@@ -501,7 +541,8 @@ public class RemoteConfigDialog extends Dialog<Void> {
      * 重命名当前 Remote。
      */
     private void onRename() {
-        RemoteConfig selected = remoteList.getSelectionModel().getSelectedItem();
+        RemoteConfig selected = remoteList.getSelectionModel()
+                                          .getSelectedItem();
         if (selected == null) {
             warn(I18nUtil.get("remote.error.selectFirst"));
             return;
@@ -511,11 +552,16 @@ public class RemoteConfigDialog extends Dialog<Void> {
         dialog.setHeaderText(I18nUtil.get("remote.rename.header"));
         dialog.setContentText(I18nUtil.get("remote.rename.prompt"));
         Optional<String> result = dialog.showAndWait();
-        if (result.isEmpty() || result.get().trim().isEmpty() || result.get().trim().equals(selected.getName())) {
+        if (result.isEmpty() || result.get()
+                                      .trim()
+                                      .isEmpty() || result.get()
+                                                          .trim()
+                                                          .equals(selected.getName())) {
             return;
         }
         String oldName = selected.getName();
-        String newName = result.get().trim();
+        String newName = result.get()
+                               .trim();
         AsyncUiLoader.submitRead(repoPath, TaskType.STATUS, () -> {
             try {
                 remoteConfigService.rename(repoPath, oldName, newName);

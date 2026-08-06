@@ -14,35 +14,57 @@ import lombok.Data;
 @Builder
 public class FileStatus {
 
-    /** 文件相对仓库路径 */
+    /**
+     * 文件相对仓库路径
+     */
     private String path;
 
-    /** 文件状态 */
+    /**
+     * 文件状态
+     */
     private FileState state;
 
-    /** 新增行数（diff 统计） */
+    /**
+     * 新增行数（diff 统计）
+     */
     private int addedLines;
 
-    /** 删除行数（diff 统计） */
+    /**
+     * 删除行数（diff 统计）
+     */
     private int deletedLines;
 
     /**
      * 文件 Git 状态枚举。
      */
     public enum FileState {
-        /** 已修改（未暂存） */
+        /**
+         * 已修改（未暂存）
+         */
         MODIFIED,
-        /** 已新增（未跟踪） */
+        /**
+         * 已新增（未跟踪）
+         */
         UNTRACKED,
-        /** 已删除 */
+        /**
+         * 已删除
+         */
         DELETED,
-        /** 已暂存 */
+        /**
+         * 已暂存
+         */
         STAGED,
-        /** 冲突 */
+        /**
+         * 冲突
+         */
         CONFLICT,
-        /** 已忽略 */
+        /**
+         * 已忽略
+         */
         IGNORED,
-        /** 未修改 */
+        /**
+         * 未修改
+         */
         UNMODIFIED
     }
 }

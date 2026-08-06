@@ -5,14 +5,13 @@ import com.gitgui.domain.model.FileStatus;
 import com.gitgui.domain.model.LogEntry;
 import com.gitgui.domain.model.RefInfo;
 import com.gitgui.domain.model.RemoteConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Git CLI 输出解析器
@@ -71,7 +70,7 @@ public class GitOutputParser {
             String xy = entry.substring(0, 2);
             int spaceIdx = entry.indexOf(' ', 2);
             String path = spaceIdx >= 0 ? entry.substring(spaceIdx + 1) : entry.substring(2);
-            
+
             // 处理重命名：下一个 entry 是新路径
             if ((xy.startsWith("R") || xy.startsWith("C")) && i + 1 < entries.length) {
                 String newPath = entries[i + 1];
@@ -90,9 +89,9 @@ public class GitOutputParser {
             FileStatus.FileState state = porcelainToFileState(xy);
             if (state != null) {
                 result.add(FileStatus.builder()
-                        .path(trimmedPath)
-                        .state(state)
-                        .build());
+                                     .path(trimmedPath)
+                                     .state(state)
+                                     .build());
             }
             i++;
         }
@@ -110,9 +109,13 @@ public class GitOutputParser {
         List<LogEntry> result = new ArrayList<>();
         String[] lines = output.split("\n");
         for (String line : lines) {
-            if (line.isBlank()) continue;
+            if (line.isBlank()) {
+                continue;
+            }
             String[] fields = line.split("\0", -1);
-            if (fields.length < 7) continue;
+            if (fields.length < 7) {
+                continue;
+            }
 
             String commitId = fields[0];
             String shortId = fields[1];
@@ -125,19 +128,18 @@ public class GitOutputParser {
 
             LocalDateTime commitTime = parseIsoDateTime(commitTimeStr);
             String fullMessage = body.isEmpty() ? message : message + "\n" + body;
-            List<String> parents = parentStr.isEmpty() ? List.of()
-                    : List.of(parentStr.split(" "));
+            List<String> parents = parentStr.isEmpty() ? List.of() : List.of(parentStr.split(" "));
 
             result.add(LogEntry.builder()
-                    .commitId(commitId)
-                    .shortId(shortId)
-                    .author(author)
-                    .authorEmail(authorEmail)
-                    .commitTime(commitTime)
-                    .message(fullMessage)
-                    .refs(List.of())
-                    .parents(parents)
-                    .build());
+                               .commitId(commitId)
+                               .shortId(shortId)
+                               .author(author)
+                               .authorEmail(authorEmail)
+                               .commitTime(commitTime)
+                               .message(fullMessage)
+                               .refs(List.of())
+                               .parents(parents)
+                               .build());
         }
         return result;
     }
@@ -165,14 +167,17 @@ public class GitOutputParser {
         String[] lines = output.split("\n");
         for (String line : lines) {
             line = line.trim();
-            if (line.isEmpty()) continue;
+            if (line.isEmpty()) {
+                continue;
+            }
             // 格式：name\turl (fetch) 或 name\turl (push)
             String[] parts = line.split("\t");
             if (parts.length >= 2) {
                 String name = parts[0].trim();
                 String urlAndType = parts[1].trim();
                 boolean isPush = urlAndType.contains("(push)");
-                String url = urlAndType.replaceAll("\\s*\\((fetch|push)\\)\\s*", "").trim();
+                String url = urlAndType.replaceAll("\\s*\\((fetch|push)\\)\\s*", "")
+                                       .trim();
                 if (isPush) {
                     pushUrls.put(name, url);
                 } else {
@@ -183,19 +188,19 @@ public class GitOutputParser {
 
         for (String name : fetchUrls.keySet()) {
             result.add(RemoteConfig.builder()
-                    .name(name)
-                    .fetchUrl(fetchUrls.get(name))
-                    .pushUrl(pushUrls.getOrDefault(name, fetchUrls.get(name)))
-                    .build());
+                                   .name(name)
+                                   .fetchUrl(fetchUrls.get(name))
+                                   .pushUrl(pushUrls.getOrDefault(name, fetchUrls.get(name)))
+                                   .build());
         }
         // 处理只有 push 没有 fetch 的 remote
         for (String name : pushUrls.keySet()) {
             if (!fetchUrls.containsKey(name)) {
                 result.add(RemoteConfig.builder()
-                        .name(name)
-                        .fetchUrl(pushUrls.get(name))
-                        .pushUrl(pushUrls.get(name))
-                        .build());
+                                       .name(name)
+                                       .fetchUrl(pushUrls.get(name))
+                                       .pushUrl(pushUrls.get(name))
+                                       .build());
             }
         }
         return result;
@@ -211,9 +216,13 @@ public class GitOutputParser {
         List<RefInfo> result = new ArrayList<>();
         String[] lines = output.split("\n");
         for (String line : lines) {
-            if (line.isBlank()) continue;
+            if (line.isBlank()) {
+                continue;
+            }
             String[] fields = line.split("\t", -1);
-            if (fields.length < 4) continue;
+            if (fields.length < 4) {
+                continue;
+            }
 
             String refName = fields[0];
             String sha = fields[1];
@@ -225,20 +234,19 @@ public class GitOutputParser {
             String remoteName = refKind.equals("REMOTE") ? extractRemoteName(refName) : "";
 
             result.add(RefInfo.builder()
-                    .refName(refName)
-                    .displayName(displayName)
-                    .kind(refKind)
-                    .remoteName(remoteName)
-                    .sha(sha)
-                    .commitDate(commitDate)
-                    .author("")
-                    .message(subject)
-                    .build());
+                              .refName(refName)
+                              .displayName(displayName)
+                              .kind(refKind)
+                              .remoteName(remoteName)
+                              .sha(sha)
+                              .commitDate(commitDate)
+                              .author("")
+                              .message(subject)
+                              .build());
         }
         // 排序：本地分支 → 远程分支 → tag
-        result.sort(java.util.Comparator
-                .comparingInt((RefInfo r) -> kindOrder(r.getKind()))
-                .thenComparing(RefInfo::getDisplayName, String.CASE_INSENSITIVE_ORDER));
+        result.sort(java.util.Comparator.comparingInt((RefInfo r) -> kindOrder(r.getKind()))
+                                        .thenComparing(RefInfo::getDisplayName, String.CASE_INSENSITIVE_ORDER));
         return result;
     }
 
@@ -254,9 +262,13 @@ public class GitOutputParser {
         String[] lines = output.split("\n");
         for (String line : lines) {
             line = line.trim();
-            if (line.isEmpty()) continue;
+            if (line.isEmpty()) {
+                continue;
+            }
             String[] parts = line.split("\t");
-            if (parts.length < 2) continue;
+            if (parts.length < 2) {
+                continue;
+            }
 
             String typeCode = parts[0];
             String changeType;
@@ -275,15 +287,24 @@ public class GitOutputParser {
             } else {
                 newPath = parts[1];
                 switch (typeCode) {
-                    case "A": changeType = "ADD"; break;
-                    case "M": changeType = "MODIFY"; break;
-                    case "D": changeType = "DELETE"; break;
-                    default: changeType = typeCode;
+                    case "A":
+                        changeType = "ADD";
+                        break;
+                    case "M":
+                        changeType = "MODIFY";
+                        break;
+                    case "D":
+                        changeType = "DELETE";
+                        break;
+                    default:
+                        changeType = typeCode;
                 }
             }
 
             String path = newPath == null ? oldPath : newPath;
-            if (path == null) continue;
+            if (path == null) {
+                continue;
+            }
             result.add(new FileChange(path, changeType, oldPath, newPath));
         }
         return result;
@@ -304,7 +325,8 @@ public class GitOutputParser {
                 if (endBracket > 1) {
                     int space = line.lastIndexOf(' ', endBracket);
                     if (space > 0) {
-                        return line.substring(space + 1, endBracket).trim();
+                        return line.substring(space + 1, endBracket)
+                                   .trim();
                     }
                 }
             }
@@ -316,15 +338,15 @@ public class GitOutputParser {
     // ========== 辅助方法 ==========
 
     private FileStatus.FileState porcelainToFileState(String xy) {
-        if (xy == null || xy.length() < 2) return null;
+        if (xy == null || xy.length() < 2) {
+            return null;
+        }
         char x = xy.charAt(0);
         char y = xy.charAt(1);
 
         // 未合并/冲突状态
-        if ((x == 'D' && y == 'D') || (x == 'A' && y == 'A')
-                || (x == 'U' && y == 'U') || (x == 'A' && y == 'U')
-                || (x == 'U' && y == 'A') || (x == 'D' && y == 'U')
-                || (x == 'U' && y == 'D')) {
+        if ((x == 'D' && y == 'D') || (x == 'A' && y == 'A') || (x == 'U' && y == 'U') || (x == 'A' && y == 'U') || (x == 'U' && y == 'A') || (
+                x == 'D' && y == 'U') || (x == 'U' && y == 'D')) {
             return FileStatus.FileState.CONFLICT;
         }
 
@@ -352,7 +374,9 @@ public class GitOutputParser {
     }
 
     private LocalDateTime parseIsoDateTime(String isoStr) {
-        if (isoStr == null || isoStr.isBlank()) return null;
+        if (isoStr == null || isoStr.isBlank()) {
+            return null;
+        }
         try {
             // ISO 8601: 2024-01-15T10:30:00+08:00 或 2024-01-15T10:30:00Z
             return LocalDateTime.ofInstant(Instant.parse(isoStr), ZoneId.systemDefault());
@@ -363,36 +387,58 @@ public class GitOutputParser {
     }
 
     private String stripRefsPrefix(String ref) {
-        if (ref == null) return "";
-        if (ref.startsWith("refs/heads/")) return ref.substring("refs/heads/".length());
+        if (ref == null) {
+            return "";
+        }
+        if (ref.startsWith("refs/heads/")) {
+            return ref.substring("refs/heads/".length());
+        }
         if (ref.startsWith("refs/remotes/")) {
             String rest = ref.substring("refs/remotes/".length());
             int slash = rest.indexOf('/');
             return slash > 0 ? rest.substring(slash + 1) : rest;
         }
-        if (ref.startsWith("refs/tags/")) return ref.substring("refs/tags/".length());
+        if (ref.startsWith("refs/tags/")) {
+            return ref.substring("refs/tags/".length());
+        }
         return ref;
     }
 
     private String classifyRefKind(String refName) {
-        if (refName == null) return "OTHER";
-        if (refName.startsWith("refs/heads/")) return "BRANCH";
-        if (refName.startsWith("refs/remotes/")) return "REMOTE";
-        if (refName.startsWith("refs/tags/")) return "TAG";
+        if (refName == null) {
+            return "OTHER";
+        }
+        if (refName.startsWith("refs/heads/")) {
+            return "BRANCH";
+        }
+        if (refName.startsWith("refs/remotes/")) {
+            return "REMOTE";
+        }
+        if (refName.startsWith("refs/tags/")) {
+            return "TAG";
+        }
         return "OTHER";
     }
 
     private String extractRemoteName(String refName) {
-        if (refName == null || !refName.startsWith("refs/remotes/")) return "";
+        if (refName == null || !refName.startsWith("refs/remotes/")) {
+            return "";
+        }
         String rest = refName.substring("refs/remotes/".length());
         int slash = rest.indexOf('/');
         return slash > 0 ? rest.substring(0, slash) : rest;
     }
 
     private int kindOrder(String kind) {
-        if ("BRANCH".equals(kind)) return 0;
-        if ("REMOTE".equals(kind)) return 1;
-        if ("TAG".equals(kind)) return 2;
+        if ("BRANCH".equals(kind)) {
+            return 0;
+        }
+        if ("REMOTE".equals(kind)) {
+            return 1;
+        }
+        if ("TAG".equals(kind)) {
+            return 2;
+        }
         return 3;
     }
 }

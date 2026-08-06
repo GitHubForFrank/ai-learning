@@ -16,9 +16,10 @@ public final class JsonUtil {
 
     private static final Logger log = LoggerFactory.getLogger(JsonUtil.class);
 
-    /** 单例 ObjectMapper（线程安全） */
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+    /**
+     * 单例 ObjectMapper（线程安全）
+     */
+    private static final ObjectMapper MAPPER = new ObjectMapper().disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
     private JsonUtil() {
         // 工具类禁止实例化
@@ -46,7 +47,8 @@ public final class JsonUtil {
         try {
             return MAPPER.writeValueAsString(obj);
         } catch (Exception e) {
-            log.warn("JSON 序列化失败：{}", obj.getClass().getName(), e);
+            log.warn("JSON 序列化失败：{}", obj.getClass()
+                                              .getName(), e);
             return "";
         }
     }
@@ -54,9 +56,9 @@ public final class JsonUtil {
     /**
      * 反序列化 JSON 字符串为指定类型。
      *
-     * @param json   JSON 字符串
-     * @param clazz  目标类型
-     * @param <T>    泛型
+     * @param json  JSON 字符串
+     * @param clazz 目标类型
+     * @param <T>   泛型
      * @return 反序列化对象；失败返回 null
      */
     public static <T> T fromJson(String json, Class<T> clazz) {

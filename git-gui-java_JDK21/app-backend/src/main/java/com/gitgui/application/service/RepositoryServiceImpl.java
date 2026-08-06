@@ -10,17 +10,16 @@ import com.gitgui.domain.model.RepositoryMeta;
 import com.gitgui.domain.model.request.CloneRequest;
 import com.gitgui.domain.repository.RepositoryMetaRepository;
 import com.gitgui.domain.service.AsyncTaskService;
-import com.gitgui.domain.service.RepositoryService;
 import com.gitgui.domain.service.RecentRepoService;
+import com.gitgui.domain.service.RepositoryService;
 import com.gitgui.infrastructure.cli.CliGitExecutor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.google.inject.Inject;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import com.google.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 仓库服务实现
@@ -41,10 +40,8 @@ public class RepositoryServiceImpl implements RepositoryService {
     private final List<RepositoryMeta> scanResults = new CopyOnWriteArrayList<>();
 
     @Inject
-    public RepositoryServiceImpl(CliGitExecutor gitExecutor,
-                                 RepositoryMetaRepository metaRepository,
-                                 AsyncTaskService asyncTaskService,
-                                 RecentRepoService recentRepoService) {
+    public RepositoryServiceImpl(CliGitExecutor gitExecutor, RepositoryMetaRepository metaRepository, AsyncTaskService asyncTaskService,
+            RecentRepoService recentRepoService) {
         this.gitExecutor = gitExecutor;
         this.metaRepository = metaRepository;
         this.asyncTaskService = asyncTaskService;
@@ -66,10 +63,12 @@ public class RepositoryServiceImpl implements RepositoryService {
 
     @Override
     public TaskHandle clone(CloneRequest req, ProgressCallback cb) {
-        if (req.getRemoteUrl() == null || req.getRemoteUrl().isBlank()) {
+        if (req.getRemoteUrl() == null || req.getRemoteUrl()
+                                             .isBlank()) {
             throw new GitGuiException(ErrorCode.VALIDATION_FAILED, "请输入远程仓库 URL");
         }
-        if (req.getTargetDir() == null || req.getTargetDir().isBlank()) {
+        if (req.getTargetDir() == null || req.getTargetDir()
+                                             .isBlank()) {
             throw new GitGuiException(ErrorCode.VALIDATION_FAILED, "请输入本地目标目录");
         }
         return asyncTaskService.submitWrite(req.getTargetDir(), TaskType.CLONE, () -> {
@@ -102,15 +101,20 @@ public class RepositoryServiceImpl implements RepositoryService {
         String branch = gitExecutor.getCurrentBranch(repoPath);
         boolean clean = gitExecutor.isClean(repoPath);
         List<com.gitgui.domain.model.RemoteConfig> remotes = gitExecutor.listRemotes(repoPath);
-        String remoteUrl = remotes.isEmpty() ? "" : remotes.get(0).getFetchUrl();
+        String remoteUrl = remotes.isEmpty() ? "" : remotes.get(0)
+                                                           .getFetchUrl();
         RepositoryMeta meta = RepositoryMeta.builder()
-                .repoPath(repoPath)
-                .currentBranch(branch)
-                .headCommit("")
-                .remoteUrl(remoteUrl)
-                .hasUncommittedChanges(!clean)
-                .build();
+                                            .repoPath(repoPath)
+                                            .currentBranch(branch)
+                                            .headCommit("")
+                                            .remoteUrl(remoteUrl)
+                                            .hasUncommittedChanges(!clean)
+                                            .build();
         metaRepository.save(meta);
+        // 关键修复：同步更新 scanResults 缓存，确保侧边栏列表项读取到最新分支。
+        // 之前只写 DB 不更新缓存，导致 git checkout 后侧边栏分支名不刷新。
+        scanResults.replaceAll(m -> m.getRepoPath()
+                                     .equals(repoPath) ? meta : m);
         return meta;
     }
 
@@ -120,16 +124,20 @@ public class RepositoryServiceImpl implements RepositoryService {
     }
 
     private void scanDirectory(File dir, int maxDepth, int current, ProgressCallback cb) {
-        if (cb != null && cb.isCancelled()) return;
-        if (dir == null || !dir.isDirectory()) return;
+        if (cb != null && cb.isCancelled()) {
+            return;
+        }
+        if (dir == null || !dir.isDirectory()) {
+            return;
+        }
         File gitDir = new File(dir, ".git");
         if (gitDir.exists()) {
             try {
                 RepositoryMeta meta = RepositoryMeta.builder()
-                        .repoPath(dir.getAbsolutePath())
-                        .currentBranch(gitExecutor.getCurrentBranch(dir.getAbsolutePath()))
-                        .hasUncommittedChanges(!gitExecutor.isClean(dir.getAbsolutePath()))
-                        .build();
+                                                    .repoPath(dir.getAbsolutePath())
+                                                    .currentBranch(gitExecutor.getCurrentBranch(dir.getAbsolutePath()))
+                                                    .hasUncommittedChanges(!gitExecutor.isClean(dir.getAbsolutePath()))
+                                                    .build();
                 scanResults.add(meta);
                 if (cb != null) {
                     cb.onOutput("发现仓库：" + dir.getAbsolutePath());
@@ -139,13 +147,19 @@ public class RepositoryServiceImpl implements RepositoryService {
             }
             return;
         }
-        if (current >= maxDepth) return;
+        if (current >= maxDepth) {
+            return;
+        }
         File[] children = dir.listFiles();
-        if (children == null) return;
+        if (children == null) {
+            return;
+        }
         for (File child : children) {
             if (child.isDirectory()) {
                 String name = child.getName();
-                if (name.startsWith(".") || "node_modules".equals(name) || "target".equals(name)) continue;
+                if (name.startsWith(".") || "node_modules".equals(name) || "target".equals(name)) {
+                    continue;
+                }
                 scanDirectory(child, maxDepth, current + 1, cb);
             }
         }

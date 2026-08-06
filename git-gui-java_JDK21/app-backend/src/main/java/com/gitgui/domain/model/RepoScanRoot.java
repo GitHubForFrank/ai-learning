@@ -2,10 +2,9 @@ package com.gitgui.domain.model;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Data;
-
-import java.time.LocalDateTime;
 
 /**
  * 多仓库扫描根目录领域模型
@@ -21,31 +20,49 @@ import java.time.LocalDateTime;
 @TableName("repo_scan_root")
 public class RepoScanRoot {
 
-    /** 主键 UUID */
+    /**
+     * 主键 UUID
+     */
     @TableId
     private String id;
 
-    /** 根目录绝对路径，唯一 */
+    /**
+     * 根目录绝对路径，唯一
+     */
     private String rootPath;
 
-    /** 用户自定义别名（便于在侧边栏识别，最大 100 字符） */
+    /**
+     * 用户自定义别名（便于在侧边栏识别，最大 100 字符）
+     */
     private String alias;
 
-    /** 扫描深度（1~10，BR-01 默认 3） */
+    /**
+     * 扫描深度（1~10，BR-01 默认 3）
+     */
     private int scanDepth;
 
-    /** 最后一次扫描时间 */
+    /**
+     * 最后一次扫描时间
+     */
     private LocalDateTime lastScannedAt;
 
-    /** 是否启用（true=启用，false=禁用） */
+    /**
+     * 是否启用（true=启用，false=禁用）
+     */
     private boolean enabled;
 
-    /** 排序权重（数值越小越靠前） */
+    /**
+     * 排序权重（数值越小越靠前）
+     */
     private int sortOrder;
 
-    /** 创建时间 */
+    /**
+     * 创建时间
+     */
     private LocalDateTime createdAt;
 
-    /** 更新时间 */
+    /**
+     * 更新时间
+     */
     private LocalDateTime updatedAt;
 }

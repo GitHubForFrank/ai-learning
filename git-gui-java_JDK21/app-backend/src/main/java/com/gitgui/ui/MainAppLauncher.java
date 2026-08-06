@@ -1,19 +1,18 @@
 package com.gitgui.ui;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import com.gitgui.domain.service.SettingsService;
 import com.gitgui.ui.i18n.I18nUtil;
 import com.gitgui.ui.main.MainController;
 import com.gitgui.ui.theme.ThemeManager;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import java.io.InputStream;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.InputStream;
 
 /**
  * 主窗口启动器
@@ -28,24 +27,28 @@ public class MainAppLauncher {
 
     private static final Logger log = LoggerFactory.getLogger(MainAppLauncher.class);
 
-    /** 主题管理器 */
+    /**
+     * 主题管理器
+     */
     private final ThemeManager themeManager;
-    /** 设置服务 */
+    /**
+     * 设置服务
+     */
     private final SettingsService settingsService;
-    /** 主窗口 Controller */
+    /**
+     * 主窗口 Controller
+     */
     private final MainController mainController;
 
     /**
      * 构造启动器（Guice 注入）。
      *
-     * @param themeManager 主题管理器
+     * @param themeManager    主题管理器
      * @param settingsService 设置服务
-     * @param mainController 主窗口 Controller
+     * @param mainController  主窗口 Controller
      */
     @Inject
-    public MainAppLauncher(ThemeManager themeManager,
-                           SettingsService settingsService,
-                           MainController mainController) {
+    public MainAppLauncher(ThemeManager themeManager, SettingsService settingsService, MainController mainController) {
         this.themeManager = themeManager;
         this.settingsService = settingsService;
         this.mainController = mainController;

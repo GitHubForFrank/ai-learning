@@ -16,6 +16,9 @@ import com.google.inject.Inject;
  */
 public class CleanFdxRule extends AbstractRedLineRule {
 
+    /**
+     * @param settingsService 设置服务
+     */
     @Inject
     public CleanFdxRule(SettingsService settingsService) {
         super(settingsService);
@@ -25,8 +28,7 @@ public class CleanFdxRule extends AbstractRedLineRule {
     protected RedLineResult doCheck(RedLineContext ctx) {
         // 命中条件：clean -fdx（含忽略文件）
         if (ctx.isCleanIncludeIgnored()) {
-            return RedLineResult.confirm(RedLineCode.RED_CLEAN_FDX,
-                    "clean -fdx 将删除 .gitignore 内的配置/密钥文件，请确认是否继续");
+            return RedLineResult.confirm(RedLineCode.RED_CLEAN_FDX, "clean -fdx 将删除 .gitignore 内的配置/密钥文件，请确认是否继续");
         }
         return RedLineResult.pass();
     }

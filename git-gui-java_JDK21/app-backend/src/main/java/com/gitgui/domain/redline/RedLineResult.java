@@ -15,29 +15,25 @@ import lombok.Data;
 @Builder(toBuilder = true)
 public class RedLineResult {
 
-    /** 拦截动作 */
+    /**
+     * 拦截动作
+     */
     private Action action;
 
-    /** 命中的规则代码（PASS 时为 null） */
+    /**
+     * 命中的规则代码（PASS 时为 null）
+     */
     private RedLineCode ruleCode;
 
-    /** 中文风险提示（含安全等价命令建议） */
+    /**
+     * 中文风险提示（含安全等价命令建议）
+     */
     private String message;
 
-    /** 详情 JSON（如命中敏感文件清单、保护分支名、文件大小） */
-    private String detail;
-
     /**
-     * 拦截动作枚举。
+     * 详情 JSON（如命中敏感文件清单、保护分支名、文件大小）
      */
-    public enum Action {
-        /** 放行执行 */
-        PASS,
-        /** UI 弹窗二次确认 */
-        CONFIRM,
-        /** 直接阻断拒绝 */
-        BLOCK
-    }
+    private String detail;
 
     /**
      * 构造放行结果。
@@ -45,7 +41,9 @@ public class RedLineResult {
      * @return PASS 结果
      */
     public static RedLineResult pass() {
-        return RedLineResult.builder().action(Action.PASS).build();
+        return RedLineResult.builder()
+                            .action(Action.PASS)
+                            .build();
     }
 
     /**
@@ -56,7 +54,11 @@ public class RedLineResult {
      * @return BLOCK 结果
      */
     public static RedLineResult block(RedLineCode code, String message) {
-        return RedLineResult.builder().action(Action.BLOCK).ruleCode(code).message(message).build();
+        return RedLineResult.builder()
+                            .action(Action.BLOCK)
+                            .ruleCode(code)
+                            .message(message)
+                            .build();
     }
 
     /**
@@ -67,6 +69,28 @@ public class RedLineResult {
      * @return CONFIRM 结果
      */
     public static RedLineResult confirm(RedLineCode code, String message) {
-        return RedLineResult.builder().action(Action.CONFIRM).ruleCode(code).message(message).build();
+        return RedLineResult.builder()
+                            .action(Action.CONFIRM)
+                            .ruleCode(code)
+                            .message(message)
+                            .build();
+    }
+
+    /**
+     * 拦截动作枚举。
+     */
+    public enum Action {
+        /**
+         * 放行执行
+         */
+        PASS,
+        /**
+         * UI 弹窗二次确认
+         */
+        CONFIRM,
+        /**
+         * 直接阻断拒绝
+         */
+        BLOCK
     }
 }
