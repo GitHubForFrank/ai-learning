@@ -1,0 +1,9 @@
+#!/bin/sh
+COMMIT_MSG_FILE=$1
+# \n\n 代表：空一行，再输出Agent文本
+SUFFIX=$'\n\nAgent: Java Skill Agent'
+
+# 检测文件内是否已经存在目标文本，不存在才追加，防止重复
+if ! grep -q "Agent: Java Skill Agent" "$COMMIT_MSG_FILE"; then
+  echo "$SUFFIX" >> "$COMMIT_MSG_FILE"
+fi
